@@ -19,7 +19,7 @@ fn is_candidate(str: String) -> bool {
     str.contains("CLOCK") || str.contains("BERLIN") || str.contains("NORTH") || str.contains("EAST")
 }
 
-fn get_decrypters() -> Vec<impl Decryptor> {
-    let v: Vec<dyn Decryptor> = vec![atbash::AtBash {}, caesar::Caesar {}];
+fn get_decryptors() -> Vec<impl Decryptor> {
+    let v: Vec<&Decryptor> = vec![atbash::AtBash {}, caesar::Caesar {}];
     v
 }
