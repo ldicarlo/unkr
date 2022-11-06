@@ -11,7 +11,7 @@ use std::collections::HashSet;
 /// - B,C
 /// - C,A
 /// - C,B
-/// - A {x0,x1,x2},B,C
+/// - A,B,C
 /// - A,C,B
 /// - B,A,C
 /// - B,C,A
@@ -27,6 +27,11 @@ pub fn combinate_strings(vector: Vec<u8>) -> std::collections::HashSet<Vec<u8>> 
             }
         }
     }
+    result
+}
+
+pub fn combine_elements(elements_count: u8) -> std::collections::HashSet<Vec<u8>> {
+    let mut result: HashSet<Vec<u8>> = HashSet::new();
     result
 }
 

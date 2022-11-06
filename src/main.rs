@@ -4,6 +4,7 @@ mod combinator;
 mod decryptors;
 mod fold;
 use decryptors::Decryptor;
+use std::collections::BTreeMap;
 fn main() {
     let str = "OBKRUOXOGHULBSOLIFBBWFLRVQQPRNGKSSOTWTQSJQSSEKZZWATJKLUDIAWINFBNYPVTTMZFPKWGDKZXTJCDIGKUHUAUEKCAR".to_string().to_uppercase();
     let decryptors = get_decryptors();
@@ -15,6 +16,8 @@ fn main() {
         }
     }
 }
+
+fn decrypt(decryptors: Vec<(u8, Box<dyn Decryptor>)>, used: Vec<u8>, str: String) {}
 
 fn is_candidate(str: String) -> bool {
     str.contains("CLOCK") || str.contains("BERLIN") || str.contains("NORTH") || str.contains("EAST")
