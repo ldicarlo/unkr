@@ -1,4 +1,7 @@
-pub trait Decryptor {
-    fn get_max_seed(&self) -> u64;
-    fn decrypt(&self, str: String, seed: u64) -> String;
+pub trait Decryptor: Clone {
+  fn decrypt(str: String, seed: u64) -> String;
+}
+
+pub trait HasSeed: Clone {
+  fn get_max_seed() -> u64;
 }
