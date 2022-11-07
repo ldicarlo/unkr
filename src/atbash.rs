@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-pub struct AtBash {}
 
 pub fn get_max_seed() -> u64 {
   1
 }
 
-fn decrypt(str: String, _seed: u64) -> String {
+pub fn decrypt(str: String, _seed: u64) -> String {
   let letters: HashMap<char, char> = vec![
     ('A', 'Z'),
     ('B', 'Y'),
