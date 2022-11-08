@@ -82,6 +82,10 @@ mod tests {
     use super::*;
     #[test]
     fn it_works() {
-        assert_eq!(1, 1)
+        let arc = Arc::new(Mutex::new(BTreeSet::new()));
+        brute_force_decrypt(arc.clone(), "str".to_string());
+        if let Ok(result) = arc.clone().lock() {
+            assert_eq!(result.clone(), BTreeSet::new());
+        }
     }
 }
