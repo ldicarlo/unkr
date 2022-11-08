@@ -22,4 +22,6 @@ struct Args {
     /// String to try to decrypt
     #[arg(short, long)]
     string: Option<String>,
+    // #[arg(short, long)]
+    // decryptor: Vec<u8>,
 }

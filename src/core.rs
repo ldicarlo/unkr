@@ -21,7 +21,7 @@ fn loop_decrypt(
 ) {
     let local_arc = res_acc.clone();
     if let Some(current) = to_use.pop() {
-        let (decryptor_id, (seed, decrypt)) = get_decryptors()
+        let (_, (seed, decrypt)) = get_decryptors()
             .into_iter()
             .find(|(id, _)| *id == current)
             .unwrap();
