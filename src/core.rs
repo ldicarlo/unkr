@@ -4,10 +4,21 @@ use super::combinator;
 use std::collections::BTreeSet;
 use std::sync::Arc;
 use std::sync::Mutex;
-pub fn brute_force_decrypt(results_accumulator: Arc<Mutex<BTreeSet<Vec<(u8, u64)>>>>, str: String) {
+
+pub fn brute_force_decrypt(str: String) {
+    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
+    internal_brute_force_decrypt(results_accumulator.clone(), str);
+    println!("Result: {:?}", results_accumulator.lock().unwrap());
+}
+
+pub fn internal_brute_force_decrypt(
+    results_accumulator: Arc<Mutex<BTreeSet<Vec<(u8, u64)>>>>,
+    str: String,
+) {
     let decryptors = get_decryptors();
 
-    for i in combinator::combinate_strings(decryptors.iter().map(|(id, _)| *id).collect()) {
+    for i in combinator::combinate_strings(decryptors.iter().map(|(id, _, _, _, _)| *id).collect())
+    {
         println!("brute_force_decrypt {:?}", i);
         loop_decrypt(results_accumulator.clone(), vec![], i, str.clone());
     }
@@ -21,9 +32,9 @@ fn loop_decrypt(
 ) {
     let local_arc = res_acc.clone();
     if let Some(current) = to_use.pop() {
-        let (_, (seed, decrypt)) = get_decryptors()
+        let (_, _, seed, decrypt, _) = get_decryptors()
             .into_iter()
-            .find(|(id, _)| *id == current)
+            .find(|(id, _, _, _, _)| *id == current)
             .unwrap();
         for s in 1..seed() {
             let new_str = decrypt(str.clone(), s);
@@ -61,18 +72,27 @@ fn is_candidate(str: String) -> bool {
     str.contains("CLOCK") || str.contains("BERLIN") || str.contains("NORTH") || str.contains("EAST")
 }
 
-fn get_decryptors() -> Vec<(
+pub fn get_decryptors() -> Vec<(
     u8,
-    (Box<dyn Fn() -> u64>, Box<dyn Fn(String, u64) -> String>),
+    String,
+    Box<dyn Fn() -> u64>,
+    Box<dyn Fn(String, u64) -> String>,
+    Box<dyn Fn(String, u64) -> String>,
 )> {
     vec![
         (
             1,
-            (Box::new(atbash::get_max_seed), Box::new(atbash::decrypt)),
+            "atbash".to_string(),
+            Box::new(atbash::get_max_seed),
+            Box::new(atbash::decrypt),
+            Box::new(atbash::decrypt),
         ),
         (
             2,
-            (Box::new(caesar::get_max_seed), Box::new(caesar::decrypt)),
+            "caesar".to_string(),
+            Box::new(caesar::get_max_seed),
+            Box::new(caesar::decrypt),
+            Box::new(caesar::encrypt),
         ),
     ]
 }
@@ -83,7 +103,7 @@ mod tests {
     #[test]
     fn it_works() {
         let arc = Arc::new(Mutex::new(BTreeSet::new()));
-        brute_force_decrypt(arc.clone(), "str".to_string());
+        internal_brute_force_decrypt(arc.clone(), "str".to_string());
         if let Ok(result) = arc.clone().lock() {
             assert_eq!(result.clone(), BTreeSet::new());
         }

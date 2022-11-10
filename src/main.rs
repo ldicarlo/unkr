@@ -3,25 +3,47 @@ mod caesar;
 mod combinator;
 mod core;
 mod fold;
-use clap::Parser;
-use std::collections::BTreeSet;
-use std::sync::Arc;
-use std::sync::Mutex;
+use clap::{Args, Parser, Subcommand, ValueEnum};
+use std::collections::BTreeMap;
 fn main() {
-    let args = Args::parse();
-    let str = args.string.unwrap_or( "OBKRUOXOGHULBSOLIFBBWFLRVQQPRNGKSSOTWTQSJQSSEKZZWATJKLUDIAWINFBNYPVTTMZFPKWGDKZXTJCDIGKUHUAUEKCAR".to_string().to_uppercase());
-    let result = Arc::new(Mutex::new(BTreeSet::new()));
-    println!("Input string: {}", str.clone());
-    core::brute_force_decrypt(result.clone(), str);
-    println!("Result: {:?}", result.lock().unwrap());
+    let args = Cli::parse();
+    match args.command {
+        Commands::Encrypt { string } => println!("TODO {}", string),
+        Commands::Decrypt { string } => todo!(),
+        Commands::BruteForce { string } => core::brute_force_decrypt(string),
+        Commands::GetDecryptors {} => println!(
+            "{:?}",
+            core::get_decryptors()
+                .iter()
+                .map(|(id, str, _, _, _)| (*id, str.clone()))
+                .collect::<BTreeMap<u8, std::string::String>>()
+        ),
+    }
 }
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-struct Args {
-    /// String to try to decrypt
-    #[arg(short, long)]
-    string: Option<String>,
-    // #[arg(short, long)]
-    // decryptor: Vec<u8>,
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+#[derive(Debug, Subcommand)]
+enum Commands {
+    #[command(arg_required_else_help = true)]
+    Encrypt {
+        /// String to try to decrypt
+        #[arg(short, long)]
+        string: String,
+    },
+    Decrypt {
+        /// String to try to decrypt
+        #[arg(short, long)]
+        string: String,
+    },
+    BruteForce {
+        /// String to try to decrypt
+        #[arg(short, long)]
+        string: String,
+    },
+    GetDecryptors {},
 }

@@ -9,6 +9,10 @@ pub fn decrypt(str: String, seed: u64) -> String {
         .collect()
 }
 
+pub fn encrypt(str: String, seed: u64) -> String {
+    decrypt(str, get_max_seed() - seed)
+}
+
 fn char_mod(c: char, number: usize) -> char {
     let alphabet = vec![
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
@@ -37,5 +41,10 @@ mod tests {
     #[test]
     fn it_works_3() {
         assert_eq!(decrypt("YVIORM".to_string(), 1), "ZWJPSN")
+    }
+
+    #[test]
+    fn it_works_4() {
+        assert_eq!(decrypt(encrypt("YVIORM".to_string(), 10), 10), "YVIORM")
     }
 }

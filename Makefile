@@ -6,6 +6,12 @@ help:
 run: test ## run the app backend
 	@cargo run
 
+run-brute-force: test ## run the app backend
+	@cargo run -- brute-force --string=OBKRUOXOGHULBSOLIFBBWFLRVQQPRNGKSSOTWTQSJQSSEKZZWATJKLUDIAWINFBNYPVTTMZFPKWGDKZXTJCDIGKUHUAUEKCAR
+
+get-decryptors: test ## print current decryptors
+	@cargo run -- get-decryptors
+
 test: ## test the app backend
 	@cargo test
 
