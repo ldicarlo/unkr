@@ -108,4 +108,12 @@ mod tests {
             assert_eq!(result.clone(), BTreeSet::new());
         }
     }
+
+    #[test]
+    fn it_works_2() {
+        let decryptors = get_decryptors();
+        for (_,d,_,decrypt,encrypt) in decryptors.iter() {
+            assert_eq!(decrypt(encrypt("SOME STRING 123 !".to_string(),1),1), "SOME STRING 123 !", "error with {}", &d) 
+        }
+    }
 }
