@@ -88,6 +88,11 @@ pub fn get_decryptors() -> Vec<(
         ),
     ]
 }
+
+pub fn decrypt(str:String, decryptors:Vec<String>){
+
+}
+
 #[cfg(test)]
 mod tests {
 
