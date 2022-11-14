@@ -1,12 +1,7 @@
-use super::decryptors;
-pub struct Caesar {}
+pub fn get_max_seed() -> u64 {
+    1
+}
 
-impl decryptors::Decryptor for Caesar {
-    fn get_max_seed(&self) -> u64 {
-        1
-    }
-
-    fn decrypt(&self, str: String, seed: u64) -> String {
-        str.chars().rev().collect()
-    }
+pub fn decrypt(str: String, _: u64) -> String {
+    str.chars().rev().collect()
 }

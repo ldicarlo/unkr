@@ -4,9 +4,10 @@ use super::combinator;
 use std::collections::BTreeSet;
 use std::sync::Arc;
 use std::sync::Mutex;
+use super::cryptors::get_decryptors;
 
 pub fn brute_force_decrypt(str: String) {
-    let result = internal_brute_force_decrypt(str);
+    let result = brute_force_strings(str);
     println!("Result: {:?}", result);
 }
 
@@ -16,12 +17,24 @@ pub fn internal_brute_force_decrypt(str: String) -> BTreeSet<Vec<(u8, u64)>> {
 
     for i in combinator::combinate_strings(decryptors.iter().map(|(id, _, _, _, _)| *id).collect())
     {
-        println!("brute_force_decrypt {:?}", i);
+        // println!("brute_force_decrypt {:?}", i);
         loop_decrypt(results_accumulator.clone(), vec![], i, str.clone());
     }
 
     let result: BTreeSet<Vec<(u8, u64)>> = results_accumulator.lock().unwrap().to_owned();
     result
+}
+
+fn brute_force_strings(str: String)-> BTreeSet<Vec<(String, u64)>>{
+    internal_brute_force_decrypt(str).iter().map(|vec| vec.iter().map(|(current_id,seed)| 
+    {
+       let (_, d_name,_,_,_) =  get_decryptors()
+        .into_iter()
+        .find(|(id, _, _, _, _)| *id == *current_id)
+        .unwrap();
+        (d_name,*seed)
+    }
+    ).collect()).collect()
 }
 
 fn loop_decrypt(
@@ -31,12 +44,14 @@ fn loop_decrypt(
     str: String,
 ) {
     let local_arc = res_acc.clone();
+    
     if let Some(current) = to_use.pop() {
-        let (_, _, seed, decrypt, _) = get_decryptors()
+        let (id, _, seed, decrypt, _) = get_decryptors()
             .into_iter()
             .find(|(id, _, _, _, _)| *id == current)
             .unwrap();
-        for s in 1..seed() {
+        for s in 0..seed() {
+           // println!("{} {}, {:?}",id,s.clone(),acc.clone());
             let new_str = decrypt(str.clone(), s);
             let mut current_acc = acc.clone();
             let current_to_use = to_use.clone();
@@ -64,30 +79,6 @@ fn is_candidate(str: String) -> bool {
     str.contains("CLOCK") || str.contains("BERLIN") || str.contains("NORTH") || str.contains("EAST")
 }
 
-pub fn get_decryptors() -> Vec<(
-    u8,
-    String,
-    Box<dyn Fn() -> u64>,
-    Box<dyn Fn(String, u64) -> String>,
-    Box<dyn Fn(String, u64) -> String>,
-)> {
-    vec![
-        (
-            1,
-            "atbash".to_string(),
-            Box::new(atbash::get_max_seed),
-            Box::new(atbash::decrypt),
-            Box::new(atbash::decrypt),
-        ),
-        (
-            2,
-            "caesar".to_string(),
-            Box::new(caesar::get_max_seed),
-            Box::new(caesar::decrypt),
-            Box::new(caesar::encrypt),
-        ),
-    ]
-}
 
 fn parse_parameter(parameter: &String) -> (String, u64) {
     let split: Vec<&str> = parameter.split(':').collect();
@@ -185,8 +176,9 @@ mod tests {
     #[test]
     fn brute_force_1() {
         assert_eq!(
-            BTreeSet::new(), // !! target/debug/kryptos encrypt --string BERLIN -- caesar:10 atbash caesar:5
-            internal_brute_force_decrypt("TQDJMH".to_string())
+            true,
+            // encrypt --string BERLIN -- caesar:10 atbash caesar:5
+            brute_force_strings("TQDJMH".to_string()).contains(&vec![("caesar".to_string(),10), ("atbash".to_string(),0), ("caesar".to_string(),5)])
         );
     }
 }

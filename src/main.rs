@@ -2,7 +2,9 @@ mod atbash;
 mod caesar;
 mod combinator;
 mod core;
+mod cryptors;
 mod fold;
+mod reverse;
 use clap::{Parser, Subcommand};
 use std::collections::BTreeMap;
 fn main() {
@@ -13,7 +15,7 @@ fn main() {
         Commands::BruteForce { string } => core::brute_force_decrypt(string),
         Commands::GetDecryptors {} => println!(
             "{:?}",
-            core::get_decryptors()
+            cryptors::get_decryptors()
                 .iter()
                 .map(|(id, str, _, _, _)| (*id, str.clone()))
                 .collect::<BTreeMap<u8, std::string::String>>()
