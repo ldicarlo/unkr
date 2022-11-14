@@ -3,13 +3,13 @@ mod caesar;
 mod combinator;
 mod core;
 mod fold;
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand};
 use std::collections::BTreeMap;
 fn main() {
     let args = Cli::parse();
     match args.command {
-        Commands::Encrypt { string , decryptors        } => core::decrypt(string,decryptors)    ,
-        Commands::Decrypt { string } => todo!(),
+        Commands::Encrypt { string, steps } => core::print_decrypt(string, steps),
+        Commands::Decrypt { string, steps } => core::print_encrypt(string, steps),
         Commands::BruteForce { string } => core::brute_force_decrypt(string),
         Commands::GetDecryptors {} => println!(
             "{:?}",
@@ -31,17 +31,20 @@ struct Cli {
 enum Commands {
     #[command(arg_required_else_help = true)]
     Encrypt {
-        /// String to try to decrypt
+        /// String to try to encrypt
         #[arg(short, long)]
         string: String,
-        /// Decryptors List as atbash:1,caesar,<DECRYPTOR>:<SEED> ...
+        /// Steps list as atbash:1 caesar <DECRYPTOR>[:<SEED>] ...
         #[arg(last = true)]
-        decryptors: Vec<String>,
+        steps: Vec<String>,
     },
     Decrypt {
         /// String to try to decrypt
         #[arg(short, long)]
         string: String,
+        /// Steps list as atbash:1 caesar <DECRYPTOR>[:<SEED>] ...
+        #[arg(last = true)]
+        steps: Vec<String>,
     },
     BruteForce {
         /// String to try to decrypt

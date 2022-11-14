@@ -31,7 +31,7 @@ pub fn combinate_strings(vector: Vec<u8>) -> std::collections::HashSet<Vec<u8>> 
 }
 
 pub fn combine_elements(elements_count: u8) -> std::collections::HashSet<Vec<u8>> {
-    let mut result: HashSet<Vec<u8>> = HashSet::new();
+    let result: HashSet<Vec<u8>> = HashSet::new();
     result
 }
 
