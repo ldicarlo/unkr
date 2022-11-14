@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 fn main() {
     let args = Cli::parse();
     match args.command {
-        Commands::Encrypt { string } => println!("TODO {}", string),
+        Commands::Encrypt { string , decryptors, seeds} => println!("TODO {} {:?} {:?}", string,decryptors,seeds),
         Commands::Decrypt { string } => todo!(),
         Commands::BruteForce { string } => core::brute_force_decrypt(string),
         Commands::GetDecryptors {} => println!(
@@ -34,6 +34,15 @@ enum Commands {
         /// String to try to decrypt
         #[arg(short, long)]
         string: String,
+        /// Decryptors List
+        #[arg(short, long)]
+        decryptors: Vec<String>,
+        /// seeds list
+        #[arg(long)]
+        seeds: Vec<u64>,
+
+
+        
     },
     Decrypt {
         /// String to try to decrypt

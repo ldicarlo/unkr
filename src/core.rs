@@ -42,15 +42,7 @@ fn loop_decrypt(
             let current_to_use = to_use.clone();
 
             current_acc.push((current.clone(), s));
-            // println!(
-            //     "loop_decrypt acc:{:?} list:{:?} {} - {} {} -> {}",
-            //     current_acc.clone(),
-            //     to_use.clone(),
-            //     str,
-            //     current,
-            //     decryptor_id,
-            //     new_str.clone()
-            // );
+
             if is_candidate(new_str.clone()) {
                 local_arc
                     .clone()
