@@ -89,6 +89,11 @@ pub fn get_decryptors() -> Vec<(
     ]
 }
 
+fn parse_parameter(parameter: String)-> (String,u8){ 
+let split: Vec<&str> = parameter.split(':').collect();
+((split.get(0).unwrap()).to_string(), split.get(1).map(|s| s.clone().parse::<u8>().unwrap() ).unwrap_or(1))
+}
+
 pub fn decrypt(str:String, decryptors:Vec<String>){
 
 }
