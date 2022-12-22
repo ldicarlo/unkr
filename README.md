@@ -1,0 +1,6 @@
+- [ ] combinator
+- [ ] cache
+- [ ] cryptors
+  - [ ] fold
+  - [ ] enigma
+  - [ ] indexcrypt (using previous cypher text to locate next char)
