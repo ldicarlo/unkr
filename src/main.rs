@@ -3,8 +3,10 @@ mod caesar;
 mod combinator;
 mod core;
 mod cryptors;
+mod cut;
 mod fold;
 mod reverse;
+mod vigenere;
 use clap::{Parser, Subcommand};
 use std::collections::BTreeMap;
 fn main() {

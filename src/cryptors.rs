@@ -1,15 +1,11 @@
 use super::atbash;
 use super::caesar;
 use super::reverse;
-use super::combinator;
-use std::collections::BTreeSet;
-use std::sync::Arc;
-use std::sync::Mutex;
 
 pub fn get_decryptors() -> Vec<(
     u8,
     String,
-    Box<dyn Fn() -> u64>,
+    Box<dyn Fn(usize) -> u64>,
     Box<dyn Fn(String, u64) -> String>,
     Box<dyn Fn(String, u64) -> String>,
 )> {

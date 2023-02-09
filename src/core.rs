@@ -1,5 +1,3 @@
-use super::atbash;
-use super::caesar;
 use super::combinator;
 use super::cryptors::get_decryptors;
 use std::collections::BTreeSet;
@@ -55,7 +53,7 @@ fn loop_decrypt(
             .into_iter()
             .find(|(id, _, _, _, _)| *id == current)
             .unwrap();
-        for s in 0..seed() {
+        for s in 0..seed(str.clone().len()) {
             // println!("{} {}, {:?}",id,s.clone(),acc.clone());
             let new_str = decrypt(str.clone(), s);
             let mut current_acc = acc.clone();

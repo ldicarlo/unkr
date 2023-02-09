@@ -1,4 +1,4 @@
-pub fn get_max_seed() -> u64 {
+pub fn get_max_seed(text_length: usize) -> u64 {
     1
 }
 

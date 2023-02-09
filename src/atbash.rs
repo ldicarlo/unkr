@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn get_max_seed() -> u64 {
+pub fn get_max_seed(_: usize) -> u64 {
     1
 }
 

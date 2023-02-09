@@ -1,4 +1,4 @@
-pub fn get_max_seed() -> u64 {
+pub fn get_max_seed(_: usize) -> u64 {
     26
 }
 
@@ -10,7 +10,8 @@ pub fn decrypt(str: String, seed: u64) -> String {
 }
 
 pub fn encrypt(str: String, seed: u64) -> String {
-    decrypt(str, get_max_seed() - seed)
+    let size = get_max_seed(str.clone().len());
+    decrypt(str, size - seed)
 }
 
 fn char_mod(c: char, number: usize) -> char {
