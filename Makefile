@@ -17,3 +17,6 @@ test: ## test the app backend
 
 watch: ## Use ENTR to reload and run tests
 	@find src -type f | entr -cr make run
+
+run-brute-force-test: test ## run test
+	@cargo run -- brute-force --string=TQDJMH

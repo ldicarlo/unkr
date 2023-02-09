@@ -1,10 +1,10 @@
 use super::atbash;
 use super::caesar;
 use super::combinator;
+use super::cryptors::get_decryptors;
 use std::collections::BTreeSet;
 use std::sync::Arc;
 use std::sync::Mutex;
-use super::cryptors::get_decryptors;
 
 pub fn brute_force_decrypt(str: String) {
     let result = brute_force_strings(str);
@@ -25,16 +25,21 @@ pub fn internal_brute_force_decrypt(str: String) -> BTreeSet<Vec<(u8, u64)>> {
     result
 }
 
-fn brute_force_strings(str: String)-> BTreeSet<Vec<(String, u64)>>{
-    internal_brute_force_decrypt(str).iter().map(|vec| vec.iter().map(|(current_id,seed)| 
-    {
-       let (_, d_name,_,_,_) =  get_decryptors()
-        .into_iter()
-        .find(|(id, _, _, _, _)| *id == *current_id)
-        .unwrap();
-        (d_name,*seed)
-    }
-    ).collect()).collect()
+fn brute_force_strings(str: String) -> BTreeSet<Vec<(String, u64)>> {
+    internal_brute_force_decrypt(str)
+        .iter()
+        .map(|vec| {
+            vec.iter()
+                .map(|(current_id, seed)| {
+                    let (_, d_name, _, _, _) = get_decryptors()
+                        .into_iter()
+                        .find(|(id, _, _, _, _)| *id == *current_id)
+                        .unwrap();
+                    (d_name, *seed)
+                })
+                .collect()
+        })
+        .collect()
 }
 
 fn loop_decrypt(
@@ -44,14 +49,14 @@ fn loop_decrypt(
     str: String,
 ) {
     let local_arc = res_acc.clone();
-    
+
     if let Some(current) = to_use.pop() {
         let (id, _, seed, decrypt, _) = get_decryptors()
             .into_iter()
             .find(|(id, _, _, _, _)| *id == current)
             .unwrap();
         for s in 0..seed() {
-           // println!("{} {}, {:?}",id,s.clone(),acc.clone());
+            // println!("{} {}, {:?}",id,s.clone(),acc.clone());
             let new_str = decrypt(str.clone(), s);
             let mut current_acc = acc.clone();
             let current_to_use = to_use.clone();
@@ -78,7 +83,6 @@ fn loop_decrypt(
 fn is_candidate(str: String) -> bool {
     str.contains("CLOCK") || str.contains("BERLIN") || str.contains("NORTH") || str.contains("EAST")
 }
-
 
 fn parse_parameter(parameter: &String) -> (String, u64) {
     let split: Vec<&str> = parameter.split(':').collect();
@@ -178,7 +182,11 @@ mod tests {
         assert_eq!(
             true,
             // encrypt --string BERLIN -- caesar:10 atbash caesar:5
-            brute_force_strings("TQDJMH".to_string()).contains(&vec![("caesar".to_string(),10), ("atbash".to_string(),0), ("caesar".to_string(),5)])
+            brute_force_strings("TQDJMH".to_string()).contains(&vec![
+                ("caesar".to_string(), 10),
+                ("atbash".to_string(), 0),
+                ("caesar".to_string(), 5)
+            ])
         );
     }
 }

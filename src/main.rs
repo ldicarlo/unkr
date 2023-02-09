@@ -52,6 +52,8 @@ enum Commands {
         /// String to try to decrypt
         #[arg(short, long)]
         string: String,
+        // #[arg(short, long)]
+        // clues: Vec<String>,
     },
     GetDecryptors {},
 }
