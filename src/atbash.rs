@@ -1,9 +1,5 @@
 use std::collections::HashMap;
 
-pub fn get_max_seed(_: usize) -> u64 {
-    1
-}
-
 pub fn decrypt(str: String, _seed: u64) -> String {
     let letters: HashMap<char, char> = vec![
         ('A', 'Z'),

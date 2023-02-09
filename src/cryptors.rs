@@ -1,6 +1,8 @@
 use super::atbash;
 use super::caesar;
+use super::fold;
 use super::reverse;
+use super::vigenere;
 
 pub fn get_decryptors() -> Vec<(
     u8,
@@ -13,7 +15,7 @@ pub fn get_decryptors() -> Vec<(
         (
             1,
             "atbash".to_string(),
-            Box::new(atbash::get_max_seed),
+            Box::new(self::get_max_seed_is_one),
             Box::new(atbash::decrypt),
             Box::new(atbash::decrypt),
         ),
@@ -27,9 +29,31 @@ pub fn get_decryptors() -> Vec<(
         (
             3,
             "reverse".to_string(),
-            Box::new(reverse::get_max_seed),
+            Box::new(self::get_max_seed_is_one),
             Box::new(reverse::decrypt),
             Box::new(reverse::decrypt),
         ),
+        (
+            4,
+            "fold".to_string(),
+            Box::new(self::get_max_seed_is_length),
+            Box::new(fold::decrypt),
+            Box::new(fold::decrypt),
+        ),
+        (
+            5,
+            "vigenere".to_string(),
+            Box::new(vigenere::get_max_seed),
+            Box::new(vigenere::decrypt),
+            Box::new(vigenere::decrypt),
+        ),
     ]
+}
+
+pub fn get_max_seed_is_length(text_length: usize) -> u64 {
+    text_length.try_into().unwrap()
+}
+
+pub fn get_max_seed_is_one(_: usize) -> u64 {
+    1
 }
