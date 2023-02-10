@@ -1,11 +1,14 @@
 /// ok fold but then we should reorder lines, so swap lines here or in another cryptor
 pub fn decrypt(str: String, seed: u64) -> String {
+    if seed == 0 {
+        return str;
+    }
     let mut result: Vec<char> = str.chars().clone().collect();
     let size: usize = str.len().try_into().unwrap();
     let block_size: usize = seed.try_into().unwrap();
     let mut lines_count: usize = size / block_size;
     // not the right way to do that ...
-    if lines_count * block_size != size{
+    if lines_count * block_size != size {
         lines_count = lines_count + 1;
     }
     let mut new_place = 0;
@@ -19,7 +22,6 @@ pub fn decrypt(str: String, seed: u64) -> String {
             } else {
                 break;
             }
-       
         }
     }
     result.iter().collect()
