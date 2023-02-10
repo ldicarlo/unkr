@@ -8,8 +8,8 @@ pub fn get_decryptors() -> Vec<(
     u8,
     String,
     Box<dyn Fn(usize) -> u64>,
-    Box<dyn Fn(String, u64) -> String>,
-    Box<dyn Fn(String, u64) -> String>,
+    Box<dyn Fn(Vec<String>, u64) -> Vec<String>>,
+    Box<dyn Fn(Vec<String>, u64) -> Vec<String>>,
 )> {
     vec![
         (

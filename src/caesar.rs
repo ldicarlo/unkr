@@ -2,14 +2,14 @@ pub fn get_max_seed(_: usize) -> u64 {
     26
 }
 
-pub fn decrypt(str: String, seed: u64) -> String {
+pub fn decrypt(str: Vec<String>, seed: u64) -> Vec<String> {
     str.chars()
         .into_iter()
         .map(|c| char_mod(c, seed.try_into().unwrap()))
         .collect()
 }
 
-pub fn encrypt(str: String, seed: u64) -> String {
+pub fn encrypt(str: Vec<String>, seed: u64) -> Vec<String> {
     let size = get_max_seed(str.clone().len());
     decrypt(str, size - seed)
 }

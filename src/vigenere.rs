@@ -4,7 +4,7 @@ pub fn get_max_seed(_: usize) -> u64 {
     3
 }
 
-pub fn encrypt(str: String, seed: u64) -> String {
+pub fn encrypt(str: Vec<String>, seed: u64) -> Vec<String> {
     let alphabet = vec![
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
         'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -19,6 +19,6 @@ pub fn encrypt(str: String, seed: u64) -> String {
     str
 }
 
-pub fn decrypt(str: String, _: u64) -> String {
+pub fn decrypt(str: Vec<String>, _: u64) -> Vec<String> {
     str
 }

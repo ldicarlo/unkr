@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn decrypt(str: String, _seed: u64) -> String {
+pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
     let letters: HashMap<char, char> = vec![
         ('A', 'Z'),
         ('B', 'Y'),
@@ -31,15 +31,19 @@ pub fn decrypt(str: String, _seed: u64) -> String {
     ]
     .into_iter()
     .collect();
-    str.chars()
-        .into_iter()
-        .map(|c| {
-            let res = c.clone();
-            let maybe_char = letters.get(&c);
-            match maybe_char {
-                Some(found) => *found,
-                None => res,
-            }
+    strs.iter()
+        .map(|str| {
+            str.chars()
+                .into_iter()
+                .map(|c| {
+                    let res = c.clone();
+                    let maybe_char = letters.get(&c);
+                    match maybe_char {
+                        Some(found) => *found,
+                        None => res,
+                    }
+                })
+                .collect()
         })
         .collect()
 }
@@ -49,10 +53,16 @@ mod tests {
 
     #[test]
     fn it_works() {
-        assert_eq!(super::decrypt("HELLO45?".to_string(), 1), "SVOOL45?");
+        assert_eq!(
+            super::decrypt(vec!["HELLO45?".to_string()], 1),
+            vec!["SVOOL45?"]
+        );
     }
     #[test]
     fn it_works_2() {
-        assert_eq!(super::decrypt("BERLIN".to_string(), 1), "YVIORM");
+        assert_eq!(
+            super::decrypt(vec!["BERLIN".to_string()], 1),
+            vec!["YVIORM"]
+        );
     }
 }

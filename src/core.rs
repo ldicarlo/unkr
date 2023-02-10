@@ -16,7 +16,7 @@ pub fn internal_brute_force_decrypt(str: String) -> BTreeSet<Vec<(u8, u64)>> {
     for i in combinator::combinate_strings(decryptors.iter().map(|(id, _, _, _, _)| *id).collect())
     {
         // println!("brute_force_decrypt {:?}", i);
-        loop_decrypt(results_accumulator.clone(), vec![], i, str.clone());
+        loop_decrypt(results_accumulator.clone(), vec![], i, vec![str.clone()]);
     }
 
     let result: BTreeSet<Vec<(u8, u64)>> = results_accumulator.lock().unwrap().to_owned();
@@ -44,7 +44,7 @@ fn loop_decrypt(
     res_acc: Arc<Mutex<BTreeSet<Vec<(u8, u64)>>>>,
     acc: Vec<(u8, u64)>,
     mut to_use: Vec<u8>,
-    str: String,
+    str: Vec<String>,
 ) {
     let local_arc = res_acc.clone();
 
@@ -78,8 +78,13 @@ fn loop_decrypt(
     }
 }
 
-fn is_candidate(str: String) -> bool {
-    str.contains("CLOCK") || str.contains("BERLIN") || str.contains("NORTH") || str.contains("EAST")
+fn is_candidate(strs: Vec<String>) -> bool {
+    strs.iter().any(|str| {
+        str.contains("CLOCK")
+            || str.contains("BERLIN")
+            || str.contains("NORTH")
+            || str.contains("EAST")
+    })
 }
 
 fn parse_parameter(parameter: &String) -> (String, u64) {
@@ -93,7 +98,7 @@ fn parse_parameter(parameter: &String) -> (String, u64) {
     )
 }
 
-pub fn decrypt(str: String, decryptors: Vec<String>) -> String {
+pub fn decrypt(str: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
     let list = get_decryptors();
 
     decryptors
@@ -109,7 +114,7 @@ pub fn decrypt(str: String, decryptors: Vec<String>) -> String {
         })
 }
 
-pub fn encrypt(str: String, decryptors: Vec<String>) -> String {
+pub fn encrypt(str: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
     let list = get_decryptors();
 
     decryptors
@@ -126,13 +131,13 @@ pub fn encrypt(str: String, decryptors: Vec<String>) -> String {
 }
 
 pub fn print_encrypt(str: String, decryptors: Vec<String>) {
-    let result = encrypt(str, decryptors);
-    println!("{}", result);
+    let result = encrypt(vec![str], decryptors);
+    println!("{:?}", result);
 }
 
 pub fn print_decrypt(str: String, decryptors: Vec<String>) {
-    let result = decrypt(str, decryptors);
-    println!("{}", result);
+    let result = decrypt(vec![str], decryptors);
+    println!("{:?}", result);
 }
 
 #[cfg(test)]
@@ -152,8 +157,8 @@ mod tests {
         let decryptors = get_decryptors();
         for (_, d, _, decrypt, encrypt) in decryptors.iter() {
             assert_eq!(
-                decrypt(encrypt("SOME STRING 123 !".to_string(), 1), 1),
-                "SOME STRING 123 !",
+                decrypt(encrypt(vec!["SOME STRING 123 !".to_string()], 1), 1),
+                vec!["SOME STRING 123 !"],
                 "error with {}",
                 &d
             )

@@ -1,5 +1,5 @@
 /// ok fold but then we should reorder lines, so swap lines here or in another cryptor
-pub fn decrypt(str: String, seed: u64) -> String {
+pub fn decrypt(str: Vec<String>, seed: u64) -> Vec<String> {
     if seed == 0 {
         return str;
     }
