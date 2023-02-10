@@ -2,10 +2,14 @@ pub fn get_max_seed(_: usize) -> u64 {
     26
 }
 
-pub fn decrypt(str: Vec<String>, seed: u64) -> Vec<String> {
-    str.chars()
-        .into_iter()
-        .map(|c| char_mod(c, seed.try_into().unwrap()))
+pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
+    strs.iter()
+        .map(|str| {
+            str.chars()
+                .into_iter()
+                .map(|c| char_mod(c, seed.try_into().unwrap()))
+                .collect()
+        })
         .collect()
 }
 
@@ -37,15 +41,21 @@ mod tests {
     }
     #[test]
     fn it_works_2() {
-        assert_eq!(decrypt("MYNAMEISCAESAR".to_string(), 10), "WIXKWOSCMKOCKB")
+        assert_eq!(
+            decrypt(vec!["MYNAMEISCAESAR".to_string()], 10),
+            vec!["WIXKWOSCMKOCKB"]
+        )
     }
     #[test]
     fn it_works_3() {
-        assert_eq!(decrypt("YVIORM".to_string(), 1), "ZWJPSN")
+        assert_eq!(decrypt(vec!["YVIORM".to_string()], 1), vec!["ZWJPSN"])
     }
 
     #[test]
     fn it_works_4() {
-        assert_eq!(decrypt(encrypt("YVIORM".to_string(), 10), 10), "YVIORM")
+        assert_eq!(
+            decrypt(encrypt(vec!["YVIORM".to_string()], 10), 10),
+            vec!["YVIORM"]
+        )
     }
 }
