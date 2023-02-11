@@ -5,7 +5,7 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
     }
     strs.iter()
         .flat_map(|str| {
-            let mut result: Vec<char> = str.chars().clone().collect();
+            let mut results: Vec<Vec<char>> = Vec::new();
             let size: usize = str.len().try_into().unwrap();
             let block_size: usize = seed.try_into().unwrap();
             let mut lines_count: usize = size / block_size;
@@ -13,20 +13,24 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
             if lines_count * block_size != size {
                 lines_count = lines_count + 1;
             }
-            let mut new_place = 0;
-            for current_idx in 0..block_size {
-                for line in 0..lines_count {
-                    let old_place = line * block_size + current_idx;
+
+            for line in 0..lines_count {
+                let mut current_line = Vec::new();
+                for current_idx in 0..block_size {
+                    let old_place = block_size * current_idx;
+                    println!("{}", old_place);
                     if let Some(val) = str.chars().nth(old_place) {
-                        result[new_place] = val;
-                        // not the right way to do that ...
-                        new_place = new_place + 1;
+                        current_line.push(val);
                     } else {
                         break;
                     }
                 }
+                results.push(current_line);
             }
-            result.iter().collect::<String>().chars()
+            results
+                .iter()
+                .map(|str| str.iter().collect::<String>())
+                .collect::<Vec<String>>()
         })
         .collect()
 }
@@ -38,7 +42,7 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            vec!["ADBECF".to_string()],
+            vec!["ADB".to_string(), "ECF".to_string()],
             decrypt(vec!["ABCDEF".to_string()], 3)
         );
     }
@@ -46,7 +50,12 @@ mod tests {
     #[test]
     fn it_works_2() {
         assert_eq!(
-            vec!["AEIMBFJNCGKODHL".to_string()],
+            vec![
+                "AEIM".to_string(),
+                "BFJN".to_string(),
+                "CGKO".to_string(),
+                "DHL".to_string(),
+            ],
             decrypt(vec!["ABCDEFGHIJKLMNO".to_string()], 4)
         );
     }
