@@ -18,7 +18,6 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
                 let mut current_line = Vec::new();
                 for line in 0..lines_count {
                     let old_place = line * block_size + current_idx;
-                    println!("{}", old_place,);
                     if let Some(val) = str.chars().nth(old_place) {
                         current_line.push(val);
                     } else {
