@@ -2,6 +2,7 @@ use super::combinator;
 use super::cryptors::get_decryptors;
 use std::collections::BTreeSet;
 use std::sync::Arc;
+use super::encrypt;
 use std::sync::Mutex;
 
 pub fn brute_force_decrypt(str: String) {
@@ -112,24 +113,10 @@ pub fn decrypt(str: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
         })
 }
 
-pub fn encrypt(str: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
-    let list = get_decryptors();
 
-    decryptors
-        .iter()
-        .map(parse_parameter)
-        .fold(str, |acc, (decryptor_name, seed)| {
-            let (_, _, _, _, current_encryptor) = list
-                .iter()
-                .into_iter()
-                .find(|(_, name, _, _, _)| *name == decryptor_name)
-                .unwrap();
-            current_encryptor(acc, seed)
-        })
-}
 
 pub fn print_encrypt(str: String, decryptors: Vec<String>) {
-    let result = encrypt(vec![str], decryptors).join("");
+    let result = encrypt::encrypt(vec![str], decryptors).join("");
     println!("{}", result);
 }
 

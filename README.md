@@ -17,3 +17,5 @@ https://kryptosfan.wordpress.com/k3/k3-solution-3/
 - [ ] `cargo run -- encrypt --string HELLOHELLO -- cut:5 vigenere:KEY:ALPHABET transpose:12 swap:[0,5,6,4,2,3,1]`
   - [ ] vigenere
 - [ ] `cargo run -- encrypt --string HELLOHELLO --cryptors=cut:5,vigenere:1,transpose:12,swap:[0,5,6,4,2,3,1]`
+- [ ] finish deserialization for cryptors
+- [ ] use enhanced / encrypt methods when useful
