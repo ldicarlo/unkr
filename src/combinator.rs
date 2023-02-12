@@ -30,7 +30,17 @@ pub fn combinate_strings(vector: Vec<u8>) -> std::collections::HashSet<Vec<u8>> 
     result
 }
 
-pub fn combine_elements(elements_count: u8) -> std::collections::HashSet<Vec<u8>> {
+#[cfg(test)]
+mod tests_combine_element {
+    use super::*;
+
+}
+
+/// 2, 2 
+/// -> [[0,0], [0,1], [1,0], [1,1]] 
+/// -> 00, 01, 10, 11
+/// -> 0, 1, 2, 3
+pub fn combine_elements(elements_count: u8, picks:u8) -> std::collections::HashSet<Vec<u8>> {
     let result: HashSet<Vec<u8>> = HashSet::new();
     result
 }
@@ -38,7 +48,7 @@ pub fn combine_elements(elements_count: u8) -> std::collections::HashSet<Vec<u8>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::combinator::combinate_strings;
+    
     #[test]
     fn it_works() {
         let mut result = HashSet::new();
