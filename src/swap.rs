@@ -1,8 +1,8 @@
-pub fn get_max_seed_is_factorial_length(text_length: usize) -> u64 {
+pub fn _get_max_seed_is_factorial_length(_text_length: usize) -> u64 {
     1
 }
 
 /// Use combinator here
-pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
+pub fn _decrypt(strs: Vec<String>, _seed: u64) -> Vec<String> {
     strs
 }
