@@ -15,7 +15,6 @@ pub fn internal_brute_force_decrypt(str: String) -> BTreeSet<Vec<(u8, u64)>> {
 
     for i in combinator::combinate_strings(decryptors.iter().map(|(id, _, _, _, _)| *id).collect())
     {
-        // println!("brute_force_decrypt {:?}", i);
         loop_decrypt(results_accumulator.clone(), vec![], i, vec![str.clone()]);
     }
 
@@ -49,12 +48,11 @@ fn loop_decrypt(
     let local_arc = res_acc.clone();
 
     if let Some(current) = to_use.pop() {
-        let (id, _, seed, decrypt, _) = get_decryptors()
+        let (_id, _, seed, decrypt, _) = get_decryptors()
             .into_iter()
             .find(|(id, _, _, _, _)| *id == current)
             .unwrap();
         for s in 0..seed(str.clone().len()) {
-            // println!("{} {}, {:?}",id,s.clone(),acc.clone());
             let new_str = decrypt(str.clone(), s);
             let mut current_acc = acc.clone();
             let current_to_use = to_use.clone();

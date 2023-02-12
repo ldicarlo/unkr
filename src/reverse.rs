@@ -1,4 +1,4 @@
-pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
+pub fn decrypt(strs: Vec<String>, _: u64) -> Vec<String> {
     strs.iter().map(|str| str.chars().rev().collect()).collect()
 }
 #[cfg(test)]

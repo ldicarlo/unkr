@@ -9,7 +9,7 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
         .map(|str| {
             str.chars()
                 .into_iter()
-                .map(|c| char_mod(c, seed.try_into().unwrap()))
+                .map(|c| char_mod(c, seed.try_into().unwrap(), true))
                 .collect()
         })
         .collect()
@@ -26,7 +26,7 @@ mod tests {
     use super::*;
     #[test]
     fn it_works() {
-        assert_eq!(char_mod('A', 5), 'F')
+        assert_eq!(char_mod('A', 5, true), 'F')
     }
     #[test]
     fn it_works_2() {

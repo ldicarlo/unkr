@@ -1,8 +1,8 @@
-use super::cut;
 use super::atbash;
 use super::caesar;
-use super::transpose;
+use super::cut;
 use super::reverse;
+use super::transpose;
 use super::vigenere;
 
 pub fn get_decryptors() -> Vec<(
@@ -46,7 +46,7 @@ pub fn get_decryptors() -> Vec<(
             "vigenere".to_string(),
             Box::new(vigenere::get_max_seed),
             Box::new(vigenere::decrypt),
-            Box::new(vigenere::decrypt),
+            Box::new(vigenere::encrypt),
         ),
         (
             6,
@@ -65,5 +65,3 @@ pub fn get_max_seed_is_length(text_length: usize) -> u64 {
 pub fn get_max_seed_is_one(_: usize) -> u64 {
     1
 }
-
-
