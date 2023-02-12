@@ -7,7 +7,7 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            vec!["HELLO", "WORLD"],
+            vec!["OLLEH", "DLROW"],
             super::decrypt(vec!["HELLO".to_string(), "WORLD".to_string()], 1),
         );
     }

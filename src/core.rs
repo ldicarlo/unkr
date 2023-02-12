@@ -131,13 +131,13 @@ pub fn encrypt(str: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
 }
 
 pub fn print_encrypt(str: String, decryptors: Vec<String>) {
-    let result = encrypt(vec![str], decryptors);
-    println!("{:?}", result);
+    let result = encrypt(vec![str], decryptors).join("");
+    println!("{}", result);
 }
 
 pub fn print_decrypt(str: String, decryptors: Vec<String>) {
-    let result = decrypt(vec![str], decryptors);
-    println!("{:?}", result);
+    let result = decrypt(vec![str], decryptors).join("");
+    println!("{}", result);
 }
 
 #[cfg(test)]

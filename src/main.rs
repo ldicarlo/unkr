@@ -6,14 +6,15 @@ mod cryptors;
 mod cut;
 mod fold;
 mod reverse;
+mod swap;
 mod vigenere;
 use clap::{Parser, Subcommand};
 use std::collections::BTreeMap;
 fn main() {
     let args = Cli::parse();
     match args.command {
-        Commands::Encrypt { string, steps } => core::print_decrypt(string, steps),
-        Commands::Decrypt { string, steps } => core::print_encrypt(string, steps),
+        Commands::Encrypt { string, steps } => core::print_encrypt(string, steps),
+        Commands::Decrypt { string, steps } => core::print_decrypt(string, steps),
         Commands::BruteForce { string } => core::brute_force_decrypt(string),
         Commands::GetDecryptors {} => println!(
             "{:?}",

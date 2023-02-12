@@ -1,3 +1,4 @@
+use super::cut;
 use super::atbash;
 use super::caesar;
 use super::fold;
@@ -47,6 +48,13 @@ pub fn get_decryptors() -> Vec<(
             Box::new(vigenere::decrypt),
             Box::new(vigenere::decrypt),
         ),
+        (
+            6,
+            "cut".to_string(),
+            Box::new(self::get_max_seed_is_length),
+            Box::new(cut::decrypt),
+            Box::new(cut::encrypt),
+        ),
     ]
 }
 
@@ -57,3 +65,5 @@ pub fn get_max_seed_is_length(text_length: usize) -> u64 {
 pub fn get_max_seed_is_one(_: usize) -> u64 {
     1
 }
+
+

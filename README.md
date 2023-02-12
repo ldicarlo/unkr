@@ -3,7 +3,7 @@
   - [ ] ./.cache/ENCRYPTEDSTRING
   - [ ] clue,clue2 1,2
 - [ ] cryptors
-  - [ ] fold
+  - [x] fold
   - [ ] enigma
   - [ ] indexcrypt (using previous cypher text to locate next char)
   - [ ] vigenere
