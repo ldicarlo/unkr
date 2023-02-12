@@ -1,3 +1,5 @@
+use super::char_utils::char_mod;
+
 pub fn get_max_seed(_: usize) -> u64 {
     26
 }
@@ -16,19 +18,6 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
 pub fn encrypt(str: Vec<String>, seed: u64) -> Vec<String> {
     let size = get_max_seed(str.clone().len());
     decrypt(str, size - seed)
-}
-
-fn char_mod(c: char, number: usize) -> char {
-    let alphabet = vec![
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    ];
-    alphabet
-        .binary_search(&c)
-        .ok()
-        .and_then(|index| alphabet.get((index + number) % 26))
-        .map(|ch| *ch)
-        .unwrap_or(c)
 }
 
 #[cfg(test)]

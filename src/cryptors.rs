@@ -1,7 +1,7 @@
 use super::cut;
 use super::atbash;
 use super::caesar;
-use super::fold;
+use super::transpose;
 use super::reverse;
 use super::vigenere;
 
@@ -36,10 +36,10 @@ pub fn get_decryptors() -> Vec<(
         ),
         (
             4,
-            "fold".to_string(),
+            "transpose".to_string(),
             Box::new(self::get_max_seed_is_length),
-            Box::new(fold::decrypt),
-            Box::new(fold::decrypt),
+            Box::new(transpose::decrypt),
+            Box::new(transpose::decrypt),
         ),
         (
             5,

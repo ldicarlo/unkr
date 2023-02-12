@@ -1,10 +1,11 @@
 mod atbash;
 mod caesar;
+mod char_utils;
 mod combinator;
 mod core;
 mod cryptors;
 mod cut;
-mod fold;
+mod transpose;
 mod reverse;
 mod swap;
 mod vigenere;

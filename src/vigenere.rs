@@ -19,6 +19,24 @@ pub fn encrypt(str: Vec<String>, seed: u64) -> Vec<String> {
     str
 }
 
+pub fn encrypt_from_key(str: Vec<String>, key: String) -> Vec<String> {
+    let alphabet = vec![
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    ];
+
+    str
+}
+
+pub fn encrypt_one_from_key(str: String, key: String) -> String {
+    let alphabet = vec![
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    ];
+
+    str
+}
+
 pub fn decrypt(str: Vec<String>, _: u64) -> Vec<String> {
     str
 }

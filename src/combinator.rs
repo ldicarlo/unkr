@@ -42,6 +42,9 @@ mod tests_combine_element {
 /// -> 0, 1, 2, 3
 pub fn combine_elements(elements_count: u8, picks:u8) -> std::collections::HashSet<Vec<u8>> {
     let result: HashSet<Vec<u8>> = HashSet::new();
+    for pick in 0..picks  {
+        
+    }
     result
 }
 
