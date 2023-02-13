@@ -11,6 +11,13 @@ pub fn encrypt_from_args(
     encrypt_from_key(strs, key, true, alphabet.chars().collect())
 }
 
+pub fn decrypt_from_args(
+    strs: Vec<String>,
+    models::VigenereArgs { key, alphabet }: models::VigenereArgs,
+) -> Vec<String> {
+    encrypt_from_key(strs, key, false, alphabet.chars().collect())
+}
+
 pub fn encrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
     vigenere(strs, seed, true)
 }
@@ -55,7 +62,6 @@ pub fn encrypt_one_from_key(
 ) -> String {
     let mut result: Vec<char> = Vec::new();
     let custom_alphabet = char_utils::merge_alphabets(alphabet, char_utils::get_alphabet());
-
     for (idx, c) in strs.iter().enumerate() {
         result.push(
             char_utils::char_position(key[(idx % key.len())], custom_alphabet.clone())
@@ -70,15 +76,17 @@ pub fn encrypt_one_from_key(
 
 #[cfg(test)]
 mod tests {
-
+    use super::models;
     #[test]
     fn it_works() {
         assert_eq!(
             vec!["LXFOPVEFRNHR".to_string(), "LXFOPVEFRNHR".to_string()],
-            super::encrypt_from_key(
+            super::encrypt_from_args(
                 vec!["ATTACKATDAWN".to_string(), "ATTACKATDAWN".to_string()],
-                "LEMON".to_string(),
-                true, vec![]
+                models::VigenereArgs {
+                    key: "LEMON".to_string(),
+                    alphabet: "".to_string()
+                }
             ),
         );
     }
@@ -86,11 +94,27 @@ mod tests {
     #[test]
     fn it_works_2() {
         assert_eq!(
-            vec!["HJILTREXR".to_string()],
-            super::encrypt_from_key(
+            vec!["HYNLPVETV".to_string()],
+            super::encrypt_from_args(
                 vec!["HELLOTEST".to_string(),],
-                "KEY".to_string(),
-                true, vec!['K']
+                models::VigenereArgs {
+                    key: "KEY".to_string(),
+                    alphabet: "KEY".to_string()
+                }
+            ),
+        );
+    }
+
+    #[test]
+    fn it_works_3() {
+        assert_eq!(
+            vec!["HELLOTEST".to_string()],
+            super::decrypt_from_args(
+                vec!["HYNLPVETV".to_string(),],
+                models::VigenereArgs {
+                    key: "KEY".to_string(),
+                    alphabet: "KEY".to_string()
+                }
             ),
         );
     }

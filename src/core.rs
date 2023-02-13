@@ -1,5 +1,6 @@
 use super::combinator;
 use super::cryptors::get_decryptors;
+use super::decrypt;
 use super::encrypt;
 use std::collections::BTreeSet;
 use std::sync::Arc;
@@ -86,33 +87,6 @@ fn is_candidate(strs: Vec<String>) -> bool {
     })
 }
 
-fn parse_parameter(parameter: &String) -> (String, u64) {
-    let split: Vec<&str> = parameter.split(':').collect();
-    (
-        (split.get(0).unwrap()).to_string(),
-        split
-            .get(1)
-            .map(|s| s.clone().parse::<u64>().unwrap())
-            .unwrap_or(1),
-    )
-}
-
-pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
-    let list = get_decryptors();
-
-    decryptors
-        .iter()
-        .map(parse_parameter)
-        .fold(strs, |acc, (decryptor_name, seed)| {
-            let (_, _, _, current_decryptor, _) = list
-                .iter()
-                .into_iter()
-                .find(|(_, name, _, _, _)| *name == decryptor_name)
-                .unwrap();
-            current_decryptor(acc, seed)
-        })
-}
-
 pub fn print_encrypt(str: String, decryptors: Vec<String>) {
     encrypt::encrypt(vec![str], decryptors)
         .iter()
@@ -120,8 +94,9 @@ pub fn print_encrypt(str: String, decryptors: Vec<String>) {
 }
 
 pub fn print_decrypt(str: String, decryptors: Vec<String>) {
-    let result = decrypt(vec![str], decryptors).join("");
-    println!("{}", result);
+    decrypt::decrypt(vec![str], decryptors)
+        .iter()
+        .for_each(|s| println!("{}", s));
 }
 
 #[cfg(test)]
@@ -147,21 +122,6 @@ mod tests {
                 &d
             )
         }
-    }
-    #[test]
-    fn parse_params() {
-        assert_eq!(
-            ("caesar".to_string(), 1),
-            parse_parameter(&"caesar:1".to_string())
-        );
-        assert_eq!(
-            ("caesar".to_string(), 100),
-            parse_parameter(&"caesar:100".to_string())
-        );
-        assert_eq!(
-            ("caesar".to_string(), 1),
-            parse_parameter(&"caesar".to_string())
-        );
     }
 
     #[test]

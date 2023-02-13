@@ -5,6 +5,7 @@ mod combinator;
 mod core;
 mod cryptors;
 mod cut;
+mod decrypt;
 mod encrypt;
 mod models;
 mod parser;
