@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
 pub fn decrypt(strs: Vec<String>, _: u64) -> Vec<String> {
+    decrypt_from_args(strs)
+}
+
+pub fn decrypt_from_args(strs: Vec<String>) -> Vec<String> {
     let letters: HashMap<char, char> = vec![
         ('A', 'Z'),
         ('B', 'Y'),

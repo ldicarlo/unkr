@@ -15,9 +15,9 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
         .collect()
 }
 
-pub fn encrypt(str: Vec<String>, seed: u64) -> Vec<String> {
-    let size = get_max_seed(str.clone().len());
-    decrypt(str, size - seed)
+pub fn encrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
+    let size = get_max_seed(strs.clone().len());
+    decrypt(strs, size - seed)
 }
 
 #[cfg(test)]

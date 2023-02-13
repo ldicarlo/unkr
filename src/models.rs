@@ -1,13 +1,19 @@
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 #[serde(tag = "name", deny_unknown_fields)]
-pub enum CryptorsArgs {
+pub enum CryptorArgs {
     Vigenere(VigenereArgs),
     Cut(SimpleArgs),
+    Caesar(SimpleArgs),
+    Transpose(SimpleArgs),
+    AtBash,
+    Reverse
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
-pub enum CryptorType {
+pub enum CryptorTypeWithArgs {
     Vigenere,
     Cut,
+    Caesar,
+    Transpose,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
@@ -23,7 +29,7 @@ pub struct SimpleArgs {
 
 pub enum Cryptors {
     Vigenere,
-    Cut
+    Cut,
 }
 
 pub struct CryptorPayload {

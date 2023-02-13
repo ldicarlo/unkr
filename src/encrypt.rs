@@ -1,12 +1,29 @@
+use crate::atbash;
+use crate::caesar;
+use crate::models::SimpleArgs;
+use crate::reverse;
+use crate::transpose;
+
+use super::cut;
+use super::models;
 use super::parser;
-pub fn encrypt(str: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
-    
-decryptors
-    
+use super::vigenere;
+
+pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
+    decryptors
         .iter()
         .map(|str| parser::read_parameters(str.to_string()))
-        .fold(str, |acc, (decryptor_name, seed)| {
-          Vec::new()
-           // current_encryptor(acc, seed)
+        .fold(strs, |acc, args| match args {
+            models::CryptorArgs::Vigenere(args) => vigenere::encrypt_from_args(acc, args),
+            models::CryptorArgs::Cut(args) => cut::encrypt_from_args(acc, args),
+            models::CryptorArgs::Caesar(SimpleArgs { number }) => caesar::encrypt(acc, number),
+            models::CryptorArgs::Transpose(SimpleArgs { number }) => {
+                transpose::decrypt(acc, number)
+            }
+            models::CryptorArgs::AtBash => atbash::decrypt_from_args(acc),
+            models::CryptorArgs::Reverse => reverse::decrypt_from_args(acc),
         })
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect()
 }

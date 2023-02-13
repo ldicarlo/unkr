@@ -1,8 +1,8 @@
 use super::combinator;
 use super::cryptors::get_decryptors;
+use super::encrypt;
 use std::collections::BTreeSet;
 use std::sync::Arc;
-use super::encrypt;
 use std::sync::Mutex;
 
 pub fn brute_force_decrypt(str: String) {
@@ -44,7 +44,7 @@ fn loop_decrypt(
     res_acc: Arc<Mutex<BTreeSet<Vec<(u8, u64)>>>>,
     acc: Vec<(u8, u64)>,
     mut to_use: Vec<u8>,
-    str: Vec<String>,
+    strs: Vec<String>,
 ) {
     let local_arc = res_acc.clone();
 
@@ -53,8 +53,8 @@ fn loop_decrypt(
             .into_iter()
             .find(|(id, _, _, _, _)| *id == current)
             .unwrap();
-        for s in 0..seed(str.clone().len()) {
-            let new_str = decrypt(str.clone(), s);
+        for s in 0..seed(strs.clone().len()) {
+            let new_str = decrypt(strs.clone(), s);
             let mut current_acc = acc.clone();
             let current_to_use = to_use.clone();
 
@@ -97,13 +97,13 @@ fn parse_parameter(parameter: &String) -> (String, u64) {
     )
 }
 
-pub fn decrypt(str: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
+pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
     let list = get_decryptors();
 
     decryptors
         .iter()
         .map(parse_parameter)
-        .fold(str, |acc, (decryptor_name, seed)| {
+        .fold(strs, |acc, (decryptor_name, seed)| {
             let (_, _, _, current_decryptor, _) = list
                 .iter()
                 .into_iter()
@@ -113,11 +113,10 @@ pub fn decrypt(str: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
         })
 }
 
-
-
 pub fn print_encrypt(str: String, decryptors: Vec<String>) {
-    let result = encrypt::encrypt(vec![str], decryptors).join("");
-    println!("{}", result);
+    encrypt::encrypt(vec![str], decryptors)
+        .iter()
+        .for_each(|s| println!("{}", s));
 }
 
 pub fn print_decrypt(str: String, decryptors: Vec<String>) {

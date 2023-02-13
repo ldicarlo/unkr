@@ -1,12 +1,12 @@
-use super::models::{CryptorType,CryptorsArgs,VigenereArgs,SimpleArgs};
+use super::models::{CryptorArgs, CryptorTypeWithArgs, SimpleArgs, VigenereArgs};
 
-fn read(str: String, cryptor_type: CryptorType) -> CryptorsArgs {
+fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b':')
         .from_reader(str.as_bytes());
     match cryptor_type {
-        CryptorType::Vigenere => CryptorsArgs::Vigenere(
+        CryptorTypeWithArgs::Vigenere => CryptorArgs::Vigenere(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -14,7 +14,23 @@ fn read(str: String, cryptor_type: CryptorType) -> CryptorsArgs {
                 .deserialize::<VigenereArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorType::Cut => CryptorsArgs::Cut(
+        CryptorTypeWithArgs::Cut => CryptorArgs::Cut(
+            rdr.records()
+                .find(|_| true)
+                .unwrap()
+                .expect("cannot find record")
+                .deserialize::<SimpleArgs>(None)
+                .expect("cannot deserialize"),
+        ),
+        CryptorTypeWithArgs::Caesar => CryptorArgs::Caesar(
+            rdr.records()
+                .find(|_| true)
+                .unwrap()
+                .expect("cannot find record")
+                .deserialize::<SimpleArgs>(None)
+                .expect("cannot deserialize"),
+        ),
+        CryptorTypeWithArgs::Transpose => CryptorArgs::Transpose(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -25,39 +41,32 @@ fn read(str: String, cryptor_type: CryptorType) -> CryptorsArgs {
     }
 }
 
-pub fn read_parameters(mut str: String) -> (CryptorType, CryptorsArgs) {
+pub fn read_parameters(mut str: String) -> CryptorArgs {
     let type_name: String = str.drain(..str.find(':').unwrap()).collect();
     str.drain(0..1);
     match type_name.as_str() {
-        "vigenere" => (CryptorType::Vigenere, read(str, CryptorType::Vigenere)),
-        "cut" => (CryptorType::Cut, read(str, CryptorType::Cut)),
+        "vigenere" => read(str, CryptorTypeWithArgs::Vigenere),
+        "cut" => read(str, CryptorTypeWithArgs::Cut),
+        "transpose" => read(str, CryptorTypeWithArgs::Transpose),
+        "reverse" => CryptorArgs::Reverse,
+        "atbash" => CryptorArgs::AtBash,
         _ => panic!("Cannot parse: {}", str),
     }
 }
 
-pub fn read_line(str: String) -> Vec<(CryptorType, CryptorsArgs)> {
-    let split: Vec<&str> = str.split(' ').collect();
-    split
-        .iter()
-        .map(|c| c.clone().to_string())
-        .map(read_parameters)
-        .collect()
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::models::CryptorType;
 
-    use super::{read, CryptorsArgs, VigenereArgs};
+    use super::{read, CryptorArgs, VigenereArgs};
 
     #[test]
     fn it_works() {
         assert_eq!(
-            CryptorsArgs::Vigenere(VigenereArgs {
+            CryptorArgs::Vigenere(VigenereArgs {
                 key: "K".to_string(),
                 alphabet: "ALP".to_string()
             }),
-            read("K:ALP".to_string(), super::CryptorType::Vigenere)
+            read("K:ALP".to_string(), super::CryptorTypeWithArgs::Vigenere)
         )
     }
 
@@ -69,7 +78,7 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(CryptorsArgs::Vigenere(VigenereArgs {
+            .serialize(CryptorArgs::Vigenere(VigenereArgs {
                 key: "K".to_string(),
                 alphabet: "ALP".to_string(),
             }))
@@ -82,20 +91,11 @@ mod tests {
     #[test]
     fn read_whole_line() {
         assert_eq!(
-            super::read_line(String::from("vigenere:KEY:ALPHABET cut:2")),
-            vec![
-                (
-                    CryptorType::Vigenere,
-                    CryptorsArgs::Vigenere(VigenereArgs {
-                        key: String::from("KEY"),
-                        alphabet: String::from("ALPHABET")
-                    })
-                ),
-                (
-                    CryptorType::Cut,
-                    CryptorsArgs::Cut(super::SimpleArgs { number: 2 })
-                )
-            ]
+            super::read_parameters(String::from("vigenere:KEY:ALPHABET")),
+            CryptorArgs::Vigenere(VigenereArgs {
+                key: String::from("KEY"),
+                alphabet: String::from("ALPHABET")
+            })
         )
     }
 }
