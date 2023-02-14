@@ -62,12 +62,14 @@ pub fn encrypt_one_from_key(
 ) -> String {
     let mut result: Vec<char> = Vec::new();
     let custom_alphabet = char_utils::merge_custom_alphabet(alphabet);
-    for (idx, c) in strs.iter().enumerate() {
-        let key_letter = key[(idx % key.len())];
+    let mut vigenere_idx = 0;
+    for c in strs.iter() {
+        let key_letter = key[(vigenere_idx % key.len())];
         let res = char_utils::char_position(*c, custom_alphabet.clone())
             .and_then(|letter_position| {
                 let key_position =
                     char_utils::char_position(key_letter, custom_alphabet.clone()).unwrap();
+                vigenere_idx = vigenere_idx + 1;
                 custom_alphabet.get(
                     (if order {
                         26 + letter_position + key_position
