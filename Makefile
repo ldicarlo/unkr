@@ -20,3 +20,12 @@ watch: ## Use ENTR to reload and run tests
 
 run-brute-force-test: test ## run test
 	@cargo run -- brute-force --string=TQDJMH
+
+solve-k1: ## Solve K1
+	@cargo run -- decrypt --string "$$(cat panels/kr1)" -- vigenere:PALIMPSEST:KRYPTOS
+
+solve-k2: ## Solve K2
+	@cargo run -- decrypt --string "$$(cat panels/kr2)" -- vigenere:ABSCISSA:KRYPTOS
+
+solve-k3: ## Solve K3
+	@cargo run -- decrypt --string "$$(cat panels/kr3clear)" -- transpose:24 reverse join transpose:8 reverse join
