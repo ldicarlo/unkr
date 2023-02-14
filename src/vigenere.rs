@@ -61,15 +61,25 @@ pub fn encrypt_one_from_key(
     alphabet: Vec<char>,
 ) -> String {
     let mut result: Vec<char> = Vec::new();
-    let custom_alphabet = char_utils::merge_alphabets(alphabet, char_utils::get_alphabet());
+    let custom_alphabet = char_utils::merge_custom_alphabet(alphabet);
     for (idx, c) in strs.iter().enumerate() {
-        result.push(
-            char_utils::char_position(key[(idx % key.len())], custom_alphabet.clone())
-                .map(|pos| {
-                    char_utils::char_mod_custom_alphabet(*c, pos, order, custom_alphabet.clone())
-                })
-                .unwrap_or(*c),
-        );
+        let key_letter = key[(idx % key.len())];
+        let res = char_utils::char_position(*c, custom_alphabet.clone())
+            .and_then(|letter_position| {
+                let key_position =
+                    char_utils::char_position(key_letter, custom_alphabet.clone()).unwrap();
+                custom_alphabet.get(
+                    (if order {
+                        26 + letter_position + key_position
+                    } else {
+                        // bad fix
+                        26 + letter_position - key_position
+                    }) % 26,
+                )
+            })
+            .unwrap_or(c);
+
+        result.push(*res);
     }
     result.iter().collect::<String>()
 }

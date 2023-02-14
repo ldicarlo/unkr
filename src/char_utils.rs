@@ -10,7 +10,7 @@ pub fn char_mod(c: char, number: usize, order: bool) -> char {
 }
 
 pub fn char_position(c: char, alphabet: Vec<char>) -> Option<usize> {
-    alphabet.binary_search(&c).ok()
+    alphabet.into_iter().position(|elem| elem == c)
 }
 
 pub fn char_mod_custom_alphabet(
@@ -19,7 +19,7 @@ pub fn char_mod_custom_alphabet(
     order: bool,
     custom_alphabet: Vec<char>,
 ) -> char {
-    let alphabet = merge_alphabets(custom_alphabet, get_alphabet());
+    let alphabet = merge_custom_alphabet(custom_alphabet);
     char_position(c, alphabet.clone())
         .and_then(|index| {
             alphabet.get(
@@ -33,6 +33,10 @@ pub fn char_mod_custom_alphabet(
         })
         .map(|ch| *ch)
         .unwrap_or(c)
+}
+
+pub fn merge_custom_alphabet(primary: Vec<char>) -> Vec<char> {
+    merge_alphabets(primary, get_alphabet())
 }
 
 pub fn merge_alphabets(mut primary: Vec<char>, secondary: Vec<char>) -> Vec<char> {
