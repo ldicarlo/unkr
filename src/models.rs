@@ -9,6 +9,7 @@ pub enum CryptorArgs {
     Reverse,
     Swap(SwapArgs),
     Join,
+    Colors(ColorsArgs),
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub enum CryptorTypeWithArgs {
@@ -17,6 +18,7 @@ pub enum CryptorTypeWithArgs {
     Caesar,
     Transpose,
     Swap,
+    Colors
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
@@ -28,6 +30,11 @@ pub struct VigenereArgs {
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub struct SwapArgs {
     pub order: Vec<usize>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+pub struct ColorsArgs {
+    pub letters: String,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]

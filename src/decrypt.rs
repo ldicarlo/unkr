@@ -1,6 +1,8 @@
 use crate::atbash;
 use crate::caesar;
+use crate::colorize;
 use crate::join;
+use crate::models::ColorsArgs;
 use crate::models::SimpleArgs;
 use crate::models::SwapArgs;
 use crate::reverse;
@@ -27,6 +29,9 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::Reverse => reverse::decrypt_from_args(acc),
             models::CryptorArgs::Swap(SwapArgs { order }) => swap::decrypt_from_args(acc, order),
             models::CryptorArgs::Join => join::join(acc),
+            models::CryptorArgs::Colors(ColorsArgs { letters }) => {
+                colorize::colorize_letters(acc, letters)
+            }
         })
         .into_iter()
         .filter(|s| !s.is_empty())

@@ -1,6 +1,6 @@
 use std::any::type_name;
 
-use crate::models::SwapArgs;
+use crate::models::{ColorsArgs, SwapArgs};
 
 use super::models::{CryptorArgs, CryptorTypeWithArgs, SimpleArgs, VigenereArgs};
 
@@ -50,6 +50,14 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<SwapArgs>(None)
                 .expect("cannot deserialize"),
         ),
+        CryptorTypeWithArgs::Colors => CryptorArgs::Colors(
+            rdr.records()
+                .find(|_| true)
+                .unwrap()
+                .expect("cannot find record")
+                .deserialize::<ColorsArgs>(None)
+                .expect("cannot deserialize"),
+        ),
     }
 }
 
@@ -66,6 +74,7 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
         "atbash" => CryptorArgs::AtBash,
         "swap" => read(str, CryptorTypeWithArgs::Swap),
         "join" => CryptorArgs::Join,
+        "colors" => read(str, CryptorTypeWithArgs::Colors),
         _ => panic!("Cannot parse: {}", str),
     }
 }
