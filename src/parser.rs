@@ -1,8 +1,5 @@
-use std::any::type_name;
-
-use crate::models::{ColorsArgs, SwapArgs};
-
 use super::models::{CryptorArgs, CryptorTypeWithArgs, SimpleArgs, VigenereArgs};
+use crate::models::{ColorsArgs, SwapArgs};
 
 fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
     let mut rdr = csv::ReaderBuilder::new()

@@ -1,13 +1,3 @@
-/// ok fold but then we should reorder lines, so swap lines here or in another cryptor
-///
-///
-/// ABCDEF / blocksize 3
-/// # Step 1
-/// A|B|C
-/// D|E|F
-/// 
-/// # Step 2
-/// AD, BE, CF
 pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
     if seed == 0 {
         return strs;
@@ -51,7 +41,7 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            vec!["AD".to_string(),"BE".to_string(), "CF".to_string()],
+            vec!["AD".to_string(), "BE".to_string(), "CF".to_string()],
             decrypt(vec!["ABCDEF".to_string()], 3)
         );
     }

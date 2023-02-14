@@ -1,3 +1,7 @@
+use super::cut;
+use super::models;
+use super::parser;
+use super::vigenere;
 use crate::atbash;
 use crate::caesar;
 use crate::join;
@@ -6,11 +10,6 @@ use crate::models::SwapArgs;
 use crate::reverse;
 use crate::swap;
 use crate::transpose;
-
-use super::cut;
-use super::models;
-use super::parser;
-use super::vigenere;
 
 pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
     decryptors

@@ -1,5 +1,6 @@
 use super::char_utils;
 use super::models;
+
 pub fn get_max_seed(_: usize) -> u64 {
     3
 }
