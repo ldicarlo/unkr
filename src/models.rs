@@ -6,7 +6,9 @@ pub enum CryptorArgs {
     Caesar(SimpleArgs),
     Transpose(SimpleArgs),
     AtBash,
-    Reverse
+    Reverse,
+    Swap(SwapArgs),
+    Join,
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub enum CryptorTypeWithArgs {
@@ -14,12 +16,18 @@ pub enum CryptorTypeWithArgs {
     Cut,
     Caesar,
     Transpose,
+    Swap,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub struct VigenereArgs {
     pub key: String,
     pub alphabet: String,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+pub struct SwapArgs {
+    pub order: Vec<usize>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]

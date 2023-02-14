@@ -1,7 +1,10 @@
 use crate::atbash;
 use crate::caesar;
+use crate::join;
 use crate::models::SimpleArgs;
+use crate::models::SwapArgs;
 use crate::reverse;
+use crate::swap;
 use crate::transpose;
 
 use super::cut;
@@ -22,6 +25,8 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             }
             models::CryptorArgs::AtBash => atbash::decrypt_from_args(acc),
             models::CryptorArgs::Reverse => reverse::decrypt_from_args(acc),
+            models::CryptorArgs::Swap(SwapArgs { order }) => swap::encrypt_from_args(acc, order),
+            models::CryptorArgs::Join => join::join(acc),
         })
         .into_iter()
         .filter(|s| !s.is_empty())

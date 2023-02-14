@@ -7,6 +7,7 @@ mod cryptors;
 mod cut;
 mod decrypt;
 mod encrypt;
+mod join;
 mod models;
 mod parser;
 mod reverse;
