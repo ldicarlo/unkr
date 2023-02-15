@@ -1,5 +1,6 @@
 mod atbash;
 mod caesar;
+mod candidates;
 mod char_utils;
 mod colorize;
 mod combinator;
