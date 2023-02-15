@@ -5,7 +5,7 @@
 - [ ] cryptors
   - [x] fold
   - [?] enigma
-  - [ ] indexcrypt (using previous cypher text to locate next char)
+  - [x] indexcrypt
   - [x] vigenere
 - [x] cut message in parts
 - [ ] print better results (with values)
