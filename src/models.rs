@@ -2,14 +2,15 @@
 #[serde(tag = "name", deny_unknown_fields)]
 pub enum CryptorArgs {
     Vigenere(VigenereArgs),
-    Cut(SimpleArgs),
-    Caesar(SimpleArgs),
-    Transpose(SimpleArgs),
+    Cut(NumberArgs),
+    Caesar(NumberArgs),
+    Transpose(NumberArgs),
     AtBash,
     Reverse,
     Swap(SwapArgs),
     Join,
-    Colors(ColorsArgs),
+    Colors(StringArgs),
+    IndexCrypt(StringArgs),
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub enum CryptorTypeWithArgs {
@@ -18,7 +19,8 @@ pub enum CryptorTypeWithArgs {
     Caesar,
     Transpose,
     Swap,
-    Colors
+    Colors,
+    IndexCrypt,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
@@ -33,23 +35,12 @@ pub struct SwapArgs {
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
-pub struct ColorsArgs {
+pub struct StringArgs {
     pub letters: String,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
-pub struct SimpleArgs {
+pub struct NumberArgs {
     pub number: u64,
 }
 
-pub enum Cryptors {
-    Vigenere,
-    Cut,
-}
-
-pub struct CryptorPayload {
-    name: String,
-    seed: Box<dyn Fn(usize) -> u64>,
-    encrypt: Box<dyn Fn(Vec<String>, u64) -> Vec<String>>,
-    decrypt: Box<dyn Fn(Vec<String>, u64) -> Vec<String>>,
-}

@@ -4,7 +4,7 @@ use super::models;
 
 pub fn encrypt_from_args(
     strs: Vec<String>,
-    models::SimpleArgs { number }: models::SimpleArgs,
+    models::NumberArgs { number }: models::NumberArgs,
 ) -> Vec<String> {
     encrypt(strs, number)
 }

@@ -5,7 +5,7 @@ use super::vigenere;
 use crate::atbash;
 use crate::caesar;
 use crate::join;
-use crate::models::SimpleArgs;
+use crate::models::NumberArgs;
 use crate::models::SwapArgs;
 use crate::reverse;
 use crate::swap;
@@ -18,8 +18,8 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
         .fold(strs, |acc, args| match args {
             models::CryptorArgs::Vigenere(args) => vigenere::encrypt_from_args(acc, args),
             models::CryptorArgs::Cut(args) => cut::encrypt_from_args(acc, args),
-            models::CryptorArgs::Caesar(SimpleArgs { number }) => caesar::encrypt(acc, number),
-            models::CryptorArgs::Transpose(SimpleArgs { number }) => {
+            models::CryptorArgs::Caesar(NumberArgs { number }) => caesar::encrypt(acc, number),
+            models::CryptorArgs::Transpose(NumberArgs { number }) => {
                 transpose::decrypt(acc, number)
             }
             models::CryptorArgs::AtBash => atbash::decrypt_from_args(acc),
@@ -27,6 +27,7 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::Swap(SwapArgs { order }) => swap::encrypt_from_args(acc, order),
             models::CryptorArgs::Join => join::join(acc),
             models::CryptorArgs::Colors(_) => acc,
+            models::CryptorArgs::IndexCrypt(_) => acc,
         })
         .into_iter()
         .filter(|s| !s.is_empty())

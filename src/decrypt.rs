@@ -5,9 +5,10 @@ use super::vigenere;
 use crate::atbash;
 use crate::caesar;
 use crate::colorize;
+use crate::indexcrypt;
 use crate::join;
-use crate::models::ColorsArgs;
-use crate::models::SimpleArgs;
+use crate::models::StringArgs;
+use crate::models::NumberArgs;
 use crate::models::SwapArgs;
 use crate::reverse;
 use crate::swap;
@@ -20,17 +21,18 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
         .fold(strs, |acc, args| match args {
             models::CryptorArgs::Vigenere(args) => vigenere::decrypt_from_args(acc, args),
             models::CryptorArgs::Cut(args) => cut::encrypt_from_args(acc, args),
-            models::CryptorArgs::Caesar(SimpleArgs { number }) => caesar::decrypt(acc, number),
-            models::CryptorArgs::Transpose(SimpleArgs { number }) => {
+            models::CryptorArgs::Caesar(NumberArgs { number }) => caesar::decrypt(acc, number),
+            models::CryptorArgs::Transpose(NumberArgs { number }) => {
                 transpose::decrypt(acc, number)
             }
             models::CryptorArgs::AtBash => atbash::decrypt_from_args(acc),
             models::CryptorArgs::Reverse => reverse::decrypt_from_args(acc),
             models::CryptorArgs::Swap(SwapArgs { order }) => swap::decrypt_from_args(acc, order),
             models::CryptorArgs::Join => join::join(acc),
-            models::CryptorArgs::Colors(ColorsArgs { letters }) => {
+            models::CryptorArgs::Colors(StringArgs { letters }) => {
                 colorize::colorize_letters(acc, letters)
             }
+            models::CryptorArgs::IndexCrypt(StringArgs { letters }) => indexcrypt::decrypt(acc, letters),
         })
         .into_iter()
         .filter(|s| !s.is_empty())

@@ -1,8 +1,16 @@
-pub fn is_candidate(strs: Vec<String>, clues: Vec<String>) -> Vec<String> {
-    vec![]
+pub fn find_candidates(strs: Vec<String>, clues: Vec<String>) -> Vec<String> {
+    strs.iter().flat_map(|string| check_string_for_candidates(string, &clues) ).collect()
 }
 
-fn clue_is_in_string(string: String, clues: Vec<String>) -> Vec<String> {
+fn check_string_for_candidates(string: &String, clues: &Vec<String>) -> Vec<String>{
+    let step1 = clue_is_in_string(string, clues);
+    if step1.len() > 0 {
+      return  step1;
+    }
+    step1
+}
+
+fn clue_is_in_string(string: &String, clues: &Vec<String>) -> Vec<String> {
     clues
         .iter()
         .filter(|clue| string.contains(*clue))
@@ -17,7 +25,7 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            clue_is_in_string(String::from("STRING"), vec![String::from("IN")]),
+            clue_is_in_string(&String::from("STRING"), &vec![String::from("IN")]),
             vec!["IN was found in STRING"]
         )
     }
