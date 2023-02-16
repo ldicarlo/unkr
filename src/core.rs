@@ -17,8 +17,7 @@ pub fn internal_brute_force_decrypt(str: String, clues: Vec<String>) -> BTreeSet
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decryptors = get_decryptors();
 
-    for i in combinator::combinate_strings(decryptors.iter().map(|(id, _, _, _, _)| *id).collect())
-    {
+    for i in combinator::combine_elements(decryptors.len().try_into().unwrap(), 4) {
         loop_decrypt(
             results_accumulator.clone(),
             vec![],
