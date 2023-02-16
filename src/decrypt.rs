@@ -7,8 +7,8 @@ use crate::caesar;
 use crate::colorize;
 use crate::indexcrypt;
 use crate::join;
-use crate::models::StringArgs;
 use crate::models::NumberArgs;
+use crate::models::StringArgs;
 use crate::models::SwapArgs;
 use crate::reverse;
 use crate::swap;
@@ -32,9 +32,17 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::Colors(StringArgs { letters }) => {
                 colorize::colorize_letters(acc, letters)
             }
-            models::CryptorArgs::IndexCrypt(StringArgs { letters }) => indexcrypt::decrypt(acc, letters),
+            models::CryptorArgs::IndexCrypt(StringArgs { letters }) => {
+                indexcrypt::decrypt(acc, letters)
+            }
         })
         .into_iter()
         .filter(|s| !s.is_empty())
         .collect()
+}
+
+pub fn print_decrypt(str: String, decryptors: Vec<String>) {
+    decrypt(vec![str], decryptors)
+        .iter()
+        .for_each(|s| println!("{}", s));
 }

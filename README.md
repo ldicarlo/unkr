@@ -12,6 +12,7 @@
 - [x] finish deserialization for cryptors
 - [ ] document shit
 - [ ] harmonize method names
+- [ ] perfs monitoring
 
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING -- clue,clue2 `

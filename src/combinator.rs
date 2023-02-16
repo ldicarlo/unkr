@@ -3,6 +3,7 @@ use std::collections::HashSet;
 pub fn combine_elements(elements_count: u8, picks: u8) -> std::collections::HashSet<Vec<u8>> {
     let mut result: Vec<Vec<u8>> = Vec::new();
     for pick in 1..(picks + 1) {
+        println!("PICK {}", pick);
         result.append(&mut generate_elements(vec![], vec![], elements_count, pick));
     }
 

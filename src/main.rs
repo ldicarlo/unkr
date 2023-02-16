@@ -18,12 +18,12 @@ mod swap;
 mod transpose;
 mod vigenere;
 use clap::{Parser, Subcommand};
-use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 fn main() {
     let args = Cli::parse();
     match args.command {
-        Commands::Encrypt { string, steps } => core::print_encrypt(string, steps),
-        Commands::Decrypt { string, steps } => core::print_decrypt(string, steps),
+        Commands::Encrypt { string, steps } => encrypt::print_encrypt(string, steps),
+        Commands::Decrypt { string, steps } => decrypt::print_decrypt(string, steps),
         Commands::BruteForce {
             string,
             clues,
@@ -33,8 +33,8 @@ fn main() {
             "{:?}",
             cryptors::get_decryptors()
                 .iter()
-                .map(|(id, str, _, _, _)| (*id, str.clone()))
-                .collect::<BTreeMap<u8, std::string::String>>()
+                .map(|(str, _, _, _)| (str.clone()))
+                .collect::<BTreeSet<std::string::String>>()
         ),
     }
 }
@@ -69,7 +69,7 @@ enum Commands {
         #[arg(short, long)]
         string: String,
         /// Consecutive steps in the bruteforce attempt
-        #[arg(short, long)]
+        #[arg(long)]
         steps: u8,
         #[arg(last = true)]
         clues: Vec<String>,
