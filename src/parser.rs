@@ -1,5 +1,5 @@
-use super::models::{CryptorArgs, CryptorTypeWithArgs, SimpleArgs, VigenereArgs};
-use crate::models::{ColorsArgs, SwapArgs};
+use super::models::{CryptorArgs, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
+use crate::models::{StringArgs, SwapArgs};
 
 fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
     let mut rdr = csv::ReaderBuilder::new()
@@ -20,7 +20,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<SimpleArgs>(None)
+                .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
         CryptorTypeWithArgs::Caesar => CryptorArgs::Caesar(
@@ -28,7 +28,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<SimpleArgs>(None)
+                .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
         CryptorTypeWithArgs::Transpose => CryptorArgs::Transpose(
@@ -36,7 +36,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<SimpleArgs>(None)
+                .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
         CryptorTypeWithArgs::Swap => CryptorArgs::Swap(
@@ -52,7 +52,15 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<ColorsArgs>(None)
+                .deserialize::<StringArgs>(None)
+                .expect("cannot deserialize"),
+        ),
+        CryptorTypeWithArgs::IndexCrypt => CryptorArgs::IndexCrypt(
+            rdr.records()
+                .find(|_| true)
+                .unwrap()
+                .expect("cannot find record")
+                .deserialize::<StringArgs>(None)
                 .expect("cannot deserialize"),
         ),
     }
@@ -72,6 +80,7 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
         "swap" => read(str, CryptorTypeWithArgs::Swap),
         "join" => CryptorArgs::Join,
         "colors" => read(str, CryptorTypeWithArgs::Colors),
+        "indexcrypt" => read(str, CryptorTypeWithArgs::IndexCrypt),
         _ => panic!("Cannot parse: {}", str),
     }
 }
