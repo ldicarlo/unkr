@@ -38,50 +38,52 @@ mod tests {
 
     #[test]
     fn it_works_2() {
-        let mut result = HashSet::new();
-
-        result.insert(vec![0]);
-        result.insert(vec![1]);
-        result.insert(vec![2]);
-
-        result.insert(vec![0, 0]);
-        result.insert(vec![0, 1]);
-        result.insert(vec![0, 2]);
-        result.insert(vec![1, 0]);
-        result.insert(vec![1, 1]);
-        result.insert(vec![1, 2]);
-        result.insert(vec![2, 0]);
-        result.insert(vec![2, 1]);
-        result.insert(vec![2, 2]);
-
-        result.insert(vec![0, 0, 0]);
-        result.insert(vec![0, 0, 0]);
-        result.insert(vec![0, 0, 1]);
-        result.insert(vec![0, 0, 2]);
-        result.insert(vec![0, 1, 0]);
-        result.insert(vec![0, 1, 1]);
-        result.insert(vec![0, 1, 2]);
-        result.insert(vec![0, 2, 0]);
-        result.insert(vec![0, 2, 1]);
-        result.insert(vec![0, 2, 2]);
-        result.insert(vec![1, 0, 0]);
-        result.insert(vec![1, 0, 1]);
-        result.insert(vec![1, 0, 2]);
-        result.insert(vec![1, 1, 0]);
-        result.insert(vec![1, 1, 1]);
-        result.insert(vec![1, 1, 2]);
-        result.insert(vec![1, 2, 0]);
-        result.insert(vec![1, 2, 1]);
-        result.insert(vec![1, 2, 2]);
-        result.insert(vec![2, 0, 0]);
-        result.insert(vec![2, 0, 1]);
-        result.insert(vec![2, 0, 2]);
-        result.insert(vec![2, 1, 0]);
-        result.insert(vec![2, 1, 1]);
-        result.insert(vec![2, 1, 2]);
-        result.insert(vec![2, 2, 0]);
-        result.insert(vec![2, 2, 1]);
-        result.insert(vec![2, 2, 2]);
-        assert_eq!(combine_elements(3, 3), result);
+        assert_eq!(
+            combine_elements(3, 3),
+            vec![
+                vec![0],
+                vec![1],
+                vec![2],
+                vec![0, 0],
+                vec![0, 1],
+                vec![0, 2],
+                vec![1, 0],
+                vec![1, 1],
+                vec![1, 2],
+                vec![2, 0],
+                vec![2, 1],
+                vec![2, 2],
+                vec![0, 0, 0],
+                vec![0, 0, 0],
+                vec![0, 0, 1],
+                vec![0, 0, 2],
+                vec![0, 1, 0],
+                vec![0, 1, 1],
+                vec![0, 1, 2],
+                vec![0, 2, 0],
+                vec![0, 2, 1],
+                vec![0, 2, 2],
+                vec![1, 0, 0],
+                vec![1, 0, 1],
+                vec![1, 0, 2],
+                vec![1, 1, 0],
+                vec![1, 1, 1],
+                vec![1, 1, 2],
+                vec![1, 2, 0],
+                vec![1, 2, 1],
+                vec![1, 2, 2],
+                vec![2, 0, 0],
+                vec![2, 0, 1],
+                vec![2, 0, 2],
+                vec![2, 1, 0],
+                vec![2, 1, 1],
+                vec![2, 1, 2],
+                vec![2, 2, 0],
+                vec![2, 2, 1],
+                vec![2, 2, 2],
+            ]
+            .into_iter()
+            .collect::<HashSet<Vec<u8>>>()
+        );
     }
 }
