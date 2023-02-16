@@ -6,8 +6,8 @@ use std::collections::BTreeSet;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub fn brute_force_decrypt(str: String, clues: Vec<String>, steps: u8) {
-    let result = brute_force_strings(str, clues, steps);
+pub fn brute_force_decrypt(str: String, clues: Vec<String>, steps: u8, decryptors: Vec<String>) {
+    let result = brute_force_strings(str, clues, steps, decryptors);
     println!("Result: {:?}", result);
 }
 
@@ -15,14 +15,22 @@ pub fn internal_brute_force_decrypt(
     str: String,
     clues: Vec<String>,
     steps: u8,
+    decryptors_filtered: Vec<String>,
 ) -> BTreeSet<Vec<(u8, u64)>> {
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
-    let decryptors = get_decryptors();
+    let decryptors = if decryptors_filtered.is_empty() {
+        get_decryptors()
+    } else {
+        get_decryptors()
+            .into_iter()
+            .filter(|(decryptor, _, _, _)| decryptors_filtered.contains(decryptor))
+            .collect()
+    };
     println!("COMPUTING START");
     let combinations = combinator::combine_elements(decryptors.len().try_into().unwrap(), steps);
     println!("TOTAL: {}", combinations.len());
     for (i, vec) in combinations.iter().enumerate() {
-        if i % 100 == 0 {
+        if i % 1 == 0 {
             println!("i: {}", i);
         }
         loop_decrypt(
@@ -38,8 +46,13 @@ pub fn internal_brute_force_decrypt(
     result
 }
 
-fn brute_force_strings(str: String, clues: Vec<String>, steps: u8) -> BTreeSet<Vec<(String, u64)>> {
-    internal_brute_force_decrypt(str, clues, steps)
+fn brute_force_strings(
+    str: String,
+    clues: Vec<String>,
+    steps: u8,
+    decryptors: Vec<String>,
+) -> BTreeSet<Vec<(String, u64)>> {
+    internal_brute_force_decrypt(str, clues, steps, decryptors)
         .iter()
         .map(|vec| {
             vec.iter()
@@ -109,7 +122,8 @@ mod tests {
                     "NORTH".to_string(),
                     "EAST".to_string(),
                 ],
-                2
+                2,
+                vec![String::from("caesar"), String::from("atbash")]
             )
         );
     }
@@ -145,7 +159,8 @@ mod tests {
                     "NORTH".to_string(),
                     "EAST".to_string(),
                 ],
-                2
+                2,
+                vec![String::from("caesar"), String::from("atbash")]
             )
         );
     }

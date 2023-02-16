@@ -29,3 +29,6 @@ solve-k2: ## Solve K2
 
 solve-k3: ## Solve K3
 	@cargo run -- decrypt --string "$$(cat panels/kr3clear)" -- transpose:24 reverse join transpose:8 reverse join
+
+brute-force-k3: ## Bruteforce k3
+	@cargo run -- brute-force --string "$$(cat panels/kr3clear)" 

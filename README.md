@@ -1,8 +1,8 @@
-- [ ] `combinator.rs`
+- [x] `combinator.rs`
 - [ ] cache
   - [ ] ./.cache/ENCRYPTEDSTRING
   - [x] clue,clue2 1,2
-- [ ] cryptors
+- [x] cryptors
   - [x] fold
   - [?] enigma
   - [x] indexcrypt
@@ -12,7 +12,11 @@
 - [x] finish deserialization for cryptors
 - [ ] document shit
 - [ ] harmonize method names
+- [ ] fix test method names
 - [ ] perfs monitoring
+- [ ] multithreading
+- [ ] profiling
+
 
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING -- clue,clue2 `

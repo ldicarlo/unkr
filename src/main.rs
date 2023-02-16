@@ -29,8 +29,9 @@ fn main() {
         Commands::BruteForce {
             string,
             clues,
+            decryptors,
             steps,
-        } => core::brute_force_decrypt(string, clues, steps),
+        } => core::brute_force_decrypt(string, clues, steps, decryptors),
         Commands::GetDecryptors {} => println!(
             "{:?}",
             cryptors::get_decryptors()
@@ -80,7 +81,10 @@ enum Commands {
         /// Consecutive steps in the bruteforce attempt
         #[arg(long)]
         steps: u8,
-        #[arg(last = true)]
+        #[arg(long)]
+        decryptors: Vec<String>,
+
+        #[arg(long)]
         clues: Vec<String>,
     },
     GetDecryptors {},
