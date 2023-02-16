@@ -18,9 +18,11 @@ mod swap;
 mod transpose;
 mod vigenere;
 use clap::{Parser, Subcommand};
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, time::Instant};
 fn main() {
     let args = Cli::parse();
+    let start = Instant::now();
+
     match args.command {
         Commands::Encrypt { string, steps } => encrypt::print_encrypt(string, steps),
         Commands::Decrypt { string, steps } => decrypt::print_decrypt(string, steps),
@@ -36,7 +38,14 @@ fn main() {
                 .map(|(str, _, _, _)| (str.clone()))
                 .collect::<BTreeSet<std::string::String>>()
         ),
-    }
+        Commands::GetCombinations {
+            elements_count,
+            picks,
+        } => combinator::print_combine_elements(elements_count, picks),
+    };
+    let duration = start.elapsed();
+
+    println!("Time elapsed is: {:?}", duration);
 }
 
 #[derive(Parser, Debug)]
@@ -75,4 +84,12 @@ enum Commands {
         clues: Vec<String>,
     },
     GetDecryptors {},
+    GetCombinations {
+        /// Consecutive steps in the bruteforce attempt
+        #[arg(long)]
+        elements_count: u8,
+        /// Consecutive steps in the bruteforce attempt
+        #[arg(long)]
+        picks: u8,
+    },
 }
