@@ -8,16 +8,20 @@ use std::collections::BTreeSet;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub fn brute_force_decrypt(str: String, clues: Vec<String>) {
-    let result = brute_force_strings(str, clues);
+pub fn brute_force_decrypt(str: String, clues: Vec<String>, steps: u8) {
+    let result = brute_force_strings(str, clues, steps);
     println!("Result: {:?}", result);
 }
 
-pub fn internal_brute_force_decrypt(str: String, clues: Vec<String>) -> BTreeSet<Vec<(u8, u64)>> {
+pub fn internal_brute_force_decrypt(
+    str: String,
+    clues: Vec<String>,
+    steps: u8,
+) -> BTreeSet<Vec<(u8, u64)>> {
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decryptors = get_decryptors();
 
-    for i in combinator::combine_elements(decryptors.len().try_into().unwrap(), 4) {
+    for i in combinator::combine_elements(decryptors.len().try_into().unwrap(), steps) {
         loop_decrypt(
             results_accumulator.clone(),
             vec![],
@@ -31,8 +35,8 @@ pub fn internal_brute_force_decrypt(str: String, clues: Vec<String>) -> BTreeSet
     result
 }
 
-fn brute_force_strings(str: String, clues: Vec<String>) -> BTreeSet<Vec<(String, u64)>> {
-    internal_brute_force_decrypt(str, clues)
+fn brute_force_strings(str: String, clues: Vec<String>, steps: u8) -> BTreeSet<Vec<(String, u64)>> {
+    internal_brute_force_decrypt(str, clues, steps)
         .iter()
         .map(|vec| {
             vec.iter()
@@ -116,7 +120,8 @@ mod tests {
                     "BERLIN".to_string(),
                     "NORTH".to_string(),
                     "EAST".to_string(),
-                ]
+                ],
+                2
             )
         );
     }
@@ -146,7 +151,8 @@ mod tests {
                     "BERLIN".to_string(),
                     "NORTH".to_string(),
                     "EAST".to_string(),
-                ]
+                ],
+                3
             )
             .contains(&vec![
                 ("caesar".to_string(), 10),

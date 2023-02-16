@@ -7,9 +7,9 @@ mod combinator;
 mod core;
 mod cryptors;
 mod cut;
-mod indexcrypt;
 mod decrypt;
 mod encrypt;
+mod indexcrypt;
 mod join;
 mod models;
 mod parser;
@@ -24,7 +24,11 @@ fn main() {
     match args.command {
         Commands::Encrypt { string, steps } => core::print_encrypt(string, steps),
         Commands::Decrypt { string, steps } => core::print_decrypt(string, steps),
-        Commands::BruteForce { string, clues } => core::brute_force_decrypt(string, clues),
+        Commands::BruteForce {
+            string,
+            clues,
+            steps,
+        } => core::brute_force_decrypt(string, clues, steps),
         Commands::GetDecryptors {} => println!(
             "{:?}",
             cryptors::get_decryptors()
@@ -64,6 +68,9 @@ enum Commands {
         /// String to try to decrypt
         #[arg(short, long)]
         string: String,
+        /// Consecutive steps in the bruteforce attempt
+        #[arg(short, long)]
+        steps: u8,
         #[arg(last = true)]
         clues: Vec<String>,
     },
