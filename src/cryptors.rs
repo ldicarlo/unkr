@@ -5,7 +5,8 @@ use super::join;
 use super::reverse;
 use super::transpose;
 use super::vigenere;
-pub fn get_decryptors() -> Vec<(
+
+fn get_decryptors() -> Vec<(
     String,
     Box<dyn Fn(usize) -> u64>,
     Box<dyn Fn(Vec<String>, u64) -> Vec<String>>,
@@ -55,6 +56,24 @@ pub fn get_decryptors() -> Vec<(
             Box::new(join::join_seed),
         ),
     ]
+}
+
+pub fn filter_decryptors(
+    decryptors_filtered: Vec<String>,
+) -> Vec<(
+    String,
+    Box<dyn Fn(usize) -> u64>,
+    Box<dyn Fn(Vec<String>, u64) -> Vec<String>>,
+    Box<dyn Fn(Vec<String>, u64) -> Vec<String>>,
+)> {
+    if decryptors_filtered.is_empty() {
+        get_decryptors()
+    } else {
+        get_decryptors()
+            .into_iter()
+            .filter(|(decryptor, _, _, _)| decryptors_filtered.contains(decryptor))
+            .collect()
+    }
 }
 
 pub fn get_max_seed_is_length(text_length: usize) -> u64 {

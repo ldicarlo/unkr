@@ -31,10 +31,11 @@ fn main() {
             clues,
             decryptors,
             steps,
-        } => core::brute_force_decrypt(string, clues, steps, decryptors),
-        Commands::GetDecryptors {} => println!(
+            threads,
+        } => core::brute_force_decrypt(string, clues, steps, decryptors, threads),
+        Commands::GetDecryptors { decryptors } => println!(
             "{:?}",
-            cryptors::get_decryptors()
+            cryptors::filter_decryptors(decryptors)
                 .iter()
                 .map(|(str, _, _, _)| (str.clone()))
                 .collect::<BTreeSet<std::string::String>>()
@@ -78,16 +79,25 @@ enum Commands {
         /// String to try to decrypt
         #[arg(short, long)]
         string: String,
+
         /// Consecutive steps in the bruteforce attempt
         #[arg(long)]
         steps: u8,
+        /// filter decryptors to use (empty means all)
         #[arg(long)]
         decryptors: Vec<String>,
-
+        /// words to search for (cannot be empty)
         #[arg(long)]
         clues: Vec<String>,
+        /// threads to run
+        #[arg(long)]
+        threads: u8,
     },
-    GetDecryptors {},
+    GetDecryptors {
+        /// filter decryptors to use (empty means all)
+        #[arg(long)]
+        decryptors: Vec<String>,
+    },
     GetCombinations {
         /// Consecutive steps in the bruteforce attempt
         #[arg(long)]
