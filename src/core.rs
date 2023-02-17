@@ -3,8 +3,10 @@ use crate::cryptors;
 
 use super::combinator;
 use std::collections::BTreeSet;
+use std::sync::mpsc::channel;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread;
 
 pub fn brute_force_decrypt(
     str: String,
@@ -17,8 +19,6 @@ pub fn brute_force_decrypt(
     println!("Result: {:?}", result);
 }
 
-fn multi_thread() {}
-
 pub fn internal_brute_force_decrypt(
     str: String,
     clues: Vec<String>,
@@ -29,29 +29,77 @@ pub fn internal_brute_force_decrypt(
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decryptors = cryptors::filter_decryptors(decryptors_filtered.clone());
     let combinations = combinator::combine_elements(decryptors.len().try_into().unwrap(), steps);
-    println!("TOTAL: {}", combinations.len());
 
     // add a mpsc here https://doc.rust-lang.org/std/sync/mpsc/fn.channel.html
 
-    let size_by_thread: usize = combinations.len() / (threads as usize);
+    let count_by_thread: usize = combinations.len() / (threads as usize);
+    println!(
+        "TOTAL: {}, threads: {}, count per thread: {}, decryptors {:?}",
+        combinations.len(),
+        threads,
+        count_by_thread,
+        decryptors_filtered
+    );
+    let mut vec_combinations = combinations.into_iter().collect::<Vec<Vec<u8>>>();
+
+    let (sender, receiver) = channel();
     for t in 0..threads {
-        for (i, vec) in combinations.iter().enumerate() {
-            if i % 1 == 0 {
-                println!("i: {}", i);
-            }
-            loop_decrypt(
-                results_accumulator.clone(),
-                vec![],
-                vec.clone(),
-                vec![str.clone()],
-                clues.clone(),
-                decryptors_filtered.clone(),
-            );
-        }
+        let local_combinations = vec_combinations.split_off(if t == threads {
+            vec_combinations.len()
+        } else {
+            vec_combinations.len() - count_by_thread
+        });
+        let local_sender = sender.clone();
+        let local_results_accumulator = results_accumulator.clone();
+        let local_str = str.clone();
+        let local_clues = clues.clone();
+        let local_decryptors = decryptors_filtered.clone();
+        println!(
+            "Start thread {} with {} combinations",
+            t,
+            local_combinations.len()
+        );
+        thread::spawn(move || {
+            local_sender
+                .send(threaded_function(
+                    local_combinations,
+                    local_results_accumulator,
+                    local_str,
+                    local_clues,
+                    local_decryptors,
+                ))
+                .unwrap();
+        });
+    }
+    for t in 0..threads {
+        println!("{} {}", t, receiver.recv().unwrap());
     }
 
     let result: BTreeSet<Vec<(u8, u64)>> = results_accumulator.lock().unwrap().to_owned();
     result
+}
+
+fn threaded_function(
+    combinations: Vec<Vec<u8>>,
+    results_accumulator: Arc<Mutex<BTreeSet<Vec<(u8, u64)>>>>,
+    str: String,
+    clues: Vec<String>,
+    decryptors_filtered: Vec<String>,
+) -> bool {
+    for (i, vec) in combinations.iter().enumerate() {
+        if i % 100 == 0 {
+            println!("i: {}", i);
+        }
+        loop_decrypt(
+            results_accumulator.clone(),
+            vec![],
+            vec.clone(),
+            vec![str.clone()],
+            clues.clone(),
+            decryptors_filtered.clone(),
+        );
+    }
+    true
 }
 
 fn brute_force_strings(
