@@ -24,7 +24,9 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
                         break;
                     }
                 }
-                results.push(current_line);
+                if current_line.len() > 0 {
+                    results.push(current_line);
+                }
             }
             results
                 .iter()

@@ -1,8 +1,36 @@
 use super::char_utils;
 use super::models;
 
+fn get_alphabets() -> Vec<String> {
+    vec![
+        "KRYPTOS".to_string(),
+        "".to_string(),
+        "PALIMPSEST".to_string(),
+        "ABSCISSA".to_string(),
+    ]
+}
+
+fn get_keys() -> Vec<String> {
+    vec![
+        "PALIMPSEST".to_string(),
+        "ABSCISSA".to_string(),
+        "KRYPTOS".to_string(),
+    ]
+}
+
+fn get_combinations() -> Vec<(String, String)> {
+    get_alphabets()
+        .into_iter()
+        .flat_map(|alphabet| {
+            get_keys()
+                .into_iter()
+                .map(move |key| (alphabet.clone(), key.clone()))
+        })
+        .collect()
+}
+
 pub fn get_max_seed(_: usize) -> u64 {
-    3
+    (get_alphabets().len() * get_keys().len()) as u64
 }
 
 pub fn encrypt_from_args(
@@ -28,13 +56,9 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
 }
 
 pub fn vigenere(strs: Vec<String>, seed: u64, order: bool) -> Vec<String> {
-    let words = vec![
-        "PALIMPSEST".to_string(),
-        "ABSCISSA".to_string(),
-        "KRYPTOS".to_string(),
-    ];
-    let key_idx: usize = seed.try_into().unwrap();
-    encrypt_from_key(strs, words[key_idx].clone(), order, vec![])
+    let (alphabet, key) = get_combinations()[seed as usize].clone();
+
+    encrypt_from_key(strs, key.clone(), order, alphabet.clone().chars().collect())
 }
 
 pub fn encrypt_from_key(
@@ -75,8 +99,8 @@ pub fn encrypt_one_from_key(
                     (if order {
                         26 + letter_position + key_position
                     } else {
-                        // bad fix
-                        26 + letter_position - key_position
+                        // bad fix?
+                        26 + 26 + letter_position - key_position
                     }) % 26,
                 )
             })

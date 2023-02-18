@@ -1,7 +1,7 @@
+use super::combinator;
 use crate::candidates;
 use crate::cryptors;
-
-use super::combinator;
+use rand::Rng;
 use std::collections::BTreeSet;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
@@ -42,13 +42,15 @@ pub fn internal_brute_force_decrypt(
     );
     let mut vec_combinations = combinations.into_iter().collect::<Vec<Vec<u8>>>();
 
+    rand::thread_rng().shuffle(vec_combinations);
+
     let (sender, receiver) = channel();
     for t in 0..threads {
-        let local_combinations = vec_combinations.split_off(if t == threads {
-            vec_combinations.len()
+        let local_combinations = if t == threads - 1 {
+            vec_combinations.clone()
         } else {
-            vec_combinations.len() - count_by_thread
-        });
+            vec_combinations.split_off(vec_combinations.len() - count_by_thread)
+        };
         let local_sender = sender.clone();
         let local_results_accumulator = results_accumulator.clone();
         let local_str = str.clone();
@@ -62,6 +64,7 @@ pub fn internal_brute_force_decrypt(
         thread::spawn(move || {
             local_sender
                 .send(threaded_function(
+                    t,
                     local_combinations,
                     local_results_accumulator,
                     local_str,
@@ -72,7 +75,7 @@ pub fn internal_brute_force_decrypt(
         });
     }
     for t in 0..threads {
-        println!("{} {}", t, receiver.recv().unwrap());
+        println!("THREAD {} finished({})", t, receiver.recv().unwrap());
     }
 
     let result: BTreeSet<Vec<(u8, u64)>> = results_accumulator.lock().unwrap().to_owned();
@@ -80,16 +83,17 @@ pub fn internal_brute_force_decrypt(
 }
 
 fn threaded_function(
+    thread_number: u8,
     combinations: Vec<Vec<u8>>,
     results_accumulator: Arc<Mutex<BTreeSet<Vec<(u8, u64)>>>>,
     str: String,
     clues: Vec<String>,
     decryptors_filtered: Vec<String>,
 ) -> bool {
-    let cache = BTreeSet::new();
+    // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
         if i % 10 == 0 {
-            println!("i: {}", i);
+            println!("THREAD {}\tcombinations: {}", thread_number, i);
         }
         loop_decrypt(
             results_accumulator.clone(),
@@ -97,7 +101,7 @@ fn threaded_function(
             vec.clone(),
             vec![str.clone()],
             clues.clone(),
-            cache.clone(),
+            // cache.clone(),
             decryptors_filtered.clone(),
         );
     }
@@ -134,29 +138,31 @@ fn loop_decrypt(
     mut to_use: Vec<u8>,
     strs: Vec<String>,
     clues: Vec<String>,
-    mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
+    // mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
     decryptors_filtered: Vec<String>,
 ) {
+    //println!("{:?} {:?} {:?}", acc, to_use, strs);
     if let Some(current) = to_use.pop() {
         let (_, seed, decrypt, _) = cryptors::filter_decryptors(decryptors_filtered.clone())
             .into_iter()
             .nth(current.into())
             .unwrap();
-        let str_seed = seed(strs.clone().join("").len());
+        let str_seed = seed(strs.first().map(|s| s.len()).unwrap_or(0));
         for s in 0..str_seed {
             let new_str = decrypt(strs.clone(), s);
             let mut current_acc = acc.clone();
             let current_to_use = to_use.clone();
-            if cache.contains(&(new_str.clone(), current_to_use.clone(), s)) {
-                continue;
-            }
+            // if cache.contains(&(new_str.clone(), current_to_use.clone(), s)) {
+            //     println!("Found one in cache.");
+            //     continue;
+            // }
 
             current_acc.push((current.clone(), s));
             let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
 
             if candidates.len() > 0 {
                 let local_arc = res_acc.clone();
-                println!("{:?} {:?}", candidates, strs);
+                println!("{:?} {:?}", candidates, new_str);
                 local_arc.lock().unwrap().insert(current_acc.clone());
             }
 
@@ -166,10 +172,10 @@ fn loop_decrypt(
                 current_to_use.clone(),
                 new_str.clone(),
                 clues.clone(),
-                cache.clone(),
+                // cache.clone(),
                 decryptors_filtered.clone(),
             );
-            cache.insert((new_str, current_to_use.clone(), s));
+            // cache.insert((new_str, current_to_use.clone(), s));
         }
     }
 }

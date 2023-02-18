@@ -9,3 +9,4 @@ edition = "2021"
 csv = "1.1"
 clap = { version = "4.0.22", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
+rand = "0.8.5"
