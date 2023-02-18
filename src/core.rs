@@ -1,7 +1,8 @@
 use super::combinator;
 use crate::candidates;
 use crate::cryptors;
-use rand::Rng;
+
+use rand::prelude::SliceRandom;
 use std::collections::BTreeSet;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
@@ -42,7 +43,7 @@ pub fn internal_brute_force_decrypt(
     );
     let mut vec_combinations = combinations.into_iter().collect::<Vec<Vec<u8>>>();
 
-    rand::thread_rng().shuffle(vec_combinations);
+    vec_combinations.shuffle(&mut rand::thread_rng());
 
     let (sender, receiver) = channel();
     for t in 0..threads {
@@ -93,7 +94,7 @@ fn threaded_function(
     // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
         if i % 10 == 0 {
-            println!("THREAD {}\tcombinations: {}", thread_number, i);
+            println!("THREAD {}\tcombination: {}", thread_number, i);
         }
         loop_decrypt(
             results_accumulator.clone(),
