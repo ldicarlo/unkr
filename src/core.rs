@@ -86,8 +86,9 @@ fn threaded_function(
     clues: Vec<String>,
     decryptors_filtered: Vec<String>,
 ) -> bool {
+    let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
-        if i % 100 == 0 {
+        if i % 10 == 0 {
             println!("i: {}", i);
         }
         loop_decrypt(
@@ -96,6 +97,7 @@ fn threaded_function(
             vec.clone(),
             vec![str.clone()],
             clues.clone(),
+            cache.clone(),
             decryptors_filtered.clone(),
         );
     }
@@ -132,39 +134,42 @@ fn loop_decrypt(
     mut to_use: Vec<u8>,
     strs: Vec<String>,
     clues: Vec<String>,
+    mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
     decryptors_filtered: Vec<String>,
 ) {
-    let local_arc = res_acc.clone();
-
     if let Some(current) = to_use.pop() {
         let (_, seed, decrypt, _) = cryptors::filter_decryptors(decryptors_filtered.clone())
             .into_iter()
             .nth(current.into())
             .unwrap();
-        for s in 0..seed(strs.clone().len()) {
+        let str_seed = seed(strs.clone().join("").len());
+        for s in 0..str_seed {
             let new_str = decrypt(strs.clone(), s);
             let mut current_acc = acc.clone();
             let current_to_use = to_use.clone();
+            if cache.contains(&(new_str.clone(), current_to_use.clone(), s)) {
+                continue;
+            }
 
             current_acc.push((current.clone(), s));
             let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
 
             if candidates.len() > 0 {
-                println!("{:?}", candidates);
-                local_arc
-                    .clone()
-                    .lock()
-                    .unwrap()
-                    .insert(current_acc.clone());
+                let local_arc = res_acc.clone();
+                println!("{:?} {:?}", candidates, strs);
+                local_arc.lock().unwrap().insert(current_acc.clone());
             }
+
             loop_decrypt(
-                local_arc.clone(),
+                res_acc.clone(),
                 current_acc,
-                current_to_use,
+                current_to_use.clone(),
                 new_str.clone(),
                 clues.clone(),
+                cache.clone(),
                 decryptors_filtered.clone(),
             );
+            cache.insert((new_str, current_to_use.clone(), s));
         }
     }
 }
