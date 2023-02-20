@@ -31,8 +31,6 @@ pub fn internal_brute_force_decrypt(
     let decryptors = cryptors::filter_decryptors(decryptors_filtered.clone());
     let combinations = combinator::combine_elements(decryptors.len().try_into().unwrap(), steps);
 
-    // add a mpsc here https://doc.rust-lang.org/std/sync/mpsc/fn.channel.html
-
     let count_by_thread: usize = combinations.len() / (threads as usize);
     println!(
         "TOTAL: {}, threads: {}, count per thread: {}, decryptors {:?}",
