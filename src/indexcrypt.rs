@@ -1,6 +1,6 @@
 use crate::char_utils;
 
-pub fn encrypt(strs: Vec<String>, base: String) -> Vec<String> {
+pub fn _encrypt(strs: Vec<String>, _: String) -> Vec<String> {
     strs
 }
 

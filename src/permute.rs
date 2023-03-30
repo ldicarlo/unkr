@@ -1,5 +1,7 @@
-pub fn decrypt(strs: Vec<String>, _: u64) -> Vec<String> {
-    decrypt_internal(strs, vec![('K', 'R'), ('Y', 'P'), ('T', 'O')])
+pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
+    let permutations = vec![vec![('K', 'R'), ('Y', 'P'), ('T', 'O')]];
+
+    decrypt_internal(strs, permutations[seed as usize].to_vec())
 }
 
 pub fn decrypt_internal(strs: Vec<String>, permutations: Vec<(char, char)>) -> Vec<String> {

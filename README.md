@@ -8,7 +8,7 @@
   - [x] indexcrypt
   - [x] vigenere
   - [ ] asciimorse?
-  - [ ] permutations
+  - [x] permutations
 - [x] cut message in parts
 - [ ] print better results (with values)
 - [x] finish deserialization for cryptors
@@ -16,8 +16,9 @@
 - [ ] harmonize method names
 - [ ] fix test method names
 - [ ] perfs monitoring
-- [ ] multithreading
+- [x] multithreading
 - [ ] profiling
+- [ ] when a thread is done, reallocate from another
 
 
 # Use Cases
