@@ -63,6 +63,14 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<StringArgs>(None)
                 .expect("cannot deserialize"),
         ),
+        CryptorTypeWithArgs::Permute => CryptorArgs::Permute(
+            rdr.records()
+                .find(|_| true)
+                .unwrap()
+                .expect("cannot find record")
+                .deserialize::<StringArgs>(None)
+                .expect("cannot deserialize"),
+        ),
     }
 }
 
@@ -81,6 +89,7 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
         "join" => CryptorArgs::Join,
         "colors" => read(str, CryptorTypeWithArgs::Colors),
         "indexcrypt" => read(str, CryptorTypeWithArgs::IndexCrypt),
+        "permute" => read(str, CryptorTypeWithArgs::Permute),
         _ => panic!("Cannot parse: {}", str),
     }
 }

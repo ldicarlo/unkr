@@ -11,6 +11,7 @@ pub enum CryptorArgs {
     Join,
     Colors(StringArgs),
     IndexCrypt(StringArgs),
+    Permute(StringArgs),
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub enum CryptorTypeWithArgs {
@@ -21,6 +22,7 @@ pub enum CryptorTypeWithArgs {
     Swap,
     Colors,
     IndexCrypt,
+    Permute,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
@@ -43,4 +45,3 @@ pub struct StringArgs {
 pub struct NumberArgs {
     pub number: u64,
 }
-

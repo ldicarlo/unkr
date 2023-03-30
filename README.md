@@ -8,6 +8,7 @@
   - [x] indexcrypt
   - [x] vigenere
   - [ ] asciimorse?
+  - [ ] permutations
 - [x] cut message in parts
 - [ ] print better results (with values)
 - [x] finish deserialization for cryptors

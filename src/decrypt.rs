@@ -10,6 +10,7 @@ use crate::join;
 use crate::models::NumberArgs;
 use crate::models::StringArgs;
 use crate::models::SwapArgs;
+use crate::permute;
 use crate::reverse;
 use crate::swap;
 use crate::transpose;
@@ -35,6 +36,7 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::IndexCrypt(StringArgs { letters }) => {
                 indexcrypt::decrypt(acc, letters)
             }
+            models::CryptorArgs::Permute(StringArgs { letters }) => permute::decrypt(acc, letters),
         })
         .into_iter()
         .filter(|s| !s.is_empty())
