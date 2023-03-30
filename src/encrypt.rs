@@ -6,7 +6,9 @@ use crate::atbash;
 use crate::caesar;
 use crate::join;
 use crate::models::NumberArgs;
+use crate::models::PermuteArgs;
 use crate::models::SwapArgs;
+use crate::permute;
 use crate::reverse;
 use crate::swap;
 use crate::transpose;
@@ -28,7 +30,7 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::Join => join::join(acc),
             models::CryptorArgs::Colors(_) => acc,
             models::CryptorArgs::IndexCrypt(_) => acc,
-            models::CryptorArgs::Permute(_) => acc,
+            models::CryptorArgs::Permute(PermuteArgs{permutations}) => permute::decrypt_internal(acc,permutations),
         })
         .into_iter()
         .filter(|s| !s.is_empty())

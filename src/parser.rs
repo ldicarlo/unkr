@@ -1,5 +1,5 @@
 use super::models::{CryptorArgs, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
-use crate::models::{StringArgs, SwapArgs};
+use crate::models::{StringArgs, SwapArgs, PermuteArgs};
 
 fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
     let mut rdr = csv::ReaderBuilder::new()
@@ -68,7 +68,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<StringArgs>(None)
+                .deserialize::<PermuteArgs>(None)
                 .expect("cannot deserialize"),
         ),
     }
@@ -97,7 +97,7 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
 #[cfg(test)]
 mod tests {
 
-    use crate::models::SwapArgs;
+    use crate::models::{SwapArgs, PermuteArgs};
 
     use super::{read, CryptorArgs, VigenereArgs};
 
@@ -156,5 +156,21 @@ mod tests {
                 alphabet: String::from("ALPHABET")
             })
         )
+    }
+
+    #[test]
+    fn permute_serialize() {
+        let mut writer = csv::WriterBuilder::new()
+            .has_headers(false)
+            .delimiter(b':')
+            .from_writer(vec![]);
+
+        writer
+            .serialize(CryptorArgs::Permute(PermuteArgs { permutations: vec![('A', 'B'),('C','D',)] }))
+            .expect("FAIL");
+        let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
+            .expect("Cannot convert utf8");
+
+        assert_eq!(result, "Permute:A:B:C:D\n".to_string())
     }
 }

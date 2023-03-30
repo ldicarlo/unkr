@@ -8,6 +8,7 @@ use crate::colorize;
 use crate::indexcrypt;
 use crate::join;
 use crate::models::NumberArgs;
+use crate::models::PermuteArgs;
 use crate::models::StringArgs;
 use crate::models::SwapArgs;
 use crate::permute;
@@ -36,7 +37,7 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::IndexCrypt(StringArgs { letters }) => {
                 indexcrypt::decrypt(acc, letters)
             }
-            models::CryptorArgs::Permute(StringArgs { letters }) => permute::decrypt(acc, letters),
+            models::CryptorArgs::Permute(PermuteArgs { permutations }) => permute::decrypt_internal(acc, permutations),
         })
         .into_iter()
         .filter(|s| !s.is_empty())

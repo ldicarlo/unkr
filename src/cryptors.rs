@@ -1,3 +1,5 @@
+use crate::permute;
+
 use super::atbash;
 use super::caesar;
 use super::cut;
@@ -54,6 +56,12 @@ fn get_decryptors() -> Vec<(
             Box::new(self::get_max_seed_is_one),
             Box::new(join::join_seed),
             Box::new(join::join_seed),
+        ),
+        (
+            "permute".to_string(),
+            Box::new(self::get_max_seed_is_one),
+            Box::new(permute::decrypt),
+            Box::new(permute::decrypt),
         ),
     ]
 }

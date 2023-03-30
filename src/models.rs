@@ -11,7 +11,7 @@ pub enum CryptorArgs {
     Join,
     Colors(StringArgs),
     IndexCrypt(StringArgs),
-    Permute(StringArgs),
+    Permute(PermuteArgs),
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub enum CryptorTypeWithArgs {
@@ -34,6 +34,11 @@ pub struct VigenereArgs {
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub struct SwapArgs {
     pub order: Vec<usize>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+pub struct PermuteArgs {
+    pub permutations: Vec<(char,char)>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
