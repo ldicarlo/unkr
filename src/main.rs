@@ -9,6 +9,7 @@ mod cryptors;
 mod cut;
 mod decrypt;
 mod encrypt;
+mod fuzzer;
 mod indexcrypt;
 mod join;
 mod models;

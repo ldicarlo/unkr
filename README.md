@@ -19,7 +19,7 @@
 - [x] multithreading
 - [ ] profiling
 - [ ] when a thread is done, reallocate from another
-
+- [ ] move to `has_next` and `get_next`
 
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `
