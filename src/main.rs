@@ -47,6 +47,7 @@ fn main() {
             elements_count,
             picks,
         } => combinator::print_combine_elements(elements_count, picks),
+        Commands::Fuzz { length } => fuzzer::fuzz_from("A".to_string(), length),
     };
     let duration = start.elapsed();
 
@@ -108,5 +109,9 @@ enum Commands {
         /// Consecutive steps in the bruteforce attempt
         #[arg(long)]
         picks: u8,
+    },
+    Fuzz {
+        #[arg(short, long)]
+        length: usize,
     },
 }
