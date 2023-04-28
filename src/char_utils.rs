@@ -5,6 +5,13 @@ pub fn get_alphabet() -> Vec<char> {
     ]
 }
 
+pub fn get_alphabet_prefixed() -> Vec<char> {
+  vec![
+     ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+      'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  ]
+}
+
 pub fn char_mod(c: char, number: usize, order: bool) -> char {
     char_mod_custom_alphabet(c, number, order, vec![])
 }

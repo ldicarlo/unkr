@@ -1,7 +1,16 @@
+use core::num;
+
 // https://cs.stackexchange.com/a/10321
 pub fn increment(input: Vec<u8>, base: u8) -> Vec<u8> {
-    let number = from_digits(input, base);
-    to_digits(number + 1, base)
+    let mut number = from_digits(input, base);
+
+    let mut result = to_digits(number + 1, base);
+    while result.clone().into_iter().any(|a| a == 0) {
+        number = number + 1;
+        result = to_digits(number + 1, base);
+    }
+
+    result
 }
 
 pub fn to_digits(mut input: u64, base: u8) -> Vec<u8> {
