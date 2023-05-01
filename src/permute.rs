@@ -31,12 +31,25 @@ pub fn decrypt_string(str: String, permutations: Vec<(char, char)>) -> String {
 
 #[cfg(test)]
 mod tests {
+    use crate::models::PermuteArgs;
 
     #[test]
     fn it_works() {
         assert_eq!(
             super::decrypt_string("KRYPTOS".to_string(), vec![('K', 'R')]),
             "RKYPTOS".to_string()
+        );
+    }
+
+    #[test]
+    fn next_works() {
+        assert_eq!(
+            super::next(PermuteArgs {
+                permutations: vec![('J', 'I')]
+            }),
+            PermuteArgs {
+                permutations: vec![('J', 'K')]
+            },
         );
     }
 }

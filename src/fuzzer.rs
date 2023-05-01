@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::{
     base,
-    char_utils::{self, get_alphabet, get_alphabet_prefixed},
+    char_utils::{self, get_alphabet_prefixed},
 };
 
 pub fn fuzz_from(str: String, len_max: usize) {
@@ -10,10 +10,7 @@ pub fn fuzz_from(str: String, len_max: usize) {
     while let Some(next) = fuzz_next_r(
         last.clone(),
         len_max,
-        vec![
-        //Box::new(pair_length)
-        Box::new(unique_letters)
-        ],
+        vec![Box::new(pair_length), Box::new(unique_letters),Box::new(sorted_letters_by_pair)],
     ) {
         println!("{}", next);
         last = next;
@@ -21,7 +18,7 @@ pub fn fuzz_from(str: String, len_max: usize) {
 }
 
 fn fuzz_next_r(
-    str:  String,
+    str: String,
     len_max: usize,
     rules: Vec<Box<dyn Fn(String) -> bool>>,
 ) -> Option<String> {
@@ -52,14 +49,33 @@ pub fn fuzz_next(str: String, len_max: usize) -> Option<String> {
     )
 }
 
-pub fn unique_letters(
-    str: String,
-) ->bool {
-   str.len() == str.chars().into_iter().collect::<HashSet<char>>().len()
+pub fn unique_letters(str: String) -> bool {
+    str.len() == str.chars().into_iter().collect::<HashSet<char>>().len()
 }
 
 pub fn pair_length(str: String) -> bool {
     str.len() % 2 == 0
+}
+
+pub fn sorted_letters_by_pair(str: String) -> bool {
+    // take even idx first
+    let even: Vec<char> = str.chars().into_iter().step_by(2).collect();
+    let uneven: Vec<char> = str.chars().skip(1).into_iter().step_by(2).collect();
+
+    let base: Vec<(char, char)> = even.into_iter().zip(uneven).collect();
+
+    // take uneven second
+
+    // tuple that
+
+    let mut ordered = base
+        .clone()
+        .into_iter()
+        .map(|(a, b)| if a > b { (b, a) } else { (a, b) })
+        .collect::<Vec<(char, char)>>();
+    ordered.sort_by(|(a, _), (b, _)| a.cmp(b));
+
+    base == ordered
 }
 
 #[cfg(test)]
@@ -76,5 +92,13 @@ mod tests {
             super::fuzz_next("ZZ".to_string(), 3),
             Some("AZZ".to_string())
         );
+    }
+
+    #[test]
+    fn ordered_works() {
+        assert_eq!(super::sorted_letters_by_pair("ADFG".to_string()), true);
+        assert_eq!(super::sorted_letters_by_pair("ADGF".to_string()), false);
+        assert_eq!(super::sorted_letters_by_pair("DAGF".to_string()), false);
+        assert_eq!(super::sorted_letters_by_pair("DAGFHE".to_string()), false);
     }
 }
