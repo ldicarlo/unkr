@@ -10,14 +10,18 @@ pub fn fuzz_from(str: String, len_max: usize) {
     while let Some(next) = fuzz_next_r(
         last.clone(),
         len_max,
-        vec![Box::new(pair_length), Box::new(unique_letters),Box::new(sorted_letters_by_pair)],
+        vec![
+            Box::new(pair_length),
+            Box::new(unique_letters),
+            Box::new(sorted_letters_by_pair),
+        ],
     ) {
         println!("{}", next);
         last = next;
     }
 }
 
-fn fuzz_next_r(
+pub fn fuzz_next_r(
     str: String,
     len_max: usize,
     rules: Vec<Box<dyn Fn(String) -> bool>>,
@@ -59,10 +63,8 @@ pub fn pair_length(str: String) -> bool {
 
 pub fn sorted_letters_by_pair(str: String) -> bool {
     // take even idx first
-    let even: Vec<char> = str.chars().into_iter().step_by(2).collect();
-    let uneven: Vec<char> = str.chars().skip(1).into_iter().step_by(2).collect();
 
-    let base: Vec<(char, char)> = even.into_iter().zip(uneven).collect();
+    let base: Vec<(char, char)> = char_utils::string_to_vec(str);
 
     // take uneven second
 

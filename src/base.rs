@@ -1,5 +1,3 @@
-use core::num;
-
 // https://cs.stackexchange.com/a/10321
 pub fn increment(input: Vec<u8>, base: u8) -> Vec<u8> {
     let mut number = from_digits(input, base);

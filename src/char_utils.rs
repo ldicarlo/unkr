@@ -6,10 +6,21 @@ pub fn get_alphabet() -> Vec<char> {
 }
 
 pub fn get_alphabet_prefixed() -> Vec<char> {
-  vec![
-     ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-      'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-  ]
+    vec![
+        ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
+        'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    ]
+}
+
+pub fn vec_to_string(input: Vec<(char, char)>) -> String {
+    input.into_iter().flat_map(|(a, b)| vec![a, b]).collect()
+}
+
+pub fn string_to_vec(input: String) -> Vec<(char, char)> {
+    let even: Vec<char> = input.chars().into_iter().step_by(2).collect();
+    let uneven: Vec<char> = input.chars().skip(1).into_iter().step_by(2).collect();
+
+    even.into_iter().zip(uneven).collect()
 }
 
 pub fn char_mod(c: char, number: usize, order: bool) -> char {
@@ -75,12 +86,8 @@ mod tests {
         );
     }
 
-
     #[test]
     fn char_pos() {
-        assert_eq!(
-            super::char_position_base('D'),
-            Some(3)
-        );
+        assert_eq!(super::char_position_base('D'), Some(3));
     }
 }
