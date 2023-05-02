@@ -1,7 +1,7 @@
 .PHONY: help
 
 help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 run: test ## run the app backend
 	@cargo run
@@ -31,4 +31,4 @@ solve-k3: ## Solve K3
 	@cargo run -- decrypt --string "$$(cat panels/kr3clear)" -- transpose:24 reverse join transpose:8 reverse join
 
 brute-force-k3: ## Bruteforce k3
-	@cargo run -- brute-force --string "$$(cat panels/kr3clear)" 
+	@cargo run -- brute-force --string "$$(cat panels/kr3clear)"

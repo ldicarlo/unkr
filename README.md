@@ -7,6 +7,7 @@
   - [?] enigma
   - [x] indexcrypt
   - [x] vigenere
+    - [ ] next impl
   - [ ] asciimorse?
   - [x] permutations
 - [x] cut message in parts
@@ -21,6 +22,9 @@
 - [ ] when a thread is done, reallocate from another
 - [ ] move to `get_next`
 - [ ] read from stdin
+- [ ] always test:
+  - [ ] all cryptors encrypt(decrypt())
+  - [ ] all cryptors readable
 
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `

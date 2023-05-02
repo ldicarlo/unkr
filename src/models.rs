@@ -38,7 +38,7 @@ pub struct SwapArgs {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub struct PermuteArgs {
-    pub permutations: Vec<(char,char)>,
+    pub permutations: Vec<(char, char)>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]

@@ -29,7 +29,7 @@ fn get_combinations() -> Vec<(String, String)> {
         .collect()
 }
 
-pub fn get_max_seed(_: usize) -> u64 {
+pub fn get_max_seed() -> u64 {
     (get_alphabets().len() * get_keys().len()) as u64
 }
 
@@ -45,10 +45,6 @@ pub fn decrypt_from_args(
     models::VigenereArgs { key, alphabet }: models::VigenereArgs,
 ) -> Vec<String> {
     encrypt_from_key(strs, key, false, alphabet.chars().collect())
-}
-
-pub fn encrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
-    vigenere(strs, seed, true)
 }
 
 pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {

@@ -94,22 +94,6 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
     }
 }
 
-fn all_cryptors_readable(c: CryptorArgs) {
-    match c {
-        CryptorArgs::Vigenere(_) => todo!(),
-        CryptorArgs::Cut(_) => todo!(),
-        CryptorArgs::Caesar(_) => todo!(),
-        CryptorArgs::Transpose(_) => todo!(),
-        CryptorArgs::AtBash => todo!(),
-        CryptorArgs::Reverse => todo!(),
-        CryptorArgs::Swap(_) => todo!(),
-        CryptorArgs::Join => todo!(),
-        CryptorArgs::Colors(_) => todo!(),
-        CryptorArgs::IndexCrypt(_) => todo!(),
-        CryptorArgs::Permute(_) => todo!(),
-    }
-}
-
 #[cfg(test)]
 mod tests {
 

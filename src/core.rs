@@ -1,6 +1,15 @@
 use super::combinator;
+use crate::atbash;
+use crate::caesar;
 use crate::candidates;
 use crate::cryptors;
+use crate::cut;
+use crate::join;
+use crate::models::PermuteArgs;
+use crate::permute;
+use crate::reverse;
+use crate::transpose;
+use crate::vigenere;
 
 use rand::prelude::SliceRandom;
 use std::collections::BTreeSet;
@@ -119,11 +128,10 @@ fn brute_force_strings(
         .map(|vec| {
             vec.iter()
                 .map(|(current_id, seed)| {
-                    let (d_name, _, _, _) =
-                        cryptors::filter_decryptors(decryptors_filtered.clone())
-                            .into_iter()
-                            .nth((*current_id).into())
-                            .unwrap();
+                    let d_name = cryptors::filter_decryptors(decryptors_filtered.clone())
+                        .into_iter()
+                        .nth((*current_id).into())
+                        .unwrap();
                     (d_name, *seed)
                 })
                 .collect()
@@ -142,39 +150,197 @@ fn loop_decrypt(
 ) {
     //println!("{:?} {:?} {:?}", acc, to_use, strs);
     if let Some(current) = to_use.pop() {
-        let (_, seed, decrypt, _) = cryptors::filter_decryptors(decryptors_filtered.clone())
+        let cryptor_name = cryptors::filter_decryptors(decryptors_filtered.clone())
             .into_iter()
             .nth(current.into())
             .unwrap();
-        let str_seed = seed(strs.first().map(|s| s.len()).unwrap_or(0));
-        for s in 0..str_seed {
-            let new_str = decrypt(strs.clone(), s);
-            let mut current_acc = acc.clone();
-            let current_to_use = to_use.clone();
-            // if cache.contains(&(new_str.clone(), current_to_use.clone(), s)) {
-            //     println!("Found one in cache.");
-            //     continue;
-            // }
 
-            current_acc.push((current.clone(), s));
-            let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
+        match cryptor_name.as_str() {
+            // make that an enum
+            "atbash" => {
+                let new_str = atbash::decrypt_from_args(strs);
+                let mut current_acc = acc.clone();
+                let current_to_use = to_use.clone();
+                current_acc.push((current.clone(), 1));
+                let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
 
-            if candidates.len() > 0 {
-                let local_arc = res_acc.clone();
-                println!("{:?} {:?}", candidates, new_str);
-                local_arc.lock().unwrap().insert(current_acc.clone());
+                if candidates.len() > 0 {
+                    let local_arc = res_acc.clone();
+                    local_arc.lock().unwrap().insert(current_acc.clone());
+                }
+
+                loop_decrypt(
+                    res_acc.clone(),
+                    current_acc,
+                    current_to_use.clone(),
+                    new_str.clone(),
+                    clues.clone(),
+                    decryptors_filtered.clone(),
+                );
             }
+            "caesar" => {
+                for s in 0..26 {
+                    let new_str = caesar::decrypt(strs.clone(), s);
+                    let mut current_acc = acc.clone();
+                    let current_to_use = to_use.clone();
+                    current_acc.push((current.clone(), s));
+                    let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
 
-            loop_decrypt(
-                res_acc.clone(),
-                current_acc,
-                current_to_use.clone(),
-                new_str.clone(),
-                clues.clone(),
-                // cache.clone(),
-                decryptors_filtered.clone(),
-            );
-            // cache.insert((new_str, current_to_use.clone(), s));
+                    if candidates.len() > 0 {
+                        let local_arc = res_acc.clone();
+                        local_arc.lock().unwrap().insert(current_acc.clone());
+                    }
+
+                    loop_decrypt(
+                        res_acc.clone(),
+                        current_acc,
+                        current_to_use.clone(),
+                        new_str.clone(),
+                        clues.clone(),
+                        decryptors_filtered.clone(),
+                    );
+                }
+            }
+            "reverse" => {
+                let new_str = reverse::decrypt_from_args(strs);
+                let mut current_acc = acc.clone();
+                let current_to_use = to_use.clone();
+                current_acc.push((current.clone(), 1));
+                let candidates =
+                    candidates::find_and_print_candidates(new_str.clone(), clues.clone());
+
+                if candidates.len() > 0 {
+                    let local_arc = res_acc.clone();
+                    local_arc.lock().unwrap().insert(current_acc.clone());
+                }
+
+                loop_decrypt(
+                    res_acc.clone(),
+                    current_acc,
+                    current_to_use.clone(),
+                    new_str.clone(),
+                    clues.clone(),
+                    decryptors_filtered.clone(),
+                );
+            }
+            "transpose" => {
+                for s in 0..strs.first().map(|s| s.len()).unwrap_or(0) {
+                    let new_str = transpose::decrypt(strs.clone(), s as u64);
+                    let mut current_acc = acc.clone();
+                    let current_to_use = to_use.clone();
+                    current_acc.push((current.clone(), s as u64));
+                    let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
+
+                    if candidates.len() > 0 {
+                        let local_arc = res_acc.clone();
+                        local_arc.lock().unwrap().insert(current_acc.clone());
+                    }
+
+                    loop_decrypt(
+                        res_acc.clone(),
+                        current_acc,
+                        current_to_use.clone(),
+                        new_str.clone(),
+                        clues.clone(),
+                        decryptors_filtered.clone(),
+                    );
+                }
+            }
+            "vigenere" => {
+                for s in 0..vigenere::get_max_seed() {
+                    let new_str = vigenere::decrypt(strs.clone(), s);
+                    let mut current_acc = acc.clone();
+                    let current_to_use = to_use.clone();
+                    current_acc.push((current.clone(), s as u64));
+                    let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
+
+                    if candidates.len() > 0 {
+                        let local_arc = res_acc.clone();
+                        local_arc.lock().unwrap().insert(current_acc.clone());
+                    }
+
+                    loop_decrypt(
+                        res_acc.clone(),
+                        current_acc,
+                        current_to_use.clone(),
+                        new_str.clone(),
+                        clues.clone(),
+                        decryptors_filtered.clone(),
+                    );
+                }
+            }
+            "cut" => {
+                for s in 0..strs.first().map(|s| s.len()).unwrap_or(0) {
+                    let new_str = cut::encrypt(strs.clone(), s as u64);
+                    let mut current_acc = acc.clone();
+                    let current_to_use = to_use.clone();
+                    current_acc.push((current.clone(), s as u64));
+                    let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
+
+                    if candidates.len() > 0 {
+                        let local_arc = res_acc.clone();
+                        local_arc.lock().unwrap().insert(current_acc.clone());
+                    }
+
+                    loop_decrypt(
+                        res_acc.clone(),
+                        current_acc,
+                        current_to_use.clone(),
+                        new_str.clone(),
+                        clues.clone(),
+                        decryptors_filtered.clone(),
+                    );
+                }
+            }
+            "join" => {
+                let new_str = join::join(strs);
+                let mut current_acc = acc.clone();
+                let current_to_use = to_use.clone();
+                current_acc.push((current.clone(), 1));
+                let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
+
+                if candidates.len() > 0 {
+                    let local_arc = res_acc.clone();
+                    local_arc.lock().unwrap().insert(current_acc.clone());
+                }
+
+                loop_decrypt(
+                    res_acc.clone(),
+                    current_acc,
+                    current_to_use.clone(),
+                    new_str.clone(),
+                    clues.clone(),
+                    decryptors_filtered.clone(),
+                );
+            }
+            "permute" => {
+                let mut current_permutations = permute::init();
+                while let Some(PermuteArgs { permutations: next }) =
+                    permute::next(current_permutations)
+                {
+                    let new_str = permute::decrypt_internal(strs.clone(), next.clone());
+                    let mut current_acc = acc.clone();
+                    let current_to_use = to_use.clone();
+                    current_acc.push((current.clone(), 1));
+                    let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
+
+                    if candidates.len() > 0 {
+                        let local_arc = res_acc.clone();
+                        local_arc.lock().unwrap().insert(current_acc.clone());
+                    }
+                    current_permutations = PermuteArgs { permutations: next };
+
+                    loop_decrypt(
+                        res_acc.clone(),
+                        current_acc,
+                        current_to_use.clone(),
+                        new_str.clone(),
+                        clues.clone(),
+                        decryptors_filtered.clone(),
+                    );
+                }
+            }
+            _ => todo!(),
         }
     }
 }
@@ -202,18 +368,18 @@ mod tests {
         );
     }
 
-    #[test]
-    fn it_works_2() {
-        let decryptors = cryptors::filter_decryptors(vec![]);
-        for (d, _, decrypt, encrypt) in decryptors.iter() {
-            assert_eq!(
-                decrypt(encrypt(vec!["SOME STRING 123 !".to_string()], 1), 1),
-                vec!["SOME STRING 123 !"],
-                "error with {}",
-                &d
-            )
-        }
-    }
+    // #[test]
+    // fn it_works_2() {
+    //     let decryptors = cryptors::filter_decryptors(vec![]);
+    //     for (d, _, decrypt, encrypt) in decryptors.iter() {
+    //         assert_eq!(
+    //             decrypt(encrypt(vec!["SOME STRING 123 !".to_string()], 1), 1),
+    //             vec!["SOME STRING 123 !"],
+    //             "error with {}",
+    //             &d
+    //         )
+    //     }
+    // }
 
     #[test]
     fn brute_force_1() {

@@ -40,7 +40,7 @@ fn main() {
             "{:?}",
             cryptors::filter_decryptors(decryptors)
                 .iter()
-                .map(|(str, _, _, _)| (str.clone()))
+                .map(|str| (str.clone()))
                 .collect::<BTreeSet<std::string::String>>()
         ),
         Commands::GetCombinations {

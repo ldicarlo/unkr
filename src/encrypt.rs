@@ -30,7 +30,9 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::Join => join::join(acc),
             models::CryptorArgs::Colors(_) => acc,
             models::CryptorArgs::IndexCrypt(_) => acc,
-            models::CryptorArgs::Permute(PermuteArgs{permutations}) => permute::decrypt_internal(acc,permutations),
+            models::CryptorArgs::Permute(PermuteArgs { permutations }) => {
+                permute::decrypt_internal(acc, permutations)
+            }
         })
         .into_iter()
         .filter(|s| !s.is_empty())

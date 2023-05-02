@@ -1,11 +1,20 @@
+pub fn find_and_print_candidates(strs: Vec<String>, clues: Vec<String>) -> Vec<String> {
+    let candidates = find_candidates(strs.clone(), clues.clone());
+    if candidates.len() > 0 {
+        println!("{:?} {:?}", candidates, strs);
+    }
+    candidates
+}
 pub fn find_candidates(strs: Vec<String>, clues: Vec<String>) -> Vec<String> {
-    strs.iter().flat_map(|string| check_string_for_candidates(string, &clues) ).collect()
+    strs.iter()
+        .flat_map(|string| check_string_for_candidates(string, &clues))
+        .collect()
 }
 
-fn check_string_for_candidates(string: &String, clues: &Vec<String>) -> Vec<String>{
+fn check_string_for_candidates(string: &String, clues: &Vec<String>) -> Vec<String> {
     let step1 = clue_is_in_string(string, clues);
     if step1.len() > 0 {
-      return  step1;
+        return step1;
     }
     step1
 }

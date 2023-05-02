@@ -1,5 +1,11 @@
 use crate::{char_utils, fuzzer, models};
 
+pub fn init() -> models::PermuteArgs {
+    models::PermuteArgs {
+        permutations: vec![],
+    }
+}
+
 pub fn next(args: models::PermuteArgs) -> Option<models::PermuteArgs> {
     let models::PermuteArgs { permutations } = args;
     let next = fuzzer::fuzz_next_r(
@@ -14,12 +20,6 @@ pub fn next(args: models::PermuteArgs) -> Option<models::PermuteArgs> {
     next.map(|str| models::PermuteArgs {
         permutations: char_utils::string_to_vec(str),
     })
-}
-
-pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
-    let permutations = vec![vec![('K', 'R'), ('Y', 'P'), ('T', 'O')]];
-
-    decrypt_internal(strs, permutations[seed as usize].to_vec())
 }
 
 pub fn decrypt_internal(strs: Vec<String>, permutations: Vec<(char, char)>) -> Vec<String> {
