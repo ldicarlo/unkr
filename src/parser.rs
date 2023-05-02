@@ -1,5 +1,5 @@
 use super::models::{CryptorArgs, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
-use crate::models::{StringArgs, SwapArgs, PermuteArgs};
+use crate::models::{PermuteArgs, StringArgs, SwapArgs};
 
 fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
     let mut rdr = csv::ReaderBuilder::new()
@@ -94,12 +94,31 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
     }
 }
 
+fn all_cryptors_readable(c: CryptorArgs) {
+    match c {
+        CryptorArgs::Vigenere(_) => todo!(),
+        CryptorArgs::Cut(_) => todo!(),
+        CryptorArgs::Caesar(_) => todo!(),
+        CryptorArgs::Transpose(_) => todo!(),
+        CryptorArgs::AtBash => todo!(),
+        CryptorArgs::Reverse => todo!(),
+        CryptorArgs::Swap(_) => todo!(),
+        CryptorArgs::Join => todo!(),
+        CryptorArgs::Colors(_) => todo!(),
+        CryptorArgs::IndexCrypt(_) => todo!(),
+        CryptorArgs::Permute(_) => todo!(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
-    use crate::models::{SwapArgs, PermuteArgs};
+    use crate::models::{PermuteArgs, SwapArgs};
 
     use super::{read, CryptorArgs, VigenereArgs};
+
+    #[test]
+    fn all_cryptors_readable() {}
 
     #[test]
     fn it_works() {
@@ -166,7 +185,9 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(CryptorArgs::Permute(PermuteArgs { permutations: vec![('A', 'B'),('C','D',)] }))
+            .serialize(CryptorArgs::Permute(PermuteArgs {
+                permutations: vec![('A', 'B'), ('C', 'D')],
+            }))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");

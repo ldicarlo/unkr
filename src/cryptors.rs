@@ -1,3 +1,5 @@
+use crate::models;
+use crate::models::CryptorArgs;
 use crate::permute;
 
 use super::atbash;
@@ -7,6 +9,13 @@ use super::join;
 use super::reverse;
 use super::transpose;
 use super::vigenere;
+
+struct Cryptor {
+    name: String,
+    next: Box<dyn Fn(CryptorArgs) -> Option<CryptorArgs>>,
+    encrypt: Box<dyn Fn(Vec<String>, CryptorArgs) -> Vec<String>>,
+    decrypt: Box<dyn Fn(Vec<String>, CryptorArgs) -> Vec<String>>,
+}
 
 fn get_decryptors() -> Vec<(
     String,
