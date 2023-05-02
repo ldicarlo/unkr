@@ -1,5 +1,7 @@
-pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
-    if seed == 0 {
+use crate::models::NumberArgs;
+
+pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
+    if number == 0 {
         return strs;
     }
 
@@ -7,7 +9,7 @@ pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
         .flat_map(|str| {
             let mut results: Vec<Vec<char>> = Vec::new();
             let size: usize = str.len().try_into().unwrap();
-            let block_size: usize = seed.try_into().unwrap();
+            let block_size: usize = number.try_into().unwrap();
             let mut lines_count: usize = size / block_size;
             // not the right way to do that ...
             if lines_count * block_size != size {
@@ -44,7 +46,7 @@ mod tests {
     fn it_works() {
         assert_eq!(
             vec!["AD".to_string(), "BE".to_string(), "CF".to_string()],
-            decrypt(vec!["ABCDEF".to_string()], 3)
+            decrypt(vec!["ABCDEF".to_string()], NumberArgs { number: 3 })
         );
     }
 
@@ -57,7 +59,10 @@ mod tests {
                 "CGKO".to_string(),
                 "DHL".to_string(),
             ],
-            decrypt(vec!["ABCDEFGHIJKLMNO".to_string()], 4)
+            decrypt(
+                vec!["ABCDEFGHIJKLMNO".to_string()],
+                NumberArgs { number: 4 }
+            )
         );
     }
 }

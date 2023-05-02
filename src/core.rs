@@ -5,7 +5,7 @@ use crate::candidates;
 use crate::cryptors;
 use crate::cut;
 use crate::join;
-use crate::models::PermuteArgs;
+use crate::models;
 use crate::permute;
 use crate::reverse;
 use crate::transpose;
@@ -158,10 +158,10 @@ fn loop_decrypt(
         match cryptor_name.as_str() {
             // make that an enum
             "atbash" => {
-                let new_str = atbash::decrypt_from_args(strs);
+                let new_str = atbash::decrypt(strs);
                 let mut current_acc = acc.clone();
                 let current_to_use = to_use.clone();
-                current_acc.push((current.clone(), 1));
+                current_acc.push((current.clone(), 0));
                 let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
 
                 if candidates.len() > 0 {
@@ -180,7 +180,7 @@ fn loop_decrypt(
             }
             "caesar" => {
                 for s in 0..26 {
-                    let new_str = caesar::decrypt(strs.clone(), s);
+                    let new_str = caesar::decrypt(strs.clone(), models::NumberArgs { number: s });
                     let mut current_acc = acc.clone();
                     let current_to_use = to_use.clone();
                     current_acc.push((current.clone(), s));
@@ -202,7 +202,7 @@ fn loop_decrypt(
                 }
             }
             "reverse" => {
-                let new_str = reverse::decrypt_from_args(strs);
+                let new_str = reverse::decrypt(strs);
                 let mut current_acc = acc.clone();
                 let current_to_use = to_use.clone();
                 current_acc.push((current.clone(), 1));
@@ -225,7 +225,8 @@ fn loop_decrypt(
             }
             "transpose" => {
                 for s in 0..strs.first().map(|s| s.len()).unwrap_or(0) {
-                    let new_str = transpose::decrypt(strs.clone(), s as u64);
+                    let new_str =
+                        transpose::decrypt(strs.clone(), models::NumberArgs { number: s as u64 });
                     let mut current_acc = acc.clone();
                     let current_to_use = to_use.clone();
                     current_acc.push((current.clone(), s as u64));
@@ -248,7 +249,13 @@ fn loop_decrypt(
             }
             "vigenere" => {
                 for s in 0..vigenere::get_max_seed() {
-                    let new_str = vigenere::decrypt(strs.clone(), s);
+                    let new_str = vigenere::decrypt(
+                        strs.clone(),
+                        models::VigenereArgs {
+                            alphabet: String::from(""),
+                            key: String::from(""),
+                        },
+                    );
                     let mut current_acc = acc.clone();
                     let current_to_use = to_use.clone();
                     current_acc.push((current.clone(), s as u64));
@@ -271,7 +278,8 @@ fn loop_decrypt(
             }
             "cut" => {
                 for s in 0..strs.first().map(|s| s.len()).unwrap_or(0) {
-                    let new_str = cut::encrypt(strs.clone(), s as u64);
+                    let new_str =
+                        cut::encrypt(strs.clone(), models::NumberArgs { number: s as u64 });
                     let mut current_acc = acc.clone();
                     let current_to_use = to_use.clone();
                     current_acc.push((current.clone(), s as u64));
@@ -293,7 +301,7 @@ fn loop_decrypt(
                 }
             }
             "join" => {
-                let new_str = join::join(strs);
+                let new_str = join::decrypt(strs);
                 let mut current_acc = acc.clone();
                 let current_to_use = to_use.clone();
                 current_acc.push((current.clone(), 1));
@@ -315,10 +323,8 @@ fn loop_decrypt(
             }
             "permute" => {
                 let mut current_permutations = permute::init();
-                while let Some(PermuteArgs { permutations: next }) =
-                    permute::next(current_permutations)
-                {
-                    let new_str = permute::decrypt_internal(strs.clone(), next.clone());
+                while let Some(next) = permute::next(current_permutations) {
+                    let new_str = permute::decrypt(strs.clone(), next.clone());
                     let mut current_acc = acc.clone();
                     let current_to_use = to_use.clone();
                     current_acc.push((current.clone(), 1));
@@ -328,7 +334,7 @@ fn loop_decrypt(
                         let local_arc = res_acc.clone();
                         local_arc.lock().unwrap().insert(current_acc.clone());
                     }
-                    current_permutations = PermuteArgs { permutations: next };
+                    current_permutations = next;
 
                     loop_decrypt(
                         res_acc.clone(),

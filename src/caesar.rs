@@ -1,27 +1,36 @@
+use crate::models::NumberArgs;
+
 use super::char_utils::char_mod;
 
 pub fn get_max_seed(_: usize) -> u64 {
     26
 }
 
-pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
+pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
     strs.iter()
         .map(|str| {
             str.chars()
                 .into_iter()
-                .map(|c| char_mod(c, seed.try_into().unwrap(), true))
+                .map(|c| char_mod(c, number.try_into().unwrap(), true))
                 .collect()
         })
         .collect()
 }
 
-pub fn encrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
+pub fn encrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
     let size = get_max_seed(strs.clone().len());
-    decrypt(strs, size - seed)
+    decrypt(
+        strs,
+        NumberArgs {
+            number: size - number,
+        },
+    )
 }
 
 #[cfg(test)]
 mod tests {
+
+    use crate::models;
 
     use super::*;
     #[test]
@@ -31,19 +40,31 @@ mod tests {
     #[test]
     fn it_works_2() {
         assert_eq!(
-            decrypt(vec!["MYNAMEISCAESAR".to_string()], 10),
+            decrypt(
+                vec!["MYNAMEISCAESAR".to_string()],
+                models::NumberArgs { number: 10 }
+            ),
             vec!["WIXKWOSCMKOCKB"]
         )
     }
     #[test]
     fn it_works_3() {
-        assert_eq!(decrypt(vec!["YVIORM".to_string()], 1), vec!["ZWJPSN"])
+        assert_eq!(
+            decrypt(vec!["YVIORM".to_string()], models::NumberArgs { number: 1 }),
+            vec!["ZWJPSN"]
+        )
     }
 
     #[test]
     fn it_works_4() {
         assert_eq!(
-            decrypt(encrypt(vec!["YVIORM".to_string()], 10), 10),
+            decrypt(
+                encrypt(
+                    vec!["YVIORM".to_string()],
+                    models::NumberArgs { number: 10 }
+                ),
+                models::NumberArgs { number: 10 }
+            ),
             vec!["YVIORM"]
         )
     }

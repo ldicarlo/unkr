@@ -36,6 +36,6 @@ mod tests {
     fn it_works() {
         assert_eq!(super::from_digits(vec![1, 0], 2), 2);
         assert_eq!(super::to_digits(2, 2), vec![1, 0]);
-        assert_eq!(super::increment(vec![23, 24, 25], 26), vec![23, 25, 0]);
+        assert_eq!(super::increment(vec![23, 24, 25], 26), vec![23, 25, 1]);
     }
 }

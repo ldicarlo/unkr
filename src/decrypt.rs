@@ -7,10 +7,7 @@ use crate::caesar;
 use crate::colorize;
 use crate::indexcrypt;
 use crate::join;
-use crate::models::NumberArgs;
-use crate::models::PermuteArgs;
 use crate::models::StringArgs;
-use crate::models::SwapArgs;
 use crate::permute;
 use crate::reverse;
 use crate::swap;
@@ -21,23 +18,19 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
         .iter()
         .map(|str| parser::read_parameters(str.to_string()))
         .fold(strs, |acc, args| match args {
-            models::CryptorArgs::Vigenere(args) => vigenere::decrypt_from_args(acc, args),
-            models::CryptorArgs::Cut(args) => cut::encrypt_from_args(acc, args),
-            models::CryptorArgs::Caesar(NumberArgs { number }) => caesar::decrypt(acc, number),
-            models::CryptorArgs::Transpose(NumberArgs { number }) => {
-                transpose::decrypt(acc, number)
-            }
-            models::CryptorArgs::AtBash => atbash::decrypt_from_args(acc),
-            models::CryptorArgs::Reverse => reverse::decrypt_from_args(acc),
-            models::CryptorArgs::Swap(SwapArgs { order }) => swap::decrypt_from_args(acc, order),
-            models::CryptorArgs::Join => join::join(acc),
-            models::CryptorArgs::Colors(StringArgs { letters }) => {
-                colorize::colorize_letters(acc, letters)
-            }
+            models::CryptorArgs::Vigenere(args) => vigenere::decrypt(acc, args),
+            models::CryptorArgs::Cut(_) => cut::decrypt(acc),
+            models::CryptorArgs::Caesar(number) => caesar::decrypt(acc, number),
+            models::CryptorArgs::Transpose(number) => transpose::decrypt(acc, number),
+            models::CryptorArgs::AtBash => atbash::decrypt(acc),
+            models::CryptorArgs::Reverse => reverse::decrypt(acc),
+            models::CryptorArgs::Swap(order) => swap::decrypt(acc, order),
+            models::CryptorArgs::Join => join::decrypt(acc),
+            models::CryptorArgs::Colors(letters) => colorize::colorize_letters(acc, letters),
             models::CryptorArgs::IndexCrypt(StringArgs { letters }) => {
                 indexcrypt::decrypt(acc, letters)
             }
-            models::CryptorArgs::Permute(PermuteArgs { permutations }) => permute::decrypt_internal(acc, permutations),
+            models::CryptorArgs::Permute(permutations) => permute::decrypt(acc, permutations),
         })
         .into_iter()
         .filter(|s| !s.is_empty())

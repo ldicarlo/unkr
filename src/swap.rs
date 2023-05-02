@@ -1,8 +1,6 @@
-pub fn _get_max_seed_is_factorial_length(_text_length: usize) -> u64 {
-    1
-}
+use crate::models::SwapArgs;
 
-pub fn encrypt_from_args(strs: Vec<String>, order: Vec<usize>) -> Vec<String> {
+pub fn encrypt(strs: Vec<String>, order: Vec<usize>) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     for i in order {
         if let Some(str) = strs.get(i) {
@@ -18,7 +16,7 @@ pub fn encrypt_from_args(strs: Vec<String>, order: Vec<usize>) -> Vec<String> {
     result
 }
 
-pub fn decrypt_from_args(strs: Vec<String>, order: Vec<usize>) -> Vec<String> {
+pub fn decrypt(strs: Vec<String>, SwapArgs { order }: SwapArgs) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     let mut unordered_idx = order.len();
     for i in 0..strs.len() {
@@ -39,11 +37,12 @@ pub fn _decrypt(strs: Vec<String>, _seed: u64) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
+    use crate::models::SwapArgs;
 
     #[test]
     fn it_works() {
         assert_eq!(
-            super::encrypt_from_args(
+            super::encrypt(
                 vec!["abc".to_string(), "def".to_string(), "ghi".to_string()],
                 vec![2, 1, 0]
             ),
@@ -54,7 +53,7 @@ mod tests {
     #[test]
     fn too_much_strings() {
         assert_eq!(
-            super::encrypt_from_args(
+            super::encrypt(
                 vec!["abc".to_string(), "def".to_string(), "ghi".to_string()],
                 vec![2, 1]
             ),
@@ -65,12 +64,12 @@ mod tests {
     #[test]
     fn back_and_forth() {
         assert_eq!(
-            super::decrypt_from_args(
-                super::encrypt_from_args(
+            super::decrypt(
+                super::encrypt(
                     vec!["abc".to_string(), "def".to_string(), "ghi".to_string()],
                     vec![2, 1]
                 ),
-                vec![2, 1]
+                SwapArgs { order: vec![2, 1] }
             ),
             vec!["abc".to_string(), "def".to_string(), "ghi".to_string()]
         )

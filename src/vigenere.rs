@@ -33,22 +33,18 @@ pub fn get_max_seed() -> u64 {
     (get_alphabets().len() * get_keys().len()) as u64
 }
 
-pub fn encrypt_from_args(
+pub fn encrypt(
     strs: Vec<String>,
     models::VigenereArgs { key, alphabet }: models::VigenereArgs,
 ) -> Vec<String> {
     encrypt_from_key(strs, key, true, alphabet.chars().collect())
 }
 
-pub fn decrypt_from_args(
+pub fn decrypt(
     strs: Vec<String>,
     models::VigenereArgs { key, alphabet }: models::VigenereArgs,
 ) -> Vec<String> {
     encrypt_from_key(strs, key, false, alphabet.chars().collect())
-}
-
-pub fn decrypt(strs: Vec<String>, seed: u64) -> Vec<String> {
-    vigenere(strs, seed, false)
 }
 
 pub fn vigenere(strs: Vec<String>, seed: u64, order: bool) -> Vec<String> {
@@ -114,7 +110,7 @@ mod tests {
     fn it_works() {
         assert_eq!(
             vec!["LXFOPVEFRNHR".to_string(), "LXFOPVEFRNHR".to_string()],
-            super::encrypt_from_args(
+            super::encrypt(
                 vec!["ATTACKATDAWN".to_string(), "ATTACKATDAWN".to_string()],
                 models::VigenereArgs {
                     key: "LEMON".to_string(),
@@ -128,7 +124,7 @@ mod tests {
     fn it_works_2() {
         assert_eq!(
             vec!["HYNLPVETV".to_string()],
-            super::encrypt_from_args(
+            super::encrypt(
                 vec!["HELLOTEST".to_string(),],
                 models::VigenereArgs {
                     key: "KEY".to_string(),
@@ -142,7 +138,7 @@ mod tests {
     fn it_works_3() {
         assert_eq!(
             vec!["HELLOTEST".to_string()],
-            super::decrypt_from_args(
+            super::decrypt(
                 vec!["HYNLPVETV".to_string(),],
                 models::VigenereArgs {
                     key: "KEY".to_string(),

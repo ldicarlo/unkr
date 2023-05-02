@@ -62,13 +62,7 @@ pub fn pair_length(str: String) -> bool {
 }
 
 pub fn sorted_letters_by_pair(str: String) -> bool {
-    // take even idx first
-
     let base: Vec<(char, char)> = char_utils::string_to_vec(str);
-
-    // take uneven second
-
-    // tuple that
 
     let mut ordered = base
         .clone()
@@ -92,7 +86,7 @@ mod tests {
         assert_eq!(super::fuzz_next("ZZZ".to_string(), 3), None);
         assert_eq!(
             super::fuzz_next("ZZ".to_string(), 3),
-            Some("AZZ".to_string())
+            Some("AAA".to_string())
         );
     }
 

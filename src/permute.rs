@@ -22,7 +22,10 @@ pub fn next(args: models::PermuteArgs) -> Option<models::PermuteArgs> {
     })
 }
 
-pub fn decrypt_internal(strs: Vec<String>, permutations: Vec<(char, char)>) -> Vec<String> {
+pub fn decrypt(
+    strs: Vec<String>,
+    models::PermuteArgs { permutations }: models::PermuteArgs,
+) -> Vec<String> {
     strs.iter()
         .map(|str| decrypt_string(str.clone(), permutations.clone()))
         .collect()

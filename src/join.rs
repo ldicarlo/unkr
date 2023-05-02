@@ -1,3 +1,3 @@
-pub fn join(strs: Vec<String>) -> Vec<String> {
+pub fn decrypt(strs: Vec<String>) -> Vec<String> {
     vec![strs.join("")]
 }

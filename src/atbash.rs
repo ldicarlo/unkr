@@ -1,10 +1,6 @@
 use std::collections::HashMap;
 
-pub fn decrypt(strs: Vec<String>, _: u64) -> Vec<String> {
-    decrypt_from_args(strs)
-}
-
-pub fn decrypt_from_args(strs: Vec<String>) -> Vec<String> {
+pub fn decrypt(strs: Vec<String>) -> Vec<String> {
     let letters: HashMap<char, char> = vec![
         ('A', 'Z'),
         ('B', 'Y'),
@@ -58,15 +54,12 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            super::decrypt(vec!["HELLO45?".to_string()], 1),
+            super::decrypt(vec!["HELLO45?".to_string()]),
             vec!["SVOOL45?"]
         );
     }
     #[test]
     fn it_works_2() {
-        assert_eq!(
-            super::decrypt(vec!["BERLIN".to_string()], 1),
-            vec!["YVIORM"]
-        );
+        assert_eq!(super::decrypt(vec!["BERLIN".to_string()]), vec!["YVIORM"]);
     }
 }
