@@ -129,16 +129,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 
 [[package]]
-name = "kryptos"
-version = "0.1.0"
-dependencies = [
- "clap",
- "csv",
- "rand",
- "serde",
-]
-
-[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -309,6 +299,16 @@ name = "unicode-ident"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ceab39d59e4c9499d4e5a8ee0e2735b891bb7308ac83dfb4e80cad195c9f6f3"
+
+[[package]]
+name = "unkr"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "csv",
+ "rand",
+ "serde",
+]
 
 [[package]]
 name = "version_check"

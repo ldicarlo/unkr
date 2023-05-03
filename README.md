@@ -25,12 +25,18 @@
 - [ ] always test:
   - [x] all cryptors encrypt(decrypt())
   - [ ] all cryptors readable
+- [ ] decryptors docs
+- [ ] bruteforce finishers?
+  - [ ] colors
+  - [ ] join
+  - [ ] bold
 
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `
 - [x] use enhanced / encrypt methods when useful
   - [x] `cargo run -- encrypt --string HELLOHELLO -- cut:5 vigenere:KEY:ALPHABET transpose:12 swap:0:5:6:4:2:3:1`
-
+- [ ] `unkr decryptor <decryptor>` shows doc for decryptor
+- [ ] `unkr bruteforce --clues-file ./words`
 
 https://kryptosfan.wordpress.com/k3/k3-solution-3/
 http://kryptools.com/hints.htm

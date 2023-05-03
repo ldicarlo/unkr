@@ -4,8 +4,8 @@ use super::parser;
 use super::vigenere;
 use crate::atbash;
 use crate::caesar;
+use crate::colorize;
 use crate::join;
-use crate::models::SwapArgs;
 use crate::permute;
 use crate::reverse;
 use crate::swap;
@@ -24,7 +24,7 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::Reverse => reverse::decrypt(acc),
             models::CryptorArgs::Swap(order) => swap::encrypt(acc, order),
             models::CryptorArgs::Join => join::decrypt(acc),
-            models::CryptorArgs::Colors(_) => acc,
+            models::CryptorArgs::Colors(letters) => colorize::colorize_letters(acc, letters),
             models::CryptorArgs::IndexCrypt(_) => acc,
             models::CryptorArgs::Permute(permutations) => permute::decrypt(acc, permutations),
         })
