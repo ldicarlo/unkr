@@ -1,13 +1,12 @@
-pub fn find_and_print_candidates(strs: Vec<String>, clues: Vec<String>) -> Vec<String> {
+pub fn find_and_print_candidates(strs: Vec<String>, clues: Vec<String>,cryptor_str:String) -> Vec<String> {
     let candidates = find_candidates(strs.clone(), clues.clone());
     if candidates.len() > 0 {
-        println!("{:?} {:?}", candidates, strs);
+        println!("{:?} {:?} {}", candidates, strs, cryptor_str);
     }
     candidates
 }
 pub fn find_candidates(strs: Vec<String>, clues: Vec<String>) -> Vec<String> {
-  check_string_for_candidates(&strs.join(""), &clues)
-
+    check_string_for_candidates(&strs.join(""), &clues)
 }
 
 fn check_string_for_candidates(string: &String, clues: &Vec<String>) -> Vec<String> {

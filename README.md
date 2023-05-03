@@ -33,7 +33,7 @@
   - [ ] colors
   - [ ] join
   - [ ] bold
-
+- [ ] useless combination (join join)
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `
 - [x] use enhanced / encrypt methods when useful

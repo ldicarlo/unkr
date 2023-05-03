@@ -1,3 +1,7 @@
+pub fn skip_if_previous_in() -> Vec<String> {
+    vec![String::from("reverse")]
+}
+
 pub fn decrypt(strs: Vec<String>) -> Vec<String> {
     strs.iter().map(|str| str.chars().rev().collect()).collect()
 }

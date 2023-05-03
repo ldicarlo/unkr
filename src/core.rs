@@ -111,6 +111,7 @@ fn threaded_function(
             clues.clone(),
             // cache.clone(),
             decryptors_filtered.clone(),
+            None,
         );
     }
     true
@@ -147,6 +148,7 @@ fn loop_decrypt(
     clues: Vec<String>,
     // mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
     decryptors_filtered: Vec<String>,
+    previous: Option<String>,
 ) {
     //println!("{:?} {:?} {:?}", acc, to_use, strs);
     if let Some(current) = to_use.pop() {
@@ -158,6 +160,12 @@ fn loop_decrypt(
         match cryptor_name.as_str() {
             // make that an enum
             "atbash" => {
+                if previous
+                    .map(|prev| atbash::skip_if_previous_in().contains(&prev))
+                    .unwrap_or(false)
+                {
+                    return;
+                }
                 let new_str: Vec<String> = atbash::decrypt(strs.clone());
 
                 let current_acc = process_new_str(
@@ -175,6 +183,7 @@ fn loop_decrypt(
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
+                    Some(cryptor_name.clone()),
                 );
             }
             "caesar" => {
@@ -195,16 +204,23 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
+                        Some(cryptor_name.clone()),
                     );
                 }
             }
             "reverse" => {
+                if previous
+                    .map(|prev: String| reverse::skip_if_previous_in().contains(&prev))
+                    .unwrap_or(false)
+                {
+                    return;
+                }
                 let new_str = reverse::decrypt(strs.clone());
                 let current_acc = process_new_str(
                     res_acc.clone(),
                     acc,
                     clues.clone(),
-                    cryptor_name,
+                    cryptor_name.clone(),
                     new_str.clone(),
                 );
 
@@ -215,17 +231,18 @@ fn loop_decrypt(
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
+                    Some(cryptor_name),
                 );
             }
             "transpose" => {
-                for s in 0..strs.first().map(|s| s.len()).unwrap_or(0) {
+                for s in 1..strs.first().map(|s| s.len()).unwrap_or(0) {
                     let new_str =
                         transpose::decrypt(strs.clone(), models::NumberArgs { number: s as u64 });
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
-                        cryptor_name.clone(),
+                        cryptor_name.clone() + &format!(":{}", s),
                         new_str.clone(),
                     );
 
@@ -236,23 +253,18 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
+                        Some(cryptor_name.clone()),
                     );
                 }
             }
             "vigenere" => {
                 for _ in 0..vigenere::get_max_seed() {
-                    let new_str = vigenere::decrypt(
-                        strs.clone(),
-                        models::VigenereArgs {
-                            alphabet: String::from(""),
-                            key: String::from(""),
-                        },
-                    );
+                    let new_str = vigenere::decrypt(strs.clone(), vigenere::init());
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
-                        cryptor_name.clone(),
+                        cryptor_name.clone() + &format!(":{}:{}", "TO", "FIX"),
                         new_str.clone(),
                     );
 
@@ -263,6 +275,7 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
+                        Some(cryptor_name.clone()),
                     );
                 }
             }
@@ -274,7 +287,7 @@ fn loop_decrypt(
                         res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
-                        cryptor_name.clone(),
+                        cryptor_name.clone() + &format!(":{}", s),
                         new_str.clone(),
                     );
 
@@ -285,16 +298,23 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
+                        Some(cryptor_name.clone()),
                     );
                 }
             }
             "join" => {
+                if previous
+                    .map(|prev| join::skip_if_previous_in().contains(&prev))
+                    .unwrap_or(false)
+                {
+                    return;
+                }
                 let new_str = join::decrypt(strs.clone());
                 let current_acc = process_new_str(
                     res_acc.clone(),
                     acc.clone(),
                     clues.clone(),
-                    cryptor_name,
+                    cryptor_name.clone(),
                     new_str.clone(),
                 );
 
@@ -305,6 +325,7 @@ fn loop_decrypt(
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
+                    Some(cryptor_name.clone()),
                 );
             }
             "permute" => {
@@ -315,7 +336,7 @@ fn loop_decrypt(
                         res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
-                        cryptor_name.clone(),
+                        cryptor_name.clone() + &format!(":{:?}", current_permutations),
                         new_str.clone(),
                     );
 
@@ -326,6 +347,7 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
+                        Some(cryptor_name.clone()),
                     );
                 }
             }
@@ -345,7 +367,8 @@ fn process_new_str(
     let current_acc = acc
         .map(|existing| existing + " " + &cryptor_str.clone())
         .unwrap_or(cryptor_str.clone());
-    let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
+    let candidates =
+        candidates::find_and_print_candidates(new_str.clone(), clues.clone(), current_acc.clone());
 
     if candidates.len() > 0 {
         let local_arc = res_acc.clone();
@@ -414,5 +437,4 @@ mod tests {
             .collect::<BTreeSet<String>>(),
         );
     }
-
 }
