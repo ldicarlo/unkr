@@ -27,7 +27,7 @@ mod tests {
     use crate::{
         atbash, caesar, cut, join,
         models::{self},
-        permute, reverse,
+        permute, reverse, vigenere,
     };
 
     use super::get_decryptors_names;
@@ -60,7 +60,22 @@ mod tests {
                     assert_eq!(1, 1)
                 }
                 "vigenere" => {
-                    assert_eq!(1, 1)
+                    assert_eq!(
+                        vigenere::decrypt(
+                            vigenere::encrypt(
+                                strs.clone(),
+                                models::VigenereArgs {
+                                    alphabet: String::from("FIRST"),
+                                    key: String::from("HELLO")
+                                }
+                            ),
+                            models::VigenereArgs {
+                                alphabet: String::from("FIRST"),
+                                key: String::from("HELLO")
+                            }
+                        ),
+                        strs.clone()
+                    )
                 }
                 "cut" => {
                     assert_eq!(

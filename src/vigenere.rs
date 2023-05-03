@@ -18,17 +18,6 @@ fn get_keys() -> Vec<String> {
     ]
 }
 
-fn get_combinations() -> Vec<(String, String)> {
-    get_alphabets()
-        .into_iter()
-        .flat_map(|alphabet| {
-            get_keys()
-                .into_iter()
-                .map(move |key| (alphabet.clone(), key.clone()))
-        })
-        .collect()
-}
-
 pub fn get_max_seed() -> u64 {
     (get_alphabets().len() * get_keys().len()) as u64
 }
@@ -45,12 +34,6 @@ pub fn decrypt(
     models::VigenereArgs { key, alphabet }: models::VigenereArgs,
 ) -> Vec<String> {
     encrypt_from_key(strs, key, false, alphabet.chars().collect())
-}
-
-pub fn vigenere(strs: Vec<String>, seed: u64, order: bool) -> Vec<String> {
-    let (alphabet, key) = get_combinations()[seed as usize].clone();
-
-    encrypt_from_key(strs, key.clone(), order, alphabet.clone().chars().collect())
 }
 
 pub fn encrypt_from_key(
