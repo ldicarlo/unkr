@@ -21,7 +21,10 @@
 - [ ] profiling
 - [ ] when a thread is done, reallocate from another
 - [x] move to `get_next`
-- [ ] read from stdin
+- [ ] read from stdin `--stdin`
+  - [ ] bruteforce
+  - [ ] encrypt
+  - [ ] decrypt
 - [ ] always test:
   - [x] all cryptors encrypt(decrypt())
   - [ ] all cryptors readable
