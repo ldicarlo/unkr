@@ -32,3 +32,6 @@ solve-k3: ## Solve K3
 
 brute-force-k3: ## Bruteforce k3
 	@cargo run -- brute-force --string "$$(cat panels/kr3clear)"
+
+benchmark-1: ## Benchmark t1
+	@cargo run -- brute-force --string "$$(cat benchmark/test1)" --clues=HELLO --steps=5 --threads=16 --decryptors=transpose --decryptors=join --decryptors=reverse

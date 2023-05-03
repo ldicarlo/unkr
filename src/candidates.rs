@@ -6,9 +6,8 @@ pub fn find_and_print_candidates(strs: Vec<String>, clues: Vec<String>) -> Vec<S
     candidates
 }
 pub fn find_candidates(strs: Vec<String>, clues: Vec<String>) -> Vec<String> {
-    strs.iter()
-        .flat_map(|string| check_string_for_candidates(string, &clues))
-        .collect()
+  check_string_for_candidates(&strs.join(""), &clues)
+
 }
 
 fn check_string_for_candidates(string: &String, clues: &Vec<String>) -> Vec<String> {

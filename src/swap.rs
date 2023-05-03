@@ -1,5 +1,13 @@
 use crate::models::SwapArgs;
 
+pub fn init() -> SwapArgs {
+    SwapArgs { order: vec![] }
+}
+
+pub fn next(args: SwapArgs) -> Option<SwapArgs> {
+    None
+}
+
 pub fn encrypt(strs: Vec<String>, SwapArgs { order }: SwapArgs) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     for i in order {
