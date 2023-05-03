@@ -8,6 +8,7 @@ fn get_decryptors_names() -> Vec<String> {
         "cut".to_string(),
         "join".to_string(),
         "permute".to_string(),
+        //"indexcrypt".to_string(),
     ]
 }
 

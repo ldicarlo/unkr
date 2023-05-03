@@ -1,7 +1,9 @@
 use crate::char_utils;
 
-pub fn _encrypt(strs: Vec<String>, _: String) -> Vec<String> {
-    strs
+pub fn _encrypt(strs: Vec<String>, base: String) -> Vec<String> {
+    strs.into_iter()
+        .map(|str| decrypt_string(str, base.clone()))
+        .collect()
 }
 
 pub fn decrypt(strs: Vec<String>, base: String) -> Vec<String> {
