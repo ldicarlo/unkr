@@ -20,11 +20,10 @@ mod swap;
 mod transpose;
 mod vigenere;
 use clap::{Parser, Subcommand};
-use std::{collections::BTreeSet, time::Instant};
+use std::collections::BTreeSet;
 mod permute;
 fn main() {
     let args = Cli::parse();
-    let start = Instant::now();
 
     match args.command {
         Commands::Encrypt { string, steps } => encrypt::print_encrypt(string, steps),
@@ -49,9 +48,6 @@ fn main() {
         } => combinator::print_combine_elements(elements_count, picks),
         Commands::Fuzz { length } => fuzzer::fuzz_from("".to_string(), length),
     };
-    let duration = start.elapsed();
-
-    println!("Time elapsed is: {:?}", duration);
 }
 
 #[derive(Parser, Debug)]
