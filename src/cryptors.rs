@@ -26,13 +26,19 @@ pub fn filter_decryptors(decryptors_filtered: Vec<String>) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{atbash, caesar, cut, join, models, permute, reverse, vigenere, swap};
+    use crate::{atbash, caesar, cut, join, models, permute, reverse, swap, vigenere};
 
     use super::get_decryptors_names;
 
     #[test]
     fn it_works() {
-        let strs = vec![String::from("HELLO"),String::from("TO"),String::from("THE"),String::from("WORLD"),String::from("HELLOWORLD")];
+        let strs = vec![
+            String::from("HELLO"),
+            String::from("TO"),
+            String::from("THE"),
+            String::from("WORLD"),
+            String::from("HELLOWORLD"),
+        ];
         get_decryptors_names()
             .into_iter()
             .for_each(|name| match name.as_str() {
@@ -82,7 +88,10 @@ mod tests {
                     )
                 }
                 "join" => {
-                    assert_eq!(join::decrypt(join::decrypt(strs.clone())), join::decrypt(strs.clone()))
+                    assert_eq!(
+                        join::decrypt(join::decrypt(strs.clone())),
+                        join::decrypt(strs.clone())
+                    )
                 }
                 "permute" => {
                     assert_eq!(
@@ -90,10 +99,12 @@ mod tests {
                             permute::decrypt(
                                 strs.clone(),
                                 models::PermuteArgs {
+                                    max_permutations: 2,
                                     permutations: vec![('H', 'E')]
                                 }
                             ),
                             models::PermuteArgs {
+                                max_permutations: 2,
                                 permutations: vec![('H', 'E')]
                             }
                         ),
@@ -101,21 +112,20 @@ mod tests {
                     )
                 }
                 "swap" => {
-
-                  assert_eq!(
-                    swap::decrypt(
-                        swap::encrypt(
-                            strs.clone(),
+                    assert_eq!(
+                        swap::decrypt(
+                            swap::encrypt(
+                                strs.clone(),
+                                models::SwapArgs {
+                                    order: vec![4, 1, 0, 2, 3]
+                                }
+                            ),
                             models::SwapArgs {
-                                order: vec![4,1,0,2,3]
+                                order: vec![4, 1, 0, 2, 3]
                             }
                         ),
-                        models::SwapArgs {
-                          order: vec![4,1,0,2,3]
-                      }
-                    ),
-                    strs.clone()
-                )
+                        strs.clone()
+                    )
                 }
                 _ => todo!(),
             });

@@ -38,6 +38,7 @@ pub struct SwapArgs {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct PermuteArgs {
+  pub max_permutations: usize,
     pub permutations: Vec<(char, char)>,
 }
 

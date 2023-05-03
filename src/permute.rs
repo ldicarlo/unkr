@@ -3,14 +3,18 @@ use crate::{char_utils, fuzzer, models};
 pub fn init() -> models::PermuteArgs {
     models::PermuteArgs {
         permutations: vec![],
+        max_permutations:4
     }
 }
 
 pub fn next(args: models::PermuteArgs) -> Option<models::PermuteArgs> {
-    let models::PermuteArgs { permutations } = args;
+    let models::PermuteArgs {
+        max_permutations,
+        permutations,
+    } = args;
     let next = fuzzer::fuzz_next_r(
         char_utils::vec_to_string(permutations),
-        5,
+        max_permutations,
         vec![
             Box::new(fuzzer::pair_length),
             Box::new(fuzzer::unique_letters),
@@ -18,13 +22,17 @@ pub fn next(args: models::PermuteArgs) -> Option<models::PermuteArgs> {
         ],
     );
     next.map(|str| models::PermuteArgs {
+        max_permutations,
         permutations: char_utils::string_to_vec(str),
     })
 }
 
 pub fn decrypt(
     strs: Vec<String>,
-    models::PermuteArgs { permutations }: models::PermuteArgs,
+    models::PermuteArgs {
+        max_permutations: _,
+        permutations,
+    }: models::PermuteArgs,
 ) -> Vec<String> {
     strs.iter()
         .map(|str| decrypt_string(str.clone(), permutations.clone()))
@@ -58,9 +66,11 @@ mod tests {
     fn next_works() {
         assert_eq!(
             super::next(PermuteArgs {
+                max_permutations: 2,
                 permutations: vec![('J', 'I')]
             }),
             Some(PermuteArgs {
+                max_permutations: 2,
                 permutations: vec![('J', 'K')]
             },)
         );

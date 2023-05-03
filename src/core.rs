@@ -329,7 +329,7 @@ fn loop_decrypt(
                 );
             }
             "permute" => {
-                let current_permutations = permute::init();
+                let mut current_permutations = permute::init();
                 while let Some(next) = permute::next(current_permutations.clone()) {
                     let new_str = permute::decrypt(strs.clone(), next.clone());
                     let current_acc = process_new_str(
@@ -349,6 +349,7 @@ fn loop_decrypt(
                         decryptors_filtered.clone(),
                         Some(cryptor_name.clone()),
                     );
+                    current_permutations = next;
                 }
             }
             _ => todo!(),
