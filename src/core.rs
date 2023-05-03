@@ -105,7 +105,7 @@ fn threaded_function(
         }
         loop_decrypt(
             results_accumulator.clone(),
-            String::new(),
+            None,
             vec.clone(),
             vec![str.clone()],
             clues.clone(),
@@ -141,7 +141,7 @@ fn brute_force_strings(
 
 fn loop_decrypt(
     res_acc: Arc<Mutex<BTreeSet<String>>>,
-    acc: String,
+    acc: Option<String>,
     mut to_use: Vec<u8>,
     strs: Vec<String>,
     clues: Vec<String>,
@@ -336,20 +336,22 @@ fn loop_decrypt(
 
 fn process_new_str(
     res_acc: Arc<Mutex<BTreeSet<String>>>,
-    acc: String,
+    acc: Option<String>,
     clues: Vec<String>,
     // mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
     cryptor_str: String,
     new_str: Vec<String>,
-) -> String {
-    let current_acc = vec![acc, cryptor_str].into_iter().filter(|s| s.len()>0).collect::<Vec<String>>().join(" ");
+) -> Option<String> {
+    let current_acc = acc
+        .map(|existing| existing + " " + &cryptor_str.clone())
+        .unwrap_or(cryptor_str.clone());
     let candidates = candidates::find_candidates(new_str.clone(), clues.clone());
 
     if candidates.len() > 0 {
         let local_arc = res_acc.clone();
         local_arc.lock().unwrap().insert(current_acc.clone());
     }
-    current_acc
+    Some(current_acc)
 }
 
 #[cfg(test)]
@@ -391,7 +393,6 @@ mod tests {
     #[test]
     fn brute_force_1() {
         assert_eq!(
-
             // encrypt --string BERLIN -- caesar:10 atbash caesar:5
             brute_force_strings(
                 "TQDJMH".to_string(),
@@ -406,17 +407,12 @@ mod tests {
                 1
             ),
             vec![
-              "caesar:5 atbash".to_string(),
-              "atbash caesar:21".to_string(),
-          ]
-          .into_iter()
-          .collect::<BTreeSet<String>>(),
+                "caesar:5 atbash".to_string(),
+                "atbash caesar:21".to_string(),
+            ]
+            .into_iter()
+            .collect::<BTreeSet<String>>(),
         );
     }
 
-    #[test]
-    fn test_1() {
-      assert_eq!("caesar:5 atbash", vec!["","caesar:5", "atbash"].join(" "));
-
-    }
 }
