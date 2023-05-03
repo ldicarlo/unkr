@@ -1,6 +1,6 @@
 use crate::models::SwapArgs;
 
-pub fn encrypt(strs: Vec<String>, order: Vec<usize>) -> Vec<String> {
+pub fn encrypt(strs: Vec<String>, SwapArgs { order }: SwapArgs) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     for i in order {
         if let Some(str) = strs.get(i) {
@@ -31,10 +31,6 @@ pub fn decrypt(strs: Vec<String>, SwapArgs { order }: SwapArgs) -> Vec<String> {
     result
 }
 
-pub fn _decrypt(strs: Vec<String>, _seed: u64) -> Vec<String> {
-    strs
-}
-
 #[cfg(test)]
 mod tests {
     use crate::models::SwapArgs;
@@ -44,7 +40,9 @@ mod tests {
         assert_eq!(
             super::encrypt(
                 vec!["abc".to_string(), "def".to_string(), "ghi".to_string()],
-                vec![2, 1, 0]
+                SwapArgs {
+                    order: vec![2, 1, 0]
+                }
             ),
             vec!["ghi".to_string(), "def".to_string(), "abc".to_string(),]
         )
@@ -55,7 +53,7 @@ mod tests {
         assert_eq!(
             super::encrypt(
                 vec!["abc".to_string(), "def".to_string(), "ghi".to_string()],
-                vec![2, 1]
+                SwapArgs { order: vec![2, 1] }
             ),
             vec!["ghi".to_string(), "def".to_string(), "abc".to_string(),]
         )
@@ -67,7 +65,7 @@ mod tests {
             super::decrypt(
                 super::encrypt(
                     vec!["abc".to_string(), "def".to_string(), "ghi".to_string()],
-                    vec![2, 1]
+                    SwapArgs { order: vec![2, 1] }
                 ),
                 SwapArgs { order: vec![2, 1] }
             ),

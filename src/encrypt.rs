@@ -22,7 +22,7 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::CryptorArgs::Transpose(number) => transpose::decrypt(acc, number),
             models::CryptorArgs::AtBash => atbash::decrypt(acc),
             models::CryptorArgs::Reverse => reverse::decrypt(acc),
-            models::CryptorArgs::Swap(SwapArgs { order }) => swap::encrypt(acc, order),
+            models::CryptorArgs::Swap(order) => swap::encrypt(acc, order),
             models::CryptorArgs::Join => join::decrypt(acc),
             models::CryptorArgs::Colors(_) => acc,
             models::CryptorArgs::IndexCrypt(_) => acc,

@@ -8,6 +8,7 @@ fn get_decryptors_names() -> Vec<String> {
         "cut".to_string(),
         "join".to_string(),
         "permute".to_string(),
+        "swap".to_string(),
         //"indexcrypt".to_string(),
     ]
 }
@@ -25,17 +26,13 @@ pub fn filter_decryptors(decryptors_filtered: Vec<String>) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        atbash, caesar, cut, join,
-        models::{self},
-        permute, reverse, vigenere,
-    };
+    use crate::{atbash, caesar, cut, join, models, permute, reverse, vigenere, swap};
 
     use super::get_decryptors_names;
 
     #[test]
     fn it_works() {
-        let strs = vec![String::from("HELLO")];
+        let strs = vec![String::from("HELLO"),String::from("TO"),String::from("THE"),String::from("WORLD"),String::from("HELLOWORLD")];
         get_decryptors_names()
             .into_iter()
             .for_each(|name| match name.as_str() {
@@ -81,11 +78,11 @@ mod tests {
                 "cut" => {
                     assert_eq!(
                         cut::decrypt(cut::encrypt(strs.clone(), models::NumberArgs { number: 4 })),
-                        strs.clone()
+                        join::decrypt(strs.clone())
                     )
                 }
                 "join" => {
-                    assert_eq!(join::decrypt(join::decrypt(strs.clone())), strs.clone())
+                    assert_eq!(join::decrypt(join::decrypt(strs.clone())), join::decrypt(strs.clone()))
                 }
                 "permute" => {
                     assert_eq!(
@@ -102,6 +99,23 @@ mod tests {
                         ),
                         strs.clone()
                     )
+                }
+                "swap" => {
+
+                  assert_eq!(
+                    swap::decrypt(
+                        swap::encrypt(
+                            strs.clone(),
+                            models::SwapArgs {
+                                order: vec![4,1,0,2,3]
+                            }
+                        ),
+                        models::SwapArgs {
+                          order: vec![4,1,0,2,3]
+                      }
+                    ),
+                    strs.clone()
+                )
                 }
                 _ => todo!(),
             });

@@ -1,6 +1,6 @@
 - [x] `combinator.rs`
 - [ ] cache
-  - [ ] ./.cache/ENCRYPTEDSTRING
+  - [ ] ./.cache/ENCRYPTEDSTRING.md5
   - [x] clue,clue2 1,2
 - [ ] cryptors
   - [x] fold
@@ -14,16 +14,16 @@
 - [ ] print better results (with values)
 - [x] finish deserialization for cryptors
 - [ ] document shit
-- [ ] harmonize method names
+- [x] harmonize method names
 - [ ] fix test method names
 - [ ] perfs monitoring
 - [x] multithreading
 - [ ] profiling
 - [ ] when a thread is done, reallocate from another
-- [ ] move to `get_next`
+- [x] move to `get_next`
 - [ ] read from stdin
 - [ ] always test:
-  - [ ] all cryptors encrypt(decrypt())
+  - [x] all cryptors encrypt(decrypt())
   - [ ] all cryptors readable
 
 # Use Cases
