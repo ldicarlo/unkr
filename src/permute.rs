@@ -3,17 +3,23 @@ use crate::{char_utils, fuzzer, models};
 pub fn init() -> models::PermuteArgs {
     models::PermuteArgs {
         permutations: vec![],
-        max_permutations:4
+        max_permutations: 4,
     }
 }
 
-pub fn next(args: models::PermuteArgs) -> Option<models::PermuteArgs> {
-    let models::PermuteArgs {
+pub fn next(
+    models::PermuteArgs {
         max_permutations,
         permutations,
-    } = args;
+    }: models::PermuteArgs,
+) -> Option<models::PermuteArgs> {
     let next = fuzzer::fuzz_next_r(
-        char_utils::vec_to_string(permutations),
+        char_utils::pairs_to_vec(
+            permutations
+                .into_iter()
+                .map(|(a, b)| (a as u8, b as u8))
+                .collect(),
+        ),
         max_permutations,
         vec![
             Box::new(fuzzer::pair_length),
@@ -23,7 +29,10 @@ pub fn next(args: models::PermuteArgs) -> Option<models::PermuteArgs> {
     );
     next.map(|str| models::PermuteArgs {
         max_permutations,
-        permutations: char_utils::string_to_vec(str),
+        permutations: char_utils::vec_to_pairs(str)
+            .into_iter()
+            .map(|(a, b)| (a as char, b as char))
+            .collect(),
     })
 }
 

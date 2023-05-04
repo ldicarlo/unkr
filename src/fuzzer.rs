@@ -7,7 +7,7 @@ use crate::{
 
 pub fn fuzz_from(str: String, len_max: usize) {
     let mut last = str;
-    while let Some(next) = fuzz_next_r(
+    while let Some(next) = fuzz_next_string_ruled(
         last.clone(),
         len_max,
         vec![
@@ -21,11 +21,32 @@ pub fn fuzz_from(str: String, len_max: usize) {
     }
 }
 
-pub fn fuzz_next_r(
+pub fn fuzz_next_string_ruled(
     str: String,
     len_max: usize,
-    rules: Vec<Box<dyn Fn(String) -> bool>>,
+    rules: Vec<Box<dyn Fn(Vec<u8>) -> bool>>,
 ) -> Option<String> {
+    fuzz_next_r(
+        str.chars()
+            .into_iter()
+            .flat_map(|c| char_utils::char_position(c, get_alphabet_prefixed()))
+            .map(|c| c as u8)
+            .collect(),
+        len_max,
+        rules,
+    )
+    .map(|vec| {
+        vec.into_iter()
+            .map(|c| get_alphabet_prefixed()[c as usize])
+            .collect::<String>()
+    })
+}
+
+pub fn fuzz_next_r(
+    str: Vec<u8>,
+    len_max: usize,
+    rules: Vec<Box<dyn Fn(Vec<u8>) -> bool>>,
+) -> Option<Vec<u8>> {
     let mut last = str;
     while let Some(result) = fuzz_next(last, len_max) {
         last = result.clone();
@@ -36,39 +57,30 @@ pub fn fuzz_next_r(
     None
 }
 
-pub fn fuzz_next(str: String, len_max: usize) -> Option<String> {
-    let vector: Vec<u8> = str
-        .chars()
-        .flat_map(|c| char_utils::char_position(c, get_alphabet_prefixed()))
-        .map(|c| c as u8)
-        .collect();
+pub fn fuzz_next(str: Vec<u8>, len_max: usize) -> Option<Vec<u8>> {
+    let vector: Vec<u8> = str.clone().into_iter().map(|c| c as u8).collect();
     if str.len() == len_max && vector.clone().into_iter().all(|c| c as usize == 26) {
         return None;
     }
-    Some(
-        base::increment(vector, 27)
-            .into_iter()
-            .map(|c| get_alphabet_prefixed()[c as usize])
-            .collect(),
-    )
+    Some(base::increment(vector, 27))
 }
 
-pub fn unique_letters(str: String) -> bool {
-    str.len() == str.chars().into_iter().collect::<HashSet<char>>().len()
+pub fn unique_letters(str: Vec<u8>) -> bool {
+    str.len() == str.into_iter().collect::<HashSet<u8>>().len()
 }
 
-pub fn pair_length(str: String) -> bool {
+pub fn pair_length(str: Vec<u8>) -> bool {
     str.len() % 2 == 0
 }
 
-pub fn sorted_letters_by_pair(str: String) -> bool {
-    let base: Vec<(char, char)> = char_utils::string_to_vec(str);
+pub fn sorted_letters_by_pair(str: Vec<u8>) -> bool {
+    let base: Vec<(u8, u8)> = char_utils::vec_to_pairs(str);
 
     let mut ordered = base
         .clone()
         .into_iter()
         .map(|(a, b)| if a > b { (b, a) } else { (a, b) })
-        .collect::<Vec<(char, char)>>();
+        .collect::<Vec<(u8, u8)>>();
     ordered.sort_by(|(a, _), (b, _)| a.cmp(b));
 
     base == ordered
@@ -80,21 +92,24 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            super::fuzz_next("KRYPTOR".to_string(), 7),
+            super::fuzz_next_string_ruled("KRYPTOR".to_string(), 7, vec![]),
             Some("KRYPTOS".to_string())
         );
-        assert_eq!(super::fuzz_next("ZZZ".to_string(), 3), None);
         assert_eq!(
-            super::fuzz_next("ZZ".to_string(), 3),
+            super::fuzz_next_string_ruled("ZZZ".to_string(), 3, vec![]),
+            None
+        );
+        assert_eq!(
+            super::fuzz_next_string_ruled("ZZ".to_string(), 3, vec![]),
             Some("AAA".to_string())
         );
     }
 
     #[test]
     fn ordered_works() {
-        assert_eq!(super::sorted_letters_by_pair("ADFG".to_string()), true);
-        assert_eq!(super::sorted_letters_by_pair("ADGF".to_string()), false);
-        assert_eq!(super::sorted_letters_by_pair("DAGF".to_string()), false);
-        assert_eq!(super::sorted_letters_by_pair("DAGFHE".to_string()), false);
+        assert_eq!(super::sorted_letters_by_pair(vec![1, 2, 4, 5]), true);
+        assert_eq!(super::sorted_letters_by_pair(vec![1, 2, 5, 4]), false);
+        assert_eq!(super::sorted_letters_by_pair(vec![2, 1, 5, 4]), false);
+        assert_eq!(super::sorted_letters_by_pair(vec![2, 1, 4, 5, 6, 3]), false);
     }
 }
