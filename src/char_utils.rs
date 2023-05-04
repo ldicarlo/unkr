@@ -12,13 +12,13 @@ pub fn get_alphabet_prefixed() -> Vec<char> {
     ]
 }
 
-pub fn pairs_to_vec(input: Vec<(u8, u8)>) -> Vec<u8> {
+pub fn pairs_to_vec<A>(input: Vec<(A, A)>) -> Vec<A> {
     input.into_iter().flat_map(|(a, b)| vec![a, b]).collect()
 }
 
-pub fn vec_to_pairs(input: Vec<u8>) -> Vec<(u8, u8)> {
-    let even: Vec<u8> = input.clone().into_iter().step_by(2).collect();
-    let uneven: Vec<u8> = input.into_iter().skip(1).into_iter().step_by(2).collect();
+pub fn vec_to_pairs<A: Clone>(input: Vec<A>) -> Vec<(A, A)> {
+    let even: Vec<A> = input.clone().into_iter().step_by(2).collect();
+    let uneven: Vec<A> = input.into_iter().skip(1).into_iter().step_by(2).collect();
 
     even.into_iter().zip(uneven).collect()
 }

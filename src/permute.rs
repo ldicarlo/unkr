@@ -13,13 +13,13 @@ pub fn next(
         permutations,
     }: models::PermuteArgs,
 ) -> Option<models::PermuteArgs> {
-    let next = fuzzer::fuzz_next_r(
+    let next = fuzzer::fuzz_next_string_ruled(
         char_utils::pairs_to_vec(
             permutations
-                .into_iter()
-                .map(|(a, b)| (a as u8, b as u8))
-                .collect(),
-        ),
+          )  .into_iter()
+
+                .collect::<String>()
+        ,
         max_permutations,
         vec![
             Box::new(fuzzer::pair_length),
@@ -29,7 +29,7 @@ pub fn next(
     );
     next.map(|str| models::PermuteArgs {
         max_permutations,
-        permutations: char_utils::vec_to_pairs(str)
+        permutations: char_utils::vec_to_pairs(str.chars().collect())
             .into_iter()
             .map(|(a, b)| (a as char, b as char))
             .collect(),
