@@ -1,5 +1,5 @@
 use super::models::{CryptorArgs, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
-use crate::models::{PermuteArgs, StringArgs, SwapArgs};
+use crate::models::{PermuteArgs, StringArgs, SwapArgs, BruteForceCryptorArgs, CryptorTypeWithBruteForceArgs, BruteForceVigenereArgs, BruteForcePermuteArgs};
 
 fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
     let mut rdr = csv::ReaderBuilder::new()
@@ -74,6 +74,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
     }
 }
 
+
 pub fn read_parameters(mut str: String) -> CryptorArgs {
     let type_name: String = str.drain(..str.find(':').unwrap_or(str.len())).collect();
     if str.len() > 0 {
@@ -92,6 +93,46 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
         "permute" => read(str, CryptorTypeWithArgs::Permute),
         _ => panic!("Cannot parse: {}", str),
     }
+}
+
+fn read_bruteforce(str: String, cryptor_type: CryptorTypeWithBruteForceArgs) -> BruteForceCryptorArgs {
+  let mut rdr = csv::ReaderBuilder::new()
+      .has_headers(false)
+      .delimiter(b':')
+      .from_reader(str.as_bytes());
+  match cryptor_type {
+    CryptorTypeWithBruteForceArgs::Vigenere =>  BruteForceCryptorArgs::Vigenere(rdr.records()
+    .find(|_| true)
+    .unwrap()
+    .expect("cannot find record")
+    .deserialize::<BruteForceVigenereArgs>(None)
+    .expect("cannot deserialize")),
+    CryptorTypeWithBruteForceArgs::Permute =>   BruteForceCryptorArgs::Permute(rdr.records()
+    .find(|_| true)
+    .unwrap()
+    .expect("cannot find record")
+    .deserialize::<BruteForcePermuteArgs>(None)
+    .expect("cannot deserialize")),
+} }
+
+
+pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptorArgs {
+  let type_name: String = str.drain(..str.find(':').unwrap_or(str.len())).collect();
+  if str.len() > 0 {
+      str.drain(0..1);
+  }
+  match type_name.as_str() {
+      "vigenere" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Vigenere),
+      "cut" => BruteForceCryptorArgs::Cut,
+      "transpose" => BruteForceCryptorArgs::Transpose,
+      "reverse" => BruteForceCryptorArgs::Reverse,
+      "atbash" => BruteForceCryptorArgs::AtBash,
+      "swap" => BruteForceCryptorArgs::Swap,
+      "join" => BruteForceCryptorArgs::Join,
+      "indexcrypt" => BruteForceCryptorArgs::IndexCrypt,
+      "permute" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Permute),
+      _ => panic!("Cannot parse: {}", str),
+  }
 }
 
 #[cfg(test)]
