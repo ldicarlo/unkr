@@ -2,11 +2,13 @@ use super::char_utils;
 use super::models;
 
 pub fn init() -> models::VigenereArgs {
-  models::VigenereArgs { key: String::from(""), alphabet: String::from("") }
+    models::VigenereArgs {
+        key: String::from(""),
+        alphabet: String::from(""),
+    }
 }
 
 pub fn next() {}
-
 
 fn get_alphabets() -> Vec<String> {
     vec![

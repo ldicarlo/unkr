@@ -170,13 +170,12 @@ mod tests {
 
         writer
             .serialize(CryptorArgs::Permute(PermuteArgs {
-                max_permutations: 2,
                 permutations: vec![('A', 'B'), ('C', 'D')],
             }))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");
 
-        assert_eq!(result, "Permute:2:A:B:C:D\n".to_string())
+        assert_eq!(result, "Permute:A:B:C:D\n".to_string())
     }
 }

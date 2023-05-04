@@ -99,12 +99,10 @@ mod tests {
                             permute::decrypt(
                                 strs.clone(),
                                 models::PermuteArgs {
-                                    max_permutations: 2,
                                     permutations: vec![('H', 'E')]
                                 }
                             ),
                             models::PermuteArgs {
-                                max_permutations: 2,
                                 permutations: vec![('H', 'E')]
                             }
                         ),

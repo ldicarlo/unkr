@@ -38,3 +38,6 @@ benchmark-1: ## Benchmark t1
 
 benchmark-2: ## Benchmark t2
 	@cargo run -- brute-force --string "$$(cat benchmark/test2)" --clues=HELLOBILOUTE --steps=1 --threads=16 --decryptors=permute
+
+install: ## Install
+	@cargo install --path .
