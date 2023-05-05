@@ -46,7 +46,7 @@ fn main() {
             elements_count,
             picks,
         } => combinator::print_combine_elements(elements_count, picks),
-        Commands::Fuzz { length } => fuzzer::fuzz_from("".to_string(), length),
+        Commands::Fuzz { length } => fuzzer::fuzz_from("".to_string(), length, 27),
     };
 }
 
