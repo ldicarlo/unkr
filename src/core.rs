@@ -161,7 +161,6 @@ fn loop_decrypt(
     decryptors_filtered: Vec<BruteForceCryptor>,
     previous: Option<String>,
 ) {
-    //println!("{:?} {:?} {:?}", acc, to_use, strs);
     if let Some(current) = to_use.pop() {
         let cryptor_name = decryptors_filtered
             .clone()
@@ -272,10 +271,14 @@ fn loop_decrypt(
                     );
                 }
             }
-            BruteForceCryptor::Vigenere(_) => {
-                for _ in 0..vigenere::get_max_seed() {
-                    let new_str = vigenere::decrypt(strs.clone(), vigenere::init());
-                    let cryptor_name = String::from("Vigenere");
+            BruteForceCryptor::Vigenere(brute_force_vigenere_args) => {
+                let mut current_args = vigenere::init();
+                let cryptor_name = String::from("Vigenere");
+                while let Some(next) =
+                    vigenere::next(current_args.clone(), brute_force_vigenere_args)
+                {
+                    println!("Vigenere: {:?}", next.clone());
+                    let new_str = vigenere::decrypt(strs.clone(), next.clone());
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
@@ -293,6 +296,7 @@ fn loop_decrypt(
                         decryptors_filtered.clone(),
                         Some(cryptor_name.clone()),
                     );
+                    current_args = next;
                 }
             }
             BruteForceCryptor::Cut => {
