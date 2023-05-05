@@ -5,7 +5,7 @@ use super::models;
 
 pub fn init() -> models::VigenereArgs {
     models::VigenereArgs {
-        key: String::from("A"),
+        key: String::from(""),
         alphabet: String::from(""),
     }
 }
@@ -30,27 +30,6 @@ pub fn next(
                 }
             })
         })
-}
-
-fn get_alphabets() -> Vec<String> {
-    vec![
-        "KRYPTOS".to_string(),
-        "".to_string(),
-        "PALIMPSEST".to_string(),
-        "ABSCISSA".to_string(),
-    ]
-}
-
-fn get_keys() -> Vec<String> {
-    vec![
-        "PALIMPSEST".to_string(),
-        "ABSCISSA".to_string(),
-        "KRYPTOS".to_string(),
-    ]
-}
-
-pub fn get_max_seed() -> u64 {
-    (get_alphabets().len() * get_keys().len()) as u64
 }
 
 pub fn encrypt(
@@ -95,7 +74,7 @@ pub fn encrypt_one_from_key(
     let custom_alphabet = char_utils::merge_custom_alphabet(alphabet);
     let mut vigenere_idx = 0;
     for c in strs.iter() {
-        let key_letter = key[(vigenere_idx % key.len())];
+        let key_letter = key[vigenere_idx % key.len()];
         let res = char_utils::char_position(*c, custom_alphabet.clone())
             .and_then(|letter_position| {
                 let key_position =

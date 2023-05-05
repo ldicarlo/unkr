@@ -59,7 +59,7 @@ pub struct BruteForceVigenereArgs {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct SwapArgs {
-    pub order: Vec<usize>,
+    pub order: Vec<u8>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]

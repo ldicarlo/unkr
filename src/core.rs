@@ -10,6 +10,7 @@ use crate::models::BruteForceCryptor;
 use crate::parser;
 use crate::permute;
 use crate::reverse;
+use crate::swap;
 use crate::transpose;
 use crate::vigenere;
 
@@ -19,6 +20,7 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
+use std::vec;
 
 pub fn brute_force_decrypt(
     str: String,
@@ -136,19 +138,6 @@ fn brute_force_strings(
     threads: u8,
 ) -> BTreeSet<String> {
     internal_brute_force_decrypt(str, clues, steps, decryptors_filtered.clone(), threads)
-    // .iter()
-    // .map(|vec| {
-    //     vec.iter()
-    //         .map(|(current_id, seed)| {
-    //             let d_name = cryptors::filter_decryptors(decryptors_filtered.clone())
-    //                 .into_iter()
-    //                 .nth((*current_id).into())
-    //                 .unwrap();
-    //             (d_name, *seed)
-    //         })
-    //         .collect()
-    // })
-    // .collect()
 }
 
 fn loop_decrypt(
@@ -277,7 +266,6 @@ fn loop_decrypt(
                 while let Some(next) =
                     vigenere::next(current_args.clone(), brute_force_vigenere_args)
                 {
-                    println!("Vigenere: {:?}", next.clone());
                     let new_str = vigenere::decrypt(strs.clone(), next.clone());
                     let current_acc = process_new_str(
                         res_acc.clone(),
@@ -375,7 +363,32 @@ fn loop_decrypt(
                     current_permutations = next;
                 }
             }
-            _ => todo!(),
+            BruteForceCryptor::Swap => {
+                let mut current_order = swap::init();
+                while let Some(next) = swap::next(current_order.clone(), strs.len()) {
+                    println!("Swap: {:?}", next.clone());
+                    let new_str = swap::decrypt(strs.clone(), next.clone());
+                    let cryptor_name = String::from("Swap");
+                    let current_acc = process_new_str(
+                        res_acc.clone(),
+                        acc.clone(),
+                        clues.clone(),
+                        cryptor_name.clone() + &format!(":{:?}", current_order),
+                        new_str.clone(),
+                    );
+                    loop_decrypt(
+                        res_acc.clone(),
+                        current_acc,
+                        to_use.clone(),
+                        new_str.clone(),
+                        clues.clone(),
+                        decryptors_filtered.clone(),
+                        Some(cryptor_name.clone()),
+                    );
+                    current_order = next;
+                }
+            }
+            BruteForceCryptor::IndexCrypt => todo!(),
         }
     }
 }

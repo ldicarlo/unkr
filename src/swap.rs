@@ -1,17 +1,17 @@
-use crate::models::SwapArgs;
+use crate::{fuzzer, models::SwapArgs};
 
 pub fn init() -> SwapArgs {
-    SwapArgs { order: vec![] }
+    SwapArgs { order: vec![0] }
 }
 
-pub fn next(args: SwapArgs) -> Option<SwapArgs> {
-    None
+pub fn next(SwapArgs { order }: SwapArgs, str_count: usize) -> Option<SwapArgs> {
+    fuzzer::fuzz_next_r(order, str_count, str_count, vec![]).map(|r| SwapArgs { order: r })
 }
 
 pub fn encrypt(strs: Vec<String>, SwapArgs { order }: SwapArgs) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     for i in order {
-        if let Some(str) = strs.get(i) {
+        if let Some(str) = strs.get(i as usize) {
             result.push(str.clone());
         }
     }
@@ -27,9 +27,9 @@ pub fn encrypt(strs: Vec<String>, SwapArgs { order }: SwapArgs) -> Vec<String> {
 pub fn decrypt(strs: Vec<String>, SwapArgs { order }: SwapArgs) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     let mut unordered_idx = order.len();
-    for i in 0..strs.len() {
+    for i in 0..strs.len() as u8 {
         if order.contains(&i) {
-            result.push(strs[(order.iter().position(|&r| r == i).unwrap())].clone());
+            result.push(strs[order.iter().position(|&r| r == i).unwrap()].clone());
         } else {
             result.push(strs[unordered_idx].clone());
             unordered_idx = unordered_idx + 1;
