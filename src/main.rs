@@ -20,7 +20,6 @@ mod swap;
 mod transpose;
 mod vigenere;
 use clap::{Parser, Subcommand};
-use std::collections::BTreeSet;
 mod permute;
 fn main() {
     let args = Cli::parse();
