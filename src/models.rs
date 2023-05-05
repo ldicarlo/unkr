@@ -1,6 +1,6 @@
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 #[serde(tag = "name", deny_unknown_fields)]
-pub enum CryptorArgs {
+pub enum Cryptor {
     Vigenere(VigenereArgs),
     Cut(NumberArgs),
     Caesar(NumberArgs),
@@ -27,7 +27,7 @@ pub enum CryptorTypeWithArgs {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 #[serde(tag = "name", deny_unknown_fields)]
-pub enum BruteForceCryptorArgs {
+pub enum BruteForceCryptor {
     Vigenere(BruteForceVigenereArgs),
     Cut,
     Caesar,
@@ -45,7 +45,6 @@ pub enum CryptorTypeWithBruteForceArgs {
     Permute,
 }
 
-
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub struct VigenereArgs {
     pub key: String,
@@ -54,8 +53,8 @@ pub struct VigenereArgs {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
 pub struct BruteForceVigenereArgs {
-    pub key_depth: String,
-    pub alphabet_depth: String,
+    pub alphabet_depth: usize,
+    pub key_depth: usize,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]

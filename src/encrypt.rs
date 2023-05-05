@@ -16,17 +16,17 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
         .iter()
         .map(|str| parser::read_parameters(str.to_string()))
         .fold(strs, |acc, args| match args {
-            models::CryptorArgs::Vigenere(args) => vigenere::encrypt(acc, args),
-            models::CryptorArgs::Cut(args) => cut::encrypt(acc, args),
-            models::CryptorArgs::Caesar(number) => caesar::encrypt(acc, number),
-            models::CryptorArgs::Transpose(number) => transpose::decrypt(acc, number),
-            models::CryptorArgs::AtBash => atbash::decrypt(acc),
-            models::CryptorArgs::Reverse => reverse::decrypt(acc),
-            models::CryptorArgs::Swap(order) => swap::encrypt(acc, order),
-            models::CryptorArgs::Join => join::decrypt(acc),
-            models::CryptorArgs::Colors(letters) => colorize::colorize_letters(acc, letters),
-            models::CryptorArgs::IndexCrypt(_) => acc,
-            models::CryptorArgs::Permute(permutations) => permute::decrypt(acc, permutations),
+            models::Cryptor::Vigenere(args) => vigenere::encrypt(acc, args),
+            models::Cryptor::Cut(args) => cut::encrypt(acc, args),
+            models::Cryptor::Caesar(number) => caesar::encrypt(acc, number),
+            models::Cryptor::Transpose(number) => transpose::decrypt(acc, number),
+            models::Cryptor::AtBash => atbash::decrypt(acc),
+            models::Cryptor::Reverse => reverse::decrypt(acc),
+            models::Cryptor::Swap(order) => swap::encrypt(acc, order),
+            models::Cryptor::Join => join::decrypt(acc),
+            models::Cryptor::Colors(letters) => colorize::colorize_letters(acc, letters),
+            models::Cryptor::IndexCrypt(_) => acc,
+            models::Cryptor::Permute(permutations) => permute::decrypt(acc, permutations),
         })
         .into_iter()
         .filter(|s| !s.is_empty())

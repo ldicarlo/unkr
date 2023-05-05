@@ -1,16 +1,16 @@
-use super::models::{CryptorArgs, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
+use super::models::{Cryptor, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
 use crate::models::{
-    BruteForceCryptorArgs, BruteForcePermuteArgs, BruteForceVigenereArgs,
+    BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs,
     CryptorTypeWithBruteForceArgs, PermuteArgs, StringArgs, SwapArgs,
 };
 
-fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
+fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b':')
         .from_reader(str.as_bytes());
     match cryptor_type {
-        CryptorTypeWithArgs::Vigenere => CryptorArgs::Vigenere(
+        CryptorTypeWithArgs::Vigenere => Cryptor::Vigenere(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -18,7 +18,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<VigenereArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Cut => CryptorArgs::Cut(
+        CryptorTypeWithArgs::Cut => Cryptor::Cut(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -26,7 +26,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Caesar => CryptorArgs::Caesar(
+        CryptorTypeWithArgs::Caesar => Cryptor::Caesar(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -34,7 +34,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Transpose => CryptorArgs::Transpose(
+        CryptorTypeWithArgs::Transpose => Cryptor::Transpose(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -42,7 +42,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Swap => CryptorArgs::Swap(
+        CryptorTypeWithArgs::Swap => Cryptor::Swap(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -50,7 +50,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<SwapArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Colors => CryptorArgs::Colors(
+        CryptorTypeWithArgs::Colors => Cryptor::Colors(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -58,7 +58,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<StringArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::IndexCrypt => CryptorArgs::IndexCrypt(
+        CryptorTypeWithArgs::IndexCrypt => Cryptor::IndexCrypt(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -66,7 +66,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
                 .deserialize::<StringArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Permute => CryptorArgs::Permute(
+        CryptorTypeWithArgs::Permute => Cryptor::Permute(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -77,7 +77,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CryptorArgs {
     }
 }
 
-pub fn read_parameters(mut str: String) -> CryptorArgs {
+pub fn read_parameters(mut str: String) -> Cryptor {
     let type_name: String = str.drain(..str.find(':').unwrap_or(str.len())).collect();
     if str.len() > 0 {
         str.drain(0..1);
@@ -86,10 +86,10 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
         "vigenere" => read(str, CryptorTypeWithArgs::Vigenere),
         "cut" => read(str, CryptorTypeWithArgs::Cut),
         "transpose" => read(str, CryptorTypeWithArgs::Transpose),
-        "reverse" => CryptorArgs::Reverse,
-        "atbash" => CryptorArgs::AtBash,
+        "reverse" => Cryptor::Reverse,
+        "atbash" => Cryptor::AtBash,
         "swap" => read(str, CryptorTypeWithArgs::Swap),
-        "join" => CryptorArgs::Join,
+        "join" => Cryptor::Join,
         "colors" => read(str, CryptorTypeWithArgs::Colors),
         "indexcrypt" => read(str, CryptorTypeWithArgs::IndexCrypt),
         "permute" => read(str, CryptorTypeWithArgs::Permute),
@@ -97,16 +97,13 @@ pub fn read_parameters(mut str: String) -> CryptorArgs {
     }
 }
 
-fn read_bruteforce(
-    str: String,
-    cryptor_type: CryptorTypeWithBruteForceArgs,
-) -> BruteForceCryptorArgs {
+fn read_bruteforce(str: String, cryptor_type: CryptorTypeWithBruteForceArgs) -> BruteForceCryptor {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b':')
         .from_reader(str.as_bytes());
     match cryptor_type {
-        CryptorTypeWithBruteForceArgs::Vigenere => BruteForceCryptorArgs::Vigenere(
+        CryptorTypeWithBruteForceArgs::Vigenere => BruteForceCryptor::Vigenere(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -114,7 +111,7 @@ fn read_bruteforce(
                 .deserialize::<BruteForceVigenereArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithBruteForceArgs::Permute => BruteForceCryptorArgs::Permute(
+        CryptorTypeWithBruteForceArgs::Permute => BruteForceCryptor::Permute(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -125,20 +122,20 @@ fn read_bruteforce(
     }
 }
 
-pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptorArgs {
+pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
     let type_name: String = str.drain(..str.find(':').unwrap_or(str.len())).collect();
     if str.len() > 0 {
         str.drain(0..1);
     }
     match type_name.as_str() {
         "vigenere" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Vigenere),
-        "cut" => BruteForceCryptorArgs::Cut,
-        "transpose" => BruteForceCryptorArgs::Transpose,
-        "reverse" => BruteForceCryptorArgs::Reverse,
-        "atbash" => BruteForceCryptorArgs::AtBash,
-        "swap" => BruteForceCryptorArgs::Swap,
-        "join" => BruteForceCryptorArgs::Join,
-        "indexcrypt" => BruteForceCryptorArgs::IndexCrypt,
+        "cut" => BruteForceCryptor::Cut,
+        "transpose" => BruteForceCryptor::Transpose,
+        "reverse" => BruteForceCryptor::Reverse,
+        "atbash" => BruteForceCryptor::AtBash,
+        "swap" => BruteForceCryptor::Swap,
+        "join" => BruteForceCryptor::Join,
+        "indexcrypt" => BruteForceCryptor::IndexCrypt,
         "permute" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Permute),
         _ => panic!("Cannot parse: {}", str),
     }
@@ -147,9 +144,9 @@ pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptorArgs {
 #[cfg(test)]
 mod tests {
 
-    use crate::models::{PermuteArgs, SwapArgs};
+    use crate::models::{BruteForceCryptor, PermuteArgs, SwapArgs};
 
-    use super::{read, CryptorArgs, VigenereArgs};
+    use super::{read, Cryptor, VigenereArgs};
 
     #[test]
     fn all_cryptors_readable() {}
@@ -157,7 +154,7 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            CryptorArgs::Vigenere(VigenereArgs {
+            Cryptor::Vigenere(VigenereArgs {
                 key: "K".to_string(),
                 alphabet: "ALP".to_string()
             }),
@@ -173,7 +170,7 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(CryptorArgs::Vigenere(VigenereArgs {
+            .serialize(Cryptor::Vigenere(VigenereArgs {
                 key: "K".to_string(),
                 alphabet: "ALP".to_string(),
             }))
@@ -192,7 +189,7 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(CryptorArgs::Swap(SwapArgs { order: vec![1, 2] }))
+            .serialize(Cryptor::Swap(SwapArgs { order: vec![1, 2] }))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");
@@ -204,7 +201,7 @@ mod tests {
     fn read_whole_line() {
         assert_eq!(
             super::read_parameters(String::from("vigenere:KEY:ALPHABET")),
-            CryptorArgs::Vigenere(VigenereArgs {
+            Cryptor::Vigenere(VigenereArgs {
                 key: String::from("KEY"),
                 alphabet: String::from("ALPHABET")
             })
@@ -219,7 +216,7 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(CryptorArgs::Permute(PermuteArgs {
+            .serialize(Cryptor::Permute(PermuteArgs {
                 permutations: vec![('A', 'B'), ('C', 'D')],
             }))
             .expect("FAIL");
@@ -227,5 +224,46 @@ mod tests {
             .expect("Cannot convert utf8");
 
         assert_eq!(result, "Permute:A:B:C:D\n".to_string())
+    }
+
+    #[test]
+    fn permute_bruteforce_serialize() {
+        let mut writer = csv::WriterBuilder::new()
+            .has_headers(false)
+            .delimiter(b':')
+            .from_writer(vec![]);
+
+        writer
+            .serialize(BruteForceCryptor::Permute(
+                crate::models::BruteForcePermuteArgs {
+                    max_permutations: 6,
+                },
+            ))
+            .expect("FAIL");
+        let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
+            .expect("Cannot convert utf8");
+
+        assert_eq!(result, "Permute:6\n".to_string())
+    }
+
+    #[test]
+    fn vigenere_bruteforce_serialize() {
+        let mut writer = csv::WriterBuilder::new()
+            .has_headers(false)
+            .delimiter(b':')
+            .from_writer(vec![]);
+
+        writer
+            .serialize(BruteForceCryptor::Vigenere(
+                crate::models::BruteForceVigenereArgs {
+                    alphabet_depth: 4,
+                    key_depth: 5,
+                },
+            ))
+            .expect("FAIL");
+        let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
+            .expect("Cannot convert utf8");
+
+        assert_eq!(result, "Vigenere:4:5\n".to_string())
     }
 }
