@@ -3,12 +3,20 @@ use super::models;
 
 pub fn init() -> models::VigenereArgs {
     models::VigenereArgs {
-        key: String::from(""),
+        key: String::from("A"),
         alphabet: String::from(""),
     }
 }
 
-pub fn next() {}
+pub fn next(
+    models::VigenereArgs { key, alphabet }: models::VigenereArgs,
+    models::BruteForceVigenereArgs {
+        key_depth,
+        alphabet_depth,
+    }: models::BruteForceVigenereArgs,
+) -> Option<models::VigenereArgs> {
+    None
+}
 
 fn get_alphabets() -> Vec<String> {
     vec![
