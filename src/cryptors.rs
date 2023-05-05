@@ -1,34 +1,34 @@
-fn get_decryptors_names() -> Vec<String> {
-    vec![
-        "atbash".to_string(),
-        "caesar".to_string(),
-        "reverse".to_string(),
-        "transpose".to_string(),
-        "vigenere".to_string(),
-        "cut".to_string(),
-        "join".to_string(),
-        "permute".to_string(),
-        "swap".to_string(),
-        //"indexcrypt".to_string(),
-    ]
-}
+use crate::models::{BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs};
 
-pub fn filter_decryptors(decryptors_filtered: Vec<String>) -> Vec<String> {
-    if decryptors_filtered.is_empty() {
-        get_decryptors_names()
-    } else {
-        get_decryptors_names()
-            .into_iter()
-            .filter(|decryptor| decryptors_filtered.contains(decryptor))
-            .collect()
-    }
+pub fn get_decryptors() -> Vec<BruteForceCryptor> {
+    vec![
+        BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
+            alphabet_depth: 1,
+            key_depth: 2,
+        }),
+        BruteForceCryptor::Cut,
+        BruteForceCryptor::Caesar,
+        BruteForceCryptor::Transpose,
+        BruteForceCryptor::AtBash,
+        BruteForceCryptor::Reverse,
+        BruteForceCryptor::Swap,
+        BruteForceCryptor::Join,
+        // IndexCrypt,
+        BruteForceCryptor::Permute(BruteForcePermuteArgs {
+            max_permutations: 2,
+        }),
+    ]
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{atbash, caesar, cut, join, models, permute, reverse, swap, vigenere};
+    use crate::{
+        atbash, caesar, cut, join,
+        models::{self, BruteForceCryptor},
+        permute, reverse, swap, vigenere,
+    };
 
-    use super::get_decryptors_names;
+    use super::get_decryptors;
 
     #[test]
     fn it_works() {
@@ -39,93 +39,91 @@ mod tests {
             String::from("WORLD"),
             String::from("HELLOWORLD"),
         ];
-        get_decryptors_names()
-            .into_iter()
-            .for_each(|name| match name.as_str() {
-                "atbash" => {
-                    assert_eq!(atbash::decrypt(atbash::decrypt(strs.clone())), strs)
-                }
-                "caesar" => {
-                    assert_eq!(
-                        caesar::decrypt(
-                            caesar::encrypt(strs.clone(), models::NumberArgs { number: 5 }),
-                            models::NumberArgs { number: 5 }
-                        ),
-                        strs.clone()
-                    )
-                }
-                "reverse" => {
-                    assert_eq!(
-                        reverse::decrypt(reverse::decrypt(strs.clone())),
-                        strs.clone()
-                    )
-                }
-                "transpose" => {
-                    assert_eq!(1, 1)
-                }
-                "vigenere" => {
-                    assert_eq!(
-                        vigenere::decrypt(
-                            vigenere::encrypt(
-                                strs.clone(),
-                                models::VigenereArgs {
-                                    alphabet: String::from("FIRST"),
-                                    key: String::from("HELLO")
-                                }
-                            ),
+        get_decryptors().into_iter().for_each(|name| match name {
+            BruteForceCryptor::AtBash => {
+                assert_eq!(atbash::decrypt(atbash::decrypt(strs.clone())), strs)
+            }
+            BruteForceCryptor::Caesar => {
+                assert_eq!(
+                    caesar::decrypt(
+                        caesar::encrypt(strs.clone(), models::NumberArgs { number: 5 }),
+                        models::NumberArgs { number: 5 }
+                    ),
+                    strs.clone()
+                )
+            }
+            BruteForceCryptor::Reverse => {
+                assert_eq!(
+                    reverse::decrypt(reverse::decrypt(strs.clone())),
+                    strs.clone()
+                )
+            }
+            BruteForceCryptor::Transpose => {
+                assert_eq!(1, 1)
+            }
+            BruteForceCryptor::Vigenere(_) => {
+                assert_eq!(
+                    vigenere::decrypt(
+                        vigenere::encrypt(
+                            strs.clone(),
                             models::VigenereArgs {
                                 alphabet: String::from("FIRST"),
                                 key: String::from("HELLO")
                             }
                         ),
-                        strs.clone()
-                    )
-                }
-                "cut" => {
-                    assert_eq!(
-                        cut::decrypt(cut::encrypt(strs.clone(), models::NumberArgs { number: 4 })),
-                        join::decrypt(strs.clone())
-                    )
-                }
-                "join" => {
-                    assert_eq!(
-                        join::decrypt(join::decrypt(strs.clone())),
-                        join::decrypt(strs.clone())
-                    )
-                }
-                "permute" => {
-                    assert_eq!(
+                        models::VigenereArgs {
+                            alphabet: String::from("FIRST"),
+                            key: String::from("HELLO")
+                        }
+                    ),
+                    strs.clone()
+                )
+            }
+            BruteForceCryptor::Cut => {
+                assert_eq!(
+                    cut::decrypt(cut::encrypt(strs.clone(), models::NumberArgs { number: 4 })),
+                    join::decrypt(strs.clone())
+                )
+            }
+            BruteForceCryptor::Join => {
+                assert_eq!(
+                    join::decrypt(join::decrypt(strs.clone())),
+                    join::decrypt(strs.clone())
+                )
+            }
+            BruteForceCryptor::Permute(_) => {
+                assert_eq!(
+                    permute::decrypt(
                         permute::decrypt(
-                            permute::decrypt(
-                                strs.clone(),
-                                models::PermuteArgs {
-                                    permutations: vec![('H', 'E')]
-                                }
-                            ),
+                            strs.clone(),
                             models::PermuteArgs {
                                 permutations: vec![('H', 'E')]
                             }
                         ),
-                        strs.clone()
-                    )
-                }
-                "swap" => {
-                    assert_eq!(
-                        swap::decrypt(
-                            swap::encrypt(
-                                strs.clone(),
-                                models::SwapArgs {
-                                    order: vec![4, 1, 0, 2, 3]
-                                }
-                            ),
+                        models::PermuteArgs {
+                            permutations: vec![('H', 'E')]
+                        }
+                    ),
+                    strs.clone()
+                )
+            }
+            BruteForceCryptor::Swap => {
+                assert_eq!(
+                    swap::decrypt(
+                        swap::encrypt(
+                            strs.clone(),
                             models::SwapArgs {
                                 order: vec![4, 1, 0, 2, 3]
                             }
                         ),
-                        strs.clone()
-                    )
-                }
-                _ => todo!(),
-            });
+                        models::SwapArgs {
+                            order: vec![4, 1, 0, 2, 3]
+                        }
+                    ),
+                    strs.clone()
+                )
+            }
+            _ => todo!(),
+        });
     }
 }

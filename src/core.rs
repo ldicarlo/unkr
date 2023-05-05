@@ -6,6 +6,8 @@ use crate::cryptors;
 use crate::cut;
 use crate::join;
 use crate::models;
+use crate::models::BruteForceCryptor;
+use crate::parser;
 use crate::permute;
 use crate::reverse;
 use crate::transpose;
@@ -25,7 +27,12 @@ pub fn brute_force_decrypt(
     decryptors: Vec<String>,
     threads: u8,
 ) {
-    let result = brute_force_strings(str, clues, steps, decryptors, threads);
+    let decr: Vec<models::BruteForceCryptor> = decryptors
+        .iter()
+        .map(|str| parser::read_bruteforce_parameters(str.to_string()))
+        .collect();
+    println!("{:?}", decr);
+    let result = brute_force_strings(str, clues, steps, decr, threads);
     println!("Result: {:?}", result);
 }
 
@@ -33,11 +40,15 @@ pub fn internal_brute_force_decrypt(
     str: String,
     clues: Vec<String>,
     steps: u8,
-    decryptors_filtered: Vec<String>,
+    decryptors_filtered: Vec<BruteForceCryptor>,
     threads: u8,
 ) -> BTreeSet<String> {
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
-    let decryptors = cryptors::filter_decryptors(decryptors_filtered.clone());
+    let decryptors = if decryptors_filtered.len() == 0 {
+        cryptors::get_decryptors()
+    } else {
+        decryptors_filtered
+    };
     let combinations = combinator::combine_elements(decryptors.len().try_into().unwrap(), steps);
 
     let count_by_thread: usize = combinations.len() / (threads as usize);
@@ -46,7 +57,7 @@ pub fn internal_brute_force_decrypt(
         combinations.len(),
         threads,
         count_by_thread,
-        decryptors_filtered
+        decryptors
     );
     let mut vec_combinations = combinations.into_iter().collect::<Vec<Vec<u8>>>();
 
@@ -63,7 +74,7 @@ pub fn internal_brute_force_decrypt(
         let local_results_accumulator = results_accumulator.clone();
         let local_str = str.clone();
         let local_clues = clues.clone();
-        let local_decryptors = decryptors_filtered.clone();
+        let local_decryptors = decryptors.clone();
         println!(
             "Start thread {} with {} combinations",
             t,
@@ -96,7 +107,7 @@ fn threaded_function(
     results_accumulator: Arc<Mutex<BTreeSet<String>>>,
     str: String,
     clues: Vec<String>,
-    decryptors_filtered: Vec<String>,
+    decryptors_filtered: Vec<BruteForceCryptor>,
 ) -> bool {
     // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
@@ -121,7 +132,7 @@ fn brute_force_strings(
     str: String,
     clues: Vec<String>,
     steps: u8,
-    decryptors_filtered: Vec<String>,
+    decryptors_filtered: Vec<BruteForceCryptor>,
     threads: u8,
 ) -> BTreeSet<String> {
     internal_brute_force_decrypt(str, clues, steps, decryptors_filtered.clone(), threads)
@@ -147,19 +158,19 @@ fn loop_decrypt(
     strs: Vec<String>,
     clues: Vec<String>,
     // mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
-    decryptors_filtered: Vec<String>,
+    decryptors_filtered: Vec<BruteForceCryptor>,
     previous: Option<String>,
 ) {
     //println!("{:?} {:?} {:?}", acc, to_use, strs);
     if let Some(current) = to_use.pop() {
-        let cryptor_name = cryptors::filter_decryptors(decryptors_filtered.clone())
+        let cryptor_name = decryptors_filtered
+            .clone()
             .into_iter()
             .nth(current.into())
             .unwrap();
 
-        match cryptor_name.as_str() {
-            // make that an enum
-            "atbash" => {
+        match cryptor_name {
+            BruteForceCryptor::AtBash => {
                 if previous
                     .map(|prev| atbash::skip_if_previous_in().contains(&prev))
                     .unwrap_or(false)
@@ -167,7 +178,7 @@ fn loop_decrypt(
                     return;
                 }
                 let new_str: Vec<String> = atbash::decrypt(strs.clone());
-
+                let cryptor_name = String::from("AtBash");
                 let current_acc = process_new_str(
                     res_acc.clone(),
                     acc,
@@ -186,9 +197,10 @@ fn loop_decrypt(
                     Some(cryptor_name.clone()),
                 );
             }
-            "caesar" => {
+            BruteForceCryptor::Caesar => {
                 for s in 0..26 {
                     let new_str = caesar::decrypt(strs.clone(), models::NumberArgs { number: s });
+                    let cryptor_name = String::from("Caesar");
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
@@ -208,7 +220,7 @@ fn loop_decrypt(
                     );
                 }
             }
-            "reverse" => {
+            BruteForceCryptor::Reverse => {
                 if previous
                     .map(|prev: String| reverse::skip_if_previous_in().contains(&prev))
                     .unwrap_or(false)
@@ -216,6 +228,7 @@ fn loop_decrypt(
                     return;
                 }
                 let new_str = reverse::decrypt(strs.clone());
+                let cryptor_name = String::from("Reverse");
                 let current_acc = process_new_str(
                     res_acc.clone(),
                     acc,
@@ -234,10 +247,12 @@ fn loop_decrypt(
                     Some(cryptor_name),
                 );
             }
-            "transpose" => {
+            BruteForceCryptor::Transpose => {
                 for s in 1..strs.first().map(|s| s.len()).unwrap_or(0) {
                     let new_str =
                         transpose::decrypt(strs.clone(), models::NumberArgs { number: s as u64 });
+                    let cryptor_name = String::from("Transpose");
+
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
@@ -257,9 +272,10 @@ fn loop_decrypt(
                     );
                 }
             }
-            "vigenere" => {
+            BruteForceCryptor::Vigenere(_) => {
                 for _ in 0..vigenere::get_max_seed() {
                     let new_str = vigenere::decrypt(strs.clone(), vigenere::init());
+                    let cryptor_name = String::from("Vigenere");
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
@@ -279,10 +295,11 @@ fn loop_decrypt(
                     );
                 }
             }
-            "cut" => {
+            BruteForceCryptor::Cut => {
                 for s in 0..strs.first().map(|s| s.len()).unwrap_or(0) {
                     let new_str =
                         cut::encrypt(strs.clone(), models::NumberArgs { number: s as u64 });
+                    let cryptor_name = String::from("Cut");
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
@@ -302,7 +319,7 @@ fn loop_decrypt(
                     );
                 }
             }
-            "join" => {
+            BruteForceCryptor::Join => {
                 if previous
                     .map(|prev| join::skip_if_previous_in().contains(&prev))
                     .unwrap_or(false)
@@ -310,6 +327,7 @@ fn loop_decrypt(
                     return;
                 }
                 let new_str = join::decrypt(strs.clone());
+                let cryptor_name = String::from("Join");
                 let current_acc = process_new_str(
                     res_acc.clone(),
                     acc.clone(),
@@ -328,10 +346,11 @@ fn loop_decrypt(
                     Some(cryptor_name.clone()),
                 );
             }
-            "permute" => {
+            BruteForceCryptor::Permute(_) => {
                 let mut current_permutations = permute::init();
                 while let Some(next) = permute::next(current_permutations.clone()) {
                     let new_str = permute::decrypt(strs.clone(), next.clone());
+                    let cryptor_name = String::from("Permute");
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
@@ -395,7 +414,7 @@ mod tests {
                     "EAST".to_string(),
                 ],
                 2,
-                vec![String::from("caesar"), String::from("atbash")],
+                vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
                 1
             )
         );
@@ -427,12 +446,12 @@ mod tests {
                     "EAST".to_string(),
                 ],
                 2,
-                vec![String::from("caesar"), String::from("atbash")],
+                vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
                 1
             ),
             vec![
-                "caesar:5 atbash".to_string(),
-                "atbash caesar:21".to_string(),
+                "Caesar:5 AtBash".to_string(),
+                "AtBash Caesar:21".to_string(),
             ]
             .into_iter()
             .collect::<BTreeSet<String>>(),

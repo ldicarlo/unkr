@@ -1,4 +1,4 @@
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 #[serde(tag = "name", deny_unknown_fields)]
 pub enum Cryptor {
     Vigenere(VigenereArgs),
@@ -13,7 +13,7 @@ pub enum Cryptor {
     IndexCrypt(StringArgs),
     Permute(PermuteArgs),
 }
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub enum CryptorTypeWithArgs {
     Vigenere,
     Cut,
@@ -25,7 +25,7 @@ pub enum CryptorTypeWithArgs {
     Permute,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 #[serde(tag = "name", deny_unknown_fields)]
 pub enum BruteForceCryptor {
     Vigenere(BruteForceVigenereArgs),
@@ -39,25 +39,25 @@ pub enum BruteForceCryptor {
     IndexCrypt,
     Permute(BruteForcePermuteArgs),
 }
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub enum CryptorTypeWithBruteForceArgs {
     Vigenere,
     Permute,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct VigenereArgs {
     pub key: String,
     pub alphabet: String,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub struct BruteForceVigenereArgs {
     pub alphabet_depth: usize,
     pub key_depth: usize,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct SwapArgs {
     pub order: Vec<usize>,
 }
@@ -72,12 +72,12 @@ pub struct BruteForcePermuteArgs {
     pub max_permutations: usize,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct StringArgs {
     pub letters: String,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub struct NumberArgs {
     pub number: u64,
 }

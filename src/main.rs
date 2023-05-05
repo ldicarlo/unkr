@@ -37,10 +37,14 @@ fn main() {
         } => core::brute_force_decrypt(string, clues, steps, decryptors, threads),
         Commands::GetDecryptors { decryptors } => println!(
             "{:?}",
-            cryptors::filter_decryptors(decryptors)
-                .iter()
-                .map(|str| (str.clone()))
-                .collect::<BTreeSet<std::string::String>>()
+            if decryptors.len() == 0 {
+                cryptors::get_decryptors()
+            } else {
+                decryptors
+                    .iter()
+                    .map(|str| parser::read_bruteforce_parameters(str.to_string()))
+                    .collect()
+            }
         ),
         Commands::GetCombinations {
             elements_count,
