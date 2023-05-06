@@ -366,7 +366,6 @@ fn loop_decrypt(
             BruteForceCryptor::Swap => {
                 let mut current_order = swap::init();
                 while let Some(next) = swap::next(current_order.clone(), strs.len()) {
-                    println!("Swap: {:?}", next.clone());
                     let new_str = swap::decrypt(strs.clone(), next.clone());
                     let cryptor_name = String::from("Swap");
                     let current_acc = process_new_str(

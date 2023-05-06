@@ -5,7 +5,13 @@ pub fn init() -> SwapArgs {
 }
 
 pub fn next(SwapArgs { order }: SwapArgs, str_count: usize) -> Option<SwapArgs> {
-    fuzzer::fuzz_next_r(order, str_count, str_count, vec![]).map(|r| SwapArgs { order: r })
+    fuzzer::fuzz_next_r(
+        order,
+        str_count,
+        str_count,
+        vec![Box::new(fuzzer::unique_letters)],
+    )
+    .map(|r| SwapArgs { order: r })
 }
 
 pub fn encrypt(strs: Vec<String>, SwapArgs { order }: SwapArgs) -> Vec<String> {
