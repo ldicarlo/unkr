@@ -61,8 +61,8 @@ mod tests {
             BruteForceCryptor::Transpose => {
                 assert_eq!(
                     transpose::decrypt(
-                        transpose::encrypt(strs.clone(), models::NumberArgs { number: 7 }),
-                        models::NumberArgs { number: 7 }
+                        transpose::encrypt(strs.clone(), models::NumberArgs { number: 4 }),
+                        models::NumberArgs { number: 4 }
                     ),
                     strs.clone()
                 )

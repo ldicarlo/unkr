@@ -12,6 +12,7 @@ pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<Stri
     } else {
         size / number + 1
     };
+    println!("{} {} {}", decrypt_number, number, size);
     internal_encrypt(strs.join(""), decrypt_number)
 }
 
