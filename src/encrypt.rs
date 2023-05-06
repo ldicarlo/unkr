@@ -19,7 +19,7 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::Cryptor::Vigenere(args) => vigenere::encrypt(acc, args),
             models::Cryptor::Cut(args) => cut::encrypt(acc, args),
             models::Cryptor::Caesar(number) => caesar::encrypt(acc, number),
-            models::Cryptor::Transpose(number) => transpose::decrypt(acc, number),
+            models::Cryptor::Transpose(number) => transpose::encrypt(acc, number),
             models::Cryptor::AtBash => atbash::decrypt(acc),
             models::Cryptor::Reverse => reverse::decrypt(acc),
             models::Cryptor::Swap(order) => swap::encrypt(acc, order),

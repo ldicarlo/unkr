@@ -25,7 +25,7 @@ mod tests {
     use crate::{
         atbash, caesar, cut, join,
         models::{self, BruteForceCryptor},
-        permute, reverse, swap, vigenere,
+        permute, reverse, swap, transpose, vigenere,
     };
 
     use super::get_decryptors;
@@ -59,7 +59,13 @@ mod tests {
                 )
             }
             BruteForceCryptor::Transpose => {
-                assert_eq!(1, 1)
+                assert_eq!(
+                    transpose::decrypt(
+                        transpose::encrypt(strs.clone(), models::NumberArgs { number: 7 }),
+                        models::NumberArgs { number: 7 }
+                    ),
+                    strs.clone()
+                )
             }
             BruteForceCryptor::Vigenere(_) => {
                 assert_eq!(

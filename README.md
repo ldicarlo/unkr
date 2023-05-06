@@ -36,6 +36,7 @@
 - [ ] useless combination (join join)
 - [ ] NumberArgs -> usize
 - [ ] Division dispatcher threads
+- [ ] remove join?
 
 
 # Use Cases
