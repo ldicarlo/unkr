@@ -1,7 +1,13 @@
 use crate::models::NumberArgs;
 
 pub fn encrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
-    internal_encrypt(strs.join(""), number)
+    let str = strs.join("");
+    let mut padded_str = str.clone();
+    for _ in 0..number - (str.len() % number) {
+        padded_str.push(' ');
+    }
+
+    internal_encrypt(padded_str, number)
 }
 
 pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
@@ -12,17 +18,17 @@ pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<Stri
     } else {
         size / number + 1
     };
-    println!("{} {} {}", decrypt_number, number, size);
-    internal_encrypt(str, decrypt_number)
+    let str = strs.join("");
+    let mut padded_str = str.clone();
+    for i in 0..number - (str.len() % number) {
+        padded_str.insert(padded_str.len() - (decrypt_number * i), ' ');
+    }
+
+    internal_encrypt(padded_str, decrypt_number)
 }
 
 fn internal_encrypt(str: String, number: usize) -> Vec<String> {
-    let mut padded_str = str.clone();
-    for _ in 0..number - (str.len() % number) {
-        padded_str.push(' ');
-    }
-    println!("{} {} {}", number, str.len(), str.len() % number);
-    let size: usize = padded_str.len();
+    let size: usize = str.len();
     let mut results: Vec<Vec<char>> = Vec::new();
     let block_size: usize = number.try_into().unwrap();
     let mut lines_count: usize = size / block_size;
@@ -35,7 +41,7 @@ fn internal_encrypt(str: String, number: usize) -> Vec<String> {
         let mut current_line = Vec::new();
         for line in 0..lines_count {
             let old_place = line * block_size + current_idx;
-            if let Some(val) = padded_str.chars().nth(old_place) {
+            if let Some(val) = str.chars().nth(old_place) {
                 current_line.push(val);
             } else {
                 break;

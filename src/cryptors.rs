@@ -63,8 +63,9 @@ mod tests {
                     transpose::decrypt(
                         transpose::encrypt(strs.clone(), models::NumberArgs { number: 4 }),
                         models::NumberArgs { number: 4 }
-                    ),
-                    strs.clone()
+                    )
+                    .join(""),
+                    strs.clone().join("")
                 )
             }
             BruteForceCryptor::Vigenere(_) => {
