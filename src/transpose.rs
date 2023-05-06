@@ -13,7 +13,7 @@ pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<Stri
         size / number + 1
     };
     println!("{} {} {}", decrypt_number, number, size);
-    internal_encrypt(strs.join(""), decrypt_number)
+    internal_encrypt(str, decrypt_number)
 }
 
 fn internal_encrypt(str: String, number: usize) -> Vec<String> {
@@ -21,6 +21,7 @@ fn internal_encrypt(str: String, number: usize) -> Vec<String> {
     for _ in 0..number - (str.len() % number) {
         padded_str.push(' ');
     }
+    println!("{} {} {}", number, str.len(), str.len() % number);
     let size: usize = padded_str.len();
     let mut results: Vec<Vec<char>> = Vec::new();
     let block_size: usize = number.try_into().unwrap();

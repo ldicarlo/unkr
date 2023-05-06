@@ -21,10 +21,9 @@
 - [ ] profiling
 - [ ] when a thread is done, reallocate from another
 - [x] move to `get_next`
-- [ ] read from stdin `--stdin`
-  - [ ] bruteforce
-  - [ ] encrypt
-  - [ ] decrypt
+- [x] read from stdin by default
+  - [x] encrypt
+  - [x] decrypt
 - [ ] always test:
   - [x] all cryptors encrypt(decrypt())
   - [ ] all cryptors readable
@@ -38,7 +37,7 @@
 - [ ] Division dispatcher threads
 - [ ] remove join?
 - [ ] ASD coin
-
+- [ ] numbers in chars ??
 
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `

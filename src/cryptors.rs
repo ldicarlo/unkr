@@ -33,11 +33,11 @@ mod tests {
     #[test]
     fn it_works() {
         let strs = vec![
-            String::from("HELLO"),
-            String::from("TO"),
-            String::from("THE"),
-            String::from("WORLD"),
-            String::from("HELLOWORLD"),
+            String::from("ABCD"),
+            String::from("EF"),
+            String::from("GHIJ"),
+            String::from("KLMNOP"),
+            String::from("QRSTUVXYZ"),
         ];
         get_decryptors().into_iter().for_each(|name| match name {
             BruteForceCryptor::AtBash => {
