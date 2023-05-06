@@ -337,9 +337,15 @@ fn loop_decrypt(
                     Some(cryptor_name.clone()),
                 );
             }
-            BruteForceCryptor::Permute(_) => {
+            BruteForceCryptor::Permute(args) => {
+                if previous
+                    .map(|prev: String| permute::skip_if_previous_in().contains(&prev))
+                    .unwrap_or(false)
+                {
+                    return;
+                }
                 let mut current_permutations = permute::init();
-                while let Some(next) = permute::next(current_permutations.clone()) {
+                while let Some(next) = permute::next(current_permutations.clone(), args.clone()) {
                     let new_str = permute::decrypt(strs.clone(), next.clone());
                     let cryptor_name = String::from("Permute");
                     let current_acc = process_new_str(
