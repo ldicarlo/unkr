@@ -238,7 +238,7 @@ fn loop_decrypt(
             BruteForceCryptor::Transpose => {
                 for s in 1..strs.first().map(|s| s.len()).unwrap_or(0) {
                     let new_str =
-                        transpose::decrypt(strs.clone(), models::NumberArgs { number: s as u64 });
+                        transpose::decrypt(strs.clone(), models::NumberArgs { number: s });
                     let cryptor_name = String::from("Transpose");
 
                     let current_acc = process_new_str(
@@ -289,8 +289,7 @@ fn loop_decrypt(
             }
             BruteForceCryptor::Cut => {
                 for s in 0..strs.first().map(|s| s.len()).unwrap_or(0) {
-                    let new_str =
-                        cut::encrypt(strs.clone(), models::NumberArgs { number: s as u64 });
+                    let new_str = cut::encrypt(strs.clone(), models::NumberArgs { number: s });
                     let cryptor_name = String::from("Cut");
                     let current_acc = process_new_str(
                         res_acc.clone(),

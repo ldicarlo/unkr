@@ -4,11 +4,14 @@ pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<Stri
     if number == 0 {
         return strs;
     }
-
     strs.iter()
         .flat_map(|str| {
+            let mut padded_str = str.clone();
+            for _ in 1..(str.len() % number) {
+                padded_str.push(' ');
+            }
+            let size: usize = padded_str.len();
             let mut results: Vec<Vec<char>> = Vec::new();
-            let size: usize = str.len().try_into().unwrap();
             let block_size: usize = number.try_into().unwrap();
             let mut lines_count: usize = size / block_size;
             // not the right way to do that ...
@@ -20,7 +23,7 @@ pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<Stri
                 let mut current_line = Vec::new();
                 for line in 0..lines_count {
                     let old_place = line * block_size + current_idx;
-                    if let Some(val) = str.chars().nth(old_place) {
+                    if let Some(val) = padded_str.chars().nth(old_place) {
                         current_line.push(val);
                     } else {
                         break;

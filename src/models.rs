@@ -79,5 +79,5 @@ pub struct StringArgs {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub struct NumberArgs {
-    pub number: u64,
+    pub number: usize,
 }

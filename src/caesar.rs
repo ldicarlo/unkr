@@ -2,10 +2,6 @@ use crate::models::NumberArgs;
 
 use super::char_utils::char_mod;
 
-pub fn get_max_seed(_: usize) -> u64 {
-    26
-}
-
 pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
     strs.iter()
         .map(|str| {
@@ -18,7 +14,7 @@ pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<Stri
 }
 
 pub fn encrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
-    let size = get_max_seed(strs.clone().len());
+    let size = 26;
     decrypt(
         strs,
         NumberArgs {
