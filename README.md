@@ -37,6 +37,7 @@
 - [ ] NumberArgs -> usize
 - [ ] Division dispatcher threads
 - [ ] remove join?
+- [ ] ASD coin
 
 
 # Use Cases

@@ -19,14 +19,36 @@ mod reverse;
 mod swap;
 mod transpose;
 mod vigenere;
+use std::io;
+
 use clap::{Parser, Subcommand};
 mod permute;
 fn main() {
     let args = Cli::parse();
 
     match args.command {
-        Commands::Encrypt { string, steps } => encrypt::print_encrypt(string, steps),
-        Commands::Decrypt { string, steps } => decrypt::print_decrypt(string, steps),
+        Commands::Encrypt { string, steps } => string
+            .map(|str| encrypt::print_encrypt(vec![str], steps.clone()))
+            .unwrap_or_else(|| {
+                encrypt::print_encrypt(
+                    io::stdin()
+                        .lines()
+                        .map(|l| l.unwrap())
+                        .collect::<Vec<String>>(),
+                    steps,
+                )
+            }),
+        Commands::Decrypt { string, steps } => string
+            .map(|str| decrypt::print_decrypt(vec![str], steps.clone()))
+            .unwrap_or_else(|| {
+                decrypt::print_decrypt(
+                    io::stdin()
+                        .lines()
+                        .map(|l| l.unwrap())
+                        .collect::<Vec<String>>(),
+                    steps,
+                )
+            }),
         Commands::BruteForce {
             string,
             clues,
@@ -63,17 +85,18 @@ struct Cli {
 enum Commands {
     #[command(arg_required_else_help = true)]
     Encrypt {
-        /// String to try to encrypt
+        /// String to try to encrypt (defaults to stdin)
         #[arg(short, long)]
-        string: String,
+        string: Option<String>,
+
         /// Steps list as atbash:1 caesar <DECRYPTOR>[:<SEED>] ...
         #[arg(last = true)]
         steps: Vec<String>,
     },
     Decrypt {
-        /// String to try to decrypt
+        /// String to try to decrypt (defaults to stdin)
         #[arg(short, long)]
-        string: String,
+        string: Option<String>,
         /// Steps list as atbash:1 caesar <DECRYPTOR>[:<SEED>] ...
         #[arg(last = true)]
         steps: Vec<String>,

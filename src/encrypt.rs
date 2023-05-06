@@ -33,8 +33,8 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
         .collect()
 }
 
-pub fn print_encrypt(str: String, decryptors: Vec<String>) {
-    encrypt(vec![str], decryptors)
+pub fn print_encrypt(strs: Vec<String>, decryptors: Vec<String>) {
+    encrypt(strs, decryptors)
         .iter()
         .for_each(|s| println!("{}", s));
 }
