@@ -33,9 +33,9 @@ pub fn brute_force_decrypt(
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
-    println!("{:?}", decr);
+    eprintln!("{:?}", decr);
     let result = brute_force_strings(str, clues, steps, decr, threads);
-    println!("Result: {:?}", result);
+    eprintln!("Result: {:?}", result);
 }
 
 pub fn internal_brute_force_decrypt(
@@ -54,7 +54,7 @@ pub fn internal_brute_force_decrypt(
     let combinations = combinator::combine_elements(decryptors.len().try_into().unwrap(), steps);
 
     let count_by_thread: usize = combinations.len() / (threads as usize);
-    println!(
+    eprintln!(
         "TOTAL: {}, threads: {}, count per thread: {}, decryptors {:?}",
         combinations.len(),
         threads,
@@ -77,7 +77,7 @@ pub fn internal_brute_force_decrypt(
         let local_str = str.clone();
         let local_clues = clues.clone();
         let local_decryptors = decryptors.clone();
-        println!(
+        eprintln!(
             "Start thread {} with {} combinations",
             t,
             local_combinations.len()
@@ -96,7 +96,7 @@ pub fn internal_brute_force_decrypt(
         });
     }
     for t in 0..threads {
-        println!("THREAD {} finished({})", t, receiver.recv().unwrap());
+        eprintln!("THREAD {} finished({})", t, receiver.recv().unwrap());
     }
 
     let result: BTreeSet<String> = results_accumulator.lock().unwrap().to_owned();
@@ -113,16 +113,14 @@ fn threaded_function(
 ) -> bool {
     // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
-        if i % 10 == 0 {
-            println!("THREAD {}\tcombination: {}", thread_number, i);
-        }
+        eprintln!("THREAD {}\tcombination: {} ", thread_number, i);
+
         loop_decrypt(
             results_accumulator.clone(),
             None,
             vec.clone(),
             vec![str.clone()],
             clues.clone(),
-            // cache.clone(),
             decryptors_filtered.clone(),
             None,
         );

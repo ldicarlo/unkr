@@ -16,7 +16,6 @@ fn decrypt_string(string: String, base: String) -> String {
     let mut new_base = base.clone();
     let mut result: Vec<char> = vec![];
     for i in 0..string.len() {
-        //println!("{}\t{} {}", i, result.clone().into_iter().collect::<String>(), new_base);
         let idx = char_utils::char_position_base(string.chars().nth(i).unwrap()).unwrap();
         result.push(new_base.remove(idx % new_base.len()));
     }

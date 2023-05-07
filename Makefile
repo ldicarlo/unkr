@@ -28,7 +28,7 @@ solve-k3: ## Solve K3
 	@cargo run -- encrypt --string "$$(cat panels/kr3clear)" -- transpose:24 reverse transpose:8 reverse join
 
 brute-force-k3: ## Bruteforce k3
-	@cargo run -- brute-force --string "$$(cat panels/kr3clear)" --clues=SLOWLY --steps=5 --threads=16 --decryptors=transpose --decryptors=join --decryptors=reverse
+	@cargo run -- brute-force --string "$$(cat panels/kr3clear)" --clues=SLOWLYDESPARATELY --steps=5 --threads=16 --decryptors=transpose --decryptors=join --decryptors=reverse
 
 benchmark-1: ## Benchmark t1
 	@cargo run -- brute-force --string "$$(cat benchmark/test1)" --clues=HELLOTEST --steps=5 --threads=16 --decryptors=transpose --decryptors=join --decryptors=reverse
