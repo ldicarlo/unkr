@@ -12,9 +12,9 @@ pub fn fuzz_from(str: String, len_max: usize, base: usize) {
         len_max,
         base,
         vec![
-            Box::new(pair_length),
-            Box::new(unique_letters),
-            Box::new(sorted_letters_by_pair),
+            // Box::new(pair_length),
+            // Box::new(unique_letters),
+            // Box::new(sorted_letters_by_pair),
         ],
     ) {
         println!("{}", next);
