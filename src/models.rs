@@ -94,7 +94,7 @@ pub struct HitLine {
     pub result: String,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
 pub struct DoneLine {
     pub combinations: String,
     pub args: Option<String>,
