@@ -3,12 +3,13 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
+use std::sync::{Arc, Mutex};
 
 // get Arc
 // trigger write
 
-pub fn get_hits_cache(directory: String) {}
-pub fn get_done_cache(directory: String) {}
+pub fn get_hits_cache(directory: String) -> Arc<Mutex<BTreeSet<models::HitLine>>> {}
+pub fn get_done_cache(directory: String) -> Arc<Mutex<BTreeSet<models::DoneLine>>> {}
 
 pub fn push_line(directory: String, file_name: String, line: String) {
     fs::create_dir_all(directory).unwrap();
@@ -20,7 +21,16 @@ pub fn push_line(directory: String, file_name: String, line: String) {
     writeln!(file, "{}", line).unwrap();
 }
 
-pub fn push_hit() {}
+pub fn push_hit(
+    directory: String,
+    cache: Arc<Mutex<BTreeSet<models::HitLine>>>,
+    hit_line: models::HitLine,
+) {
+    if let Ok(c) = cache.try_lock() {
+        push_line(directory, String::from("hits"), hit_line);
+    }
+}
+
 pub fn push_done() {}
 
 pub fn exists() {}

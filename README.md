@@ -52,5 +52,5 @@ http://kryptools.com/hints.htm
 
 - [ ] save combinations in the form `./md5string/md5clues/{hits,done}`:
   - [ ] hits file line `vigenere:ABC:DEF join;RESULT`
-  - [ ] done file line `vigenere:3:3;vigenere join cut`
+  - [ ] done file line `vigenere join cut;vigenere:3:3` (only applying params)
   - [ ] (always save in done)

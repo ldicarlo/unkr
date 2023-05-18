@@ -93,6 +93,6 @@ pub struct HitLine {
 }
 
 pub struct DoneLine {
-    pub args: String,
     pub combinations: String,
+    pub args: Option<String>,
 }
