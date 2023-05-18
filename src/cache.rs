@@ -19,6 +19,8 @@ pub fn get_done_cache(directory: String) -> Arc<Mutex<BTreeSet<models::DoneLine>
         .unwrap();
     let mut result: BTreeSet<models::DoneLine> = BTreeSet::new();
 
+    // Arc::new(Mutex::new(result))
+
     // let mut rdr = csv::Reader::from_reader("assets/quotes.csv").expect("assets/quotes.csv not readable.");
     // for result in rdr.records() {
     //     let record: models::YahooQuoteRecord = result
