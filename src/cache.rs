@@ -8,8 +8,27 @@ use std::sync::{Arc, Mutex};
 // get Arc
 // trigger write
 
-pub fn get_hits_cache(directory: String) -> Arc<Mutex<BTreeSet<models::HitLine>>> {}
-pub fn get_done_cache(directory: String) -> Arc<Mutex<BTreeSet<models::DoneLine>>> {}
+pub fn get_hits_cache(directory: String) -> Arc<Mutex<bool>> {
+    Arc::new(Mutex::new(true))
+}
+pub fn get_done_cache(directory: String) -> Arc<Mutex<BTreeSet<models::DoneLine>>> {
+    let file = OpenOptions::new()
+        .create(true)
+        .read(true)
+        .open(format!("{}/{}", directory, "done"))
+        .unwrap();
+    let mut result: BTreeSet<models::DoneLine> = BTreeSet::new();
+
+    // let mut rdr = csv::Reader::from_reader("assets/quotes.csv").expect("assets/quotes.csv not readable.");
+    // for result in rdr.records() {
+    //     let record: models::YahooQuoteRecord = result
+    //         .expect("Failed to deserialize element.")
+    //         .deserialize(None)
+    //         .expect("Failed to deserialize element.");
+    //     quotes.push(record)
+    // }
+    // quotes
+}
 
 pub fn push_line(directory: String, file_name: String, line: String) {
     fs::create_dir_all(directory).unwrap();
@@ -21,13 +40,13 @@ pub fn push_line(directory: String, file_name: String, line: String) {
     writeln!(file, "{}", line).unwrap();
 }
 
-pub fn push_hit(
-    directory: String,
-    cache: Arc<Mutex<BTreeSet<models::HitLine>>>,
-    hit_line: models::HitLine,
-) {
+pub fn push_hit(directory: String, cache: Arc<Mutex<bool>>, hit_line: models::HitLine) {
     if let Ok(c) = cache.try_lock() {
-        push_line(directory, String::from("hits"), hit_line);
+        push_line(
+            directory,
+            String::from("hits"),
+            hit_to_string(hit_line.clone()),
+        );
     }
 }
 
@@ -53,6 +72,10 @@ fn unique_sorted_clues(clues: Vec<String>) -> String {
 
 fn hash(str: String) -> String {
     format!("{:x}", md5::compute(str.into_bytes()))
+}
+
+fn hit_to_string(hit_line: models::HitLine) -> String {
+    format!("{};{}", hit_line.result, hit_line.args)
 }
 
 #[cfg(test)]
