@@ -1,5 +1,6 @@
 use super::combinator;
 use crate::atbash;
+use crate::cache;
 use crate::caesar;
 use crate::candidates;
 use crate::cryptors;
@@ -29,12 +30,14 @@ pub fn brute_force_decrypt(
     decryptors: Vec<String>,
     threads: u8,
 ) {
+    let done_cache = cache::get_done_cache(String::from("cache"));
+    let hits_cache = cache::get_hits_cache(String::from("cache"));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
     eprintln!("{:?}", decr);
-    let result = brute_force_strings(str, clues, steps, decr, threads);
+    let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, hits_cache);
     eprintln!("Result: {:?}", result);
 }
 
@@ -44,6 +47,8 @@ pub fn internal_brute_force_decrypt(
     steps: u8,
     decryptors_filtered: Vec<BruteForceCryptor>,
     threads: u8,
+    done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
+    hits_cache: Arc<Mutex<bool>>,
 ) -> BTreeSet<String> {
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decryptors = if decryptors_filtered.len() == 0 {
@@ -77,6 +82,9 @@ pub fn internal_brute_force_decrypt(
         let local_str = str.clone();
         let local_clues = clues.clone();
         let local_decryptors = decryptors.clone();
+        let local_done_cache = done_cache.clone();
+        let local_hits_cache = hits_cache.clone();
+
         eprintln!(
             "Start thread {} with {} combinations",
             t,
@@ -91,6 +99,8 @@ pub fn internal_brute_force_decrypt(
                     local_str,
                     local_clues,
                     local_decryptors,
+                    local_done_cache,
+                    local_hits_cache,
                 ))
                 .unwrap();
         });
@@ -110,20 +120,29 @@ fn threaded_function(
     str: String,
     clues: Vec<String>,
     decryptors_filtered: Vec<BruteForceCryptor>,
+    done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
+    hits_cache: Arc<Mutex<bool>>,
 ) -> bool {
     // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
         eprintln!("THREAD {}\tcombination: {} ", thread_number, i);
+        let done_line = models::DoneLine {
+            args: decryptors_filtered,
+            combinations: vec,
+        };
+        if !cache::already_done(done_cache, done_line) {
+            loop_decrypt(
+                results_accumulator.clone(),
+                None,
+                vec.clone(),
+                vec![str.clone()],
+                clues.clone(),
+                decryptors_filtered.clone(),
+                None,
+            );
 
-        loop_decrypt(
-            results_accumulator.clone(),
-            None,
-            vec.clone(),
-            vec![str.clone()],
-            clues.clone(),
-            decryptors_filtered.clone(),
-            None,
-        );
+            cache::push_done(String::from("cache"), done_cache, done_line);
+        }
     }
     true
 }
@@ -134,8 +153,18 @@ fn brute_force_strings(
     steps: u8,
     decryptors_filtered: Vec<BruteForceCryptor>,
     threads: u8,
+    done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
+    hits_cache: Arc<Mutex<bool>>,
 ) -> BTreeSet<String> {
-    internal_brute_force_decrypt(str, clues, steps, decryptors_filtered.clone(), threads)
+    internal_brute_force_decrypt(
+        str,
+        clues,
+        steps,
+        decryptors_filtered.clone(),
+        threads,
+        done_cache,
+        hits_cache,
+    )
 }
 
 fn loop_decrypt(
@@ -434,7 +463,9 @@ mod tests {
                 ],
                 2,
                 vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
-                1
+                1,
+                Arc::new(Mutex::new(BTreeSet::new())),
+                Arc::new(Mutex::new(true)),
             )
         );
     }
@@ -466,7 +497,9 @@ mod tests {
                 ],
                 2,
                 vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
-                1
+                1,
+                Arc::new(Mutex::new(BTreeSet::new())),
+                Arc::new(Mutex::new(true)),
             ),
             vec![
                 "Caesar:5 AtBash".to_string(),
