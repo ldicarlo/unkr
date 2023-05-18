@@ -1,12 +1,12 @@
 mod atbash;
 mod base;
+mod brute_force;
 mod cache;
 mod caesar;
 mod candidates;
 mod char_utils;
 mod colorize;
 mod combinator;
-mod core;
 mod cryptors;
 mod cut;
 mod decrypt;
@@ -56,7 +56,7 @@ fn main() {
             decryptors,
             steps,
             threads,
-        } => core::brute_force_decrypt(string, clues, steps, decryptors, threads),
+        } => brute_force::brute_force_decrypt(string, clues, steps, decryptors, threads),
         Commands::GetDecryptors { decryptors } => println!(
             "{:?}",
             if decryptors.len() == 0 {

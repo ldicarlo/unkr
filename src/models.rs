@@ -86,3 +86,13 @@ pub struct CacheArgs {
     pub md5_string: String,
     pub md5_clues: String,
 }
+
+pub struct HitLine {
+    pub args: String,
+    pub result: String,
+}
+
+pub struct DoneLine {
+    pub args: String,
+    pub combinations: String,
+}

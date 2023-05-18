@@ -1,10 +1,26 @@
 use crate::models;
-use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeSet;
-use std::collections::HashSet;
-use std::hash;
-use std::hash::Hash;
-use std::hash::Hasher;
+use std::fs;
+use std::fs::OpenOptions;
+use std::io::prelude::*;
+
+// get Arc
+// trigger write
+
+pub fn get_hits_cache(directory: String) {}
+pub fn get_done_cache(directory: String) {}
+
+pub fn push_line(directory: String, file_name: String, line: String) {
+    fs::create_dir_all(directory).unwrap();
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(file_name)
+        .unwrap();
+    writeln!(file, "{}", line).unwrap();
+}
+
+pub fn push_hit() {}
 pub fn push_done() {}
 
 pub fn exists() {}
@@ -36,6 +52,8 @@ mod tests {
         models,
     };
 
+    use super::push_line;
+
     #[test]
     fn cache_parameters() {
         assert_eq!(
@@ -63,5 +81,14 @@ mod tests {
                 String::from("CLUE2"),
             ]),
         )
+    }
+
+    #[test]
+    fn can_push_line() {
+        push_line(
+            String::from("cache-tests"),
+            String::from("done"),
+            String::from("hello"),
+        );
     }
 }
