@@ -1,5 +1,6 @@
 mod atbash;
 mod base;
+mod cache;
 mod caesar;
 mod candidates;
 mod char_utils;

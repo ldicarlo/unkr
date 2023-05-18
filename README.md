@@ -1,6 +1,4 @@
 - [x] `combinator.rs`
-- [ ] cache
-  - [ ] ./.cache/ENCRYPTEDSTRING.md5
   - [x] clue,clue2 1,2
 - [ ] cryptors
   - [x] fold
@@ -32,12 +30,13 @@
   - [ ] colors
   - [ ] join
   - [ ] bold
-- [ ] useless combination (join join)
+- [x] useless combination (join join)
 - [ ] NumberArgs -> usize
 - [ ] Division dispatcher threads
 - [ ] remove join?
 - [ ] ASD coin
 - [ ] numbers in chars ??
+- [ ] fuzzer rules in CLI params
 
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `
@@ -48,3 +47,10 @@
 
 https://kryptosfan.wordpress.com/k3/k3-solution-3/
 http://kryptools.com/hints.htm
+
+# Caching
+
+- [ ] save combinations in the form `./md5string/md5clues/{hits,done}`:
+  - [ ] hits file line `vigenere:ABC:DEF join;RESULT`
+  - [ ] done file line `vigenere:3:3;vigenere join cut`
+  - [ ] (always save in done)

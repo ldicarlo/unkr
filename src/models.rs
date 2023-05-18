@@ -81,3 +81,8 @@ pub struct StringArgs {
 pub struct NumberArgs {
     pub number: usize,
 }
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub struct CacheArgs {
+    pub md5_string: String,
+    pub md5_clues: String,
+}
