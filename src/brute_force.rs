@@ -30,14 +30,17 @@ pub fn brute_force_decrypt(
     decryptors: Vec<String>,
     threads: u8,
 ) {
-    let done_cache = cache::get_done_cache(String::from("cache"));
-    let hits_cache = cache::get_hits_cache(String::from("cache"));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
+    let cache_args = cache::prepare_cache_args(str, clues);
+    let done_cache = cache::get_done_cache(String::from("cache"), cache_args);
+    let hits_cache = cache::get_hits_cache(String::from("cache"));
     eprintln!("{:?}", decr);
-    let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, hits_cache);
+    let result = brute_force_strings(
+        str, clues, steps, decr, threads, done_cache, hits_cache, cache_args,
+    );
     eprintln!("Result: {:?}", result);
 }
 
@@ -49,6 +52,7 @@ pub fn internal_brute_force_decrypt(
     threads: u8,
     done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
     hits_cache: Arc<Mutex<bool>>,
+    cache_args: models::CacheArgs,
 ) -> BTreeSet<String> {
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decryptors = if decryptors_filtered.len() == 0 {
@@ -84,7 +88,7 @@ pub fn internal_brute_force_decrypt(
         let local_decryptors = decryptors.clone();
         let local_done_cache = done_cache.clone();
         let local_hits_cache = hits_cache.clone();
-
+        let local_cache_args = cache_args.clone();
         eprintln!(
             "Start thread {} with {} combinations",
             t,
@@ -101,6 +105,7 @@ pub fn internal_brute_force_decrypt(
                     local_decryptors,
                     local_done_cache,
                     local_hits_cache,
+                    local_cache_args,
                 ))
                 .unwrap();
         });
@@ -122,14 +127,12 @@ fn threaded_function(
     decryptors_filtered: Vec<BruteForceCryptor>,
     done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
     hits_cache: Arc<Mutex<bool>>,
+    cache_args: models::CacheArgs,
 ) -> bool {
     // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
         eprintln!("THREAD {}\tcombination: {} ", thread_number, i);
-        let done_line = models::DoneLine {
-            args: decryptors_filtered,
-            combinations: vec,
-        };
+        let done_line = cache::to_done(clues, decryptors_filtered);
         if !cache::already_done(done_cache, done_line) {
             loop_decrypt(
                 results_accumulator.clone(),
@@ -141,7 +144,7 @@ fn threaded_function(
                 None,
             );
 
-            cache::push_done(String::from("cache"), done_cache, done_line);
+            cache::push_done(String::from("cache"), done_cache, done_line, cache_args);
         }
     }
     true
@@ -155,6 +158,7 @@ fn brute_force_strings(
     threads: u8,
     done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
     hits_cache: Arc<Mutex<bool>>,
+    cache_args: models::CacheArgs,
 ) -> BTreeSet<String> {
     internal_brute_force_decrypt(
         str,
@@ -164,6 +168,7 @@ fn brute_force_strings(
         threads,
         done_cache,
         hits_cache,
+        cache_args,
     )
 }
 
