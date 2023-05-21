@@ -5,6 +5,7 @@ use crate::caesar;
 use crate::candidates;
 use crate::cryptors;
 use crate::cut;
+use crate::dispatcher;
 use crate::join;
 use crate::models;
 use crate::models::BruteForceCryptor;
@@ -49,7 +50,7 @@ pub fn internal_brute_force_decrypt(
     steps: u8,
     decryptors_filtered: Vec<BruteForceCryptor>,
     threads: u8,
-    done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
+    done_cache: BTreeSet<models::DoneLine>,
     cache_args: CacheArgs,
 ) -> BTreeSet<String> {
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
@@ -60,25 +61,38 @@ pub fn internal_brute_force_decrypt(
     };
     let combinations = combinator::combine_elements(decryptors.len().try_into().unwrap(), steps);
 
-    let count_by_thread: usize = combinations.len() / (threads as usize);
-    eprintln!(
-        "TOTAL: {}, threads: {}, count per thread: {}, decryptors {:?}",
-        combinations.len(),
-        threads,
-        count_by_thread,
-        decryptors
-    );
-    let mut vec_combinations = combinations.into_iter().collect::<Vec<Vec<u8>>>();
+    // discard combinations
+    let mut filtered_combinations = Vec::new();
+    for vec in combinations.into_iter() {
+        let done_line = cache::to_done(decryptors.clone(), vec.clone());
+        if skip_combination(vec.clone(), decryptors.clone()) {
+            eprintln!(
+                "SKIPPED combination: {:?}",
+                parse_combination(vec.clone(), decryptors.clone())
+            );
+        } else if cache::already_done(done_cache.clone(), done_line.clone()) {
+            eprintln!("CACHE present: {:?}", done_line.clone())
+        } else {
+            filtered_combinations.push(vec);
+        }
+    }
+
+    let threads_work = dispatcher::dispatch(threads as usize, filtered_combinations.len());
+    eprintln!("TOTAL combinations {}", filtered_combinations.clone().len(),);
+    eprintln!("THREADS dispatching {:?}", threads_work.clone(),);
+    eprintln!("DECRYPTORS {}", decryptors.clone().len(),);
+
+    let mut vec_combinations = filtered_combinations
+        .clone()
+        .into_iter()
+        .collect::<Vec<Vec<u8>>>();
 
     vec_combinations.shuffle(&mut rand::thread_rng());
 
     let (sender, receiver) = channel();
-    for t in 0..threads {
-        let local_combinations = if t == threads - 1 {
-            vec_combinations.clone()
-        } else {
-            vec_combinations.split_off(vec_combinations.len() - count_by_thread)
-        };
+    for (i, t) in threads_work.into_iter().enumerate() {
+        let local_combinations = vec_combinations.split_off(vec_combinations.len() - t);
+
         let local_sender = sender.clone();
         let local_results_accumulator = results_accumulator.clone();
         let local_str = str.clone();
@@ -87,14 +101,14 @@ pub fn internal_brute_force_decrypt(
         let local_done_cache = done_cache.clone();
         let local_cache_args = cache_args.clone();
         eprintln!(
-            "Start thread {} with {} combinations",
-            t,
+            "THREAD {}\tstart {} combinations",
+            i,
             local_combinations.len()
         );
         thread::spawn(move || {
             local_sender
                 .send(threaded_function(
-                    t,
+                    i,
                     local_combinations,
                     local_results_accumulator,
                     local_str,
@@ -107,7 +121,7 @@ pub fn internal_brute_force_decrypt(
         });
     }
     for t in 0..threads {
-        eprintln!("THREAD {} finished({})", t, receiver.recv().unwrap());
+        eprintln!("THREAD {}\tfinished({})", t, receiver.recv().unwrap());
     }
 
     let result: BTreeSet<String> = results_accumulator.lock().unwrap().to_owned();
@@ -115,13 +129,13 @@ pub fn internal_brute_force_decrypt(
 }
 
 fn threaded_function(
-    thread_number: u8,
+    thread_number: usize,
     combinations: Vec<Vec<u8>>,
     results_accumulator: Arc<Mutex<BTreeSet<String>>>,
     str: String,
     clues: Vec<String>,
     decryptors_filtered: Vec<BruteForceCryptor>,
-    done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
+    done_cache: BTreeSet<models::DoneLine>,
     cache_args: models::CacheArgs,
 ) -> bool {
     for (i, vec) in combinations.iter().enumerate() {
@@ -132,27 +146,19 @@ fn threaded_function(
             i,
             done_line.clone()
         );
-        if skip_combination(vec.clone(), decryptors_filtered.clone()) {
-            eprintln!(
-                "SKIPPED combination: {:?}",
-                parse_combination(vec.clone(), decryptors_filtered.clone())
-            );
-        } else if !cache::already_done(done_cache.clone(), done_line.clone()) {
-            loop_decrypt(
-                results_accumulator.clone(),
-                None,
-                vec.clone(),
-                vec![str.clone()],
-                clues.clone(),
-                decryptors_filtered.clone(),
-                None,
-                cache_args.clone(),
-            );
 
-            cache::push_done(done_cache.clone(), done_line.clone(), cache_args.clone());
-        } else {
-            eprintln!("CACHE present: {:?}", done_line.clone())
-        }
+        loop_decrypt(
+            results_accumulator.clone(),
+            None,
+            vec.clone(),
+            vec![str.clone()],
+            clues.clone(),
+            decryptors_filtered.clone(),
+            None,
+            cache_args.clone(),
+        );
+
+        cache::push_done(done_line.clone(), cache_args.clone());
     }
     true
 }
@@ -163,7 +169,7 @@ fn brute_force_strings(
     steps: u8,
     decryptors_filtered: Vec<BruteForceCryptor>,
     threads: u8,
-    done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
+    done_cache: BTreeSet<models::DoneLine>,
     cache_args: CacheArgs,
 ) -> BTreeSet<String> {
     internal_brute_force_decrypt(
@@ -566,7 +572,7 @@ mod tests {
                 2,
                 vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
                 1,
-                Arc::new(Mutex::new(BTreeSet::new())),
+                BTreeSet::new(),
                 prepare_cache_args(
                     test_cache_name(),
                     "str".to_string(),
@@ -596,7 +602,7 @@ mod tests {
                 2,
                 vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
                 1,
-                Arc::new(Mutex::new(BTreeSet::new())),
+                BTreeSet::new(),
                 prepare_cache_args(
                     test_cache_name(),
                     "TQDJMH".to_string(),

@@ -10,6 +10,7 @@ mod combinator;
 mod cryptors;
 mod cut;
 mod decrypt;
+mod dispatcher;
 mod encrypt;
 mod fuzzer;
 mod indexcrypt;

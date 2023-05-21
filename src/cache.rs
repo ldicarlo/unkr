@@ -31,7 +31,7 @@ fn hits_string(
     )
 }
 
-pub fn get_done_cache(cache_args: models::CacheArgs) -> Arc<Mutex<BTreeSet<models::DoneLine>>> {
+pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLine> {
     let (done_folder, done_file) = done_string(cache_args);
     fs::create_dir_all(done_folder.clone()).unwrap();
     OpenOptions::new()
@@ -54,7 +54,7 @@ pub fn get_done_cache(cache_args: models::CacheArgs) -> Arc<Mutex<BTreeSet<model
             .expect("Failed to deserialize element.");
         cache.insert(record);
     }
-    Arc::new(Mutex::new(cache))
+    cache
 }
 
 pub fn push_line(full_directory: String, file_name: String, line: String) {
@@ -74,7 +74,6 @@ pub fn push_hit(cache_args: models::CacheArgs, hit_line: models::HitLine) {
 }
 
 pub fn push_done(
-    cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
     done_line: DoneLine,
     models::CacheArgs {
         md5_clues,
@@ -82,32 +81,25 @@ pub fn push_done(
         path,
     }: models::CacheArgs,
 ) {
-    if let Ok(mut c) = cache.try_lock() {
-        let mut writer = csv::WriterBuilder::new()
-            .has_headers(false)
-            .delimiter(b';')
-            .from_writer(vec![]);
+    let mut writer = csv::WriterBuilder::new()
+        .has_headers(false)
+        .delimiter(b';')
+        .from_writer(vec![]);
 
-        writer.serialize(done_line.clone()).expect("FAIL");
-        let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
-            .expect("Cannot convert utf8")
-            .trim()
-            .to_string();
-        push_line(
-            format!("{}/{}/{}", path, md5_string, md5_clues),
-            String::from("done"),
-            result,
-        );
-        c.insert(done_line);
-    }
+    writer.serialize(done_line.clone()).expect("FAIL");
+    let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
+        .expect("Cannot convert utf8")
+        .trim()
+        .to_string();
+    push_line(
+        format!("{}/{}/{}", path, md5_string, md5_clues),
+        String::from("done"),
+        result,
+    );
 }
 
-pub fn already_done(cache: Arc<Mutex<BTreeSet<models::DoneLine>>>, done_line: DoneLine) -> bool {
-    if let Ok(c) = cache.try_lock() {
-        c.contains(&done_line)
-    } else {
-        false
-    }
+pub fn already_done(cache: BTreeSet<models::DoneLine>, done_line: DoneLine) -> bool {
+    cache.contains(&done_line)
 }
 
 pub fn prepare_cache_args(path: String, str: String, clues: Vec<String>) -> models::CacheArgs {
@@ -294,7 +286,6 @@ pub mod tests {
         };
         assert_eq!(already_done(cache.clone(), done_line.clone()), false);
         push_done(
-            cache.clone(),
             done_line.clone(),
             models::CacheArgs {
                 path: path.clone(),
@@ -302,7 +293,12 @@ pub mod tests {
                 md5_clues: md5_clues.clone(),
             },
         );
-        assert_eq!(already_done(cache.clone(), done_line.clone()), true);
+        let updated_cache = get_done_cache(models::CacheArgs {
+            path: path.clone(),
+            md5_string: md5_string.clone(),
+            md5_clues: md5_clues.clone(),
+        });
+        assert_eq!(already_done(updated_cache, done_line.clone()), true);
         empty_test_cache()
     }
 
