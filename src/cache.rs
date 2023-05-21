@@ -1,4 +1,3 @@
-use crate::brute_force;
 use crate::models::{self, DoneLine};
 use std::collections::BTreeSet;
 use std::fs;
@@ -32,11 +31,6 @@ fn hits_string(
     )
 }
 
-pub fn to_hit() -> models::HitLine {}
-
-pub fn get_hits_cache(directory: String) -> Arc<Mutex<bool>> {
-    Arc::new(Mutex::new(true))
-}
 pub fn get_done_cache(
     cache_directory: String,
     cache_args: models::CacheArgs,
@@ -158,7 +152,7 @@ pub fn to_done(
 pub fn combinations_string(
     brute_force_cryptors: Vec<models::BruteForceCryptor>,
 ) -> (String, String) {
-    let mut strings: Vec<(String, Option<String>)> = brute_force_cryptors
+    let strings: Vec<(String, Option<String>)> = brute_force_cryptors
         .iter()
         .map(|c| match c {
             models::BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
