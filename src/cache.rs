@@ -108,7 +108,11 @@ pub fn push_done(
         writer.serialize(done_line.clone()).expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");
-        push_line(directory, String::from("done"), result);
+        push_line(
+            format!("{}/{}/{}", directory, md5_string, md5_clues),
+            String::from("done"),
+            result,
+        );
         c.insert(done_line);
     }
 }
@@ -184,7 +188,7 @@ pub fn combinations_string(
             ),
         })
         .collect();
-    strings.sort_by_key(|(a, _)| a.clone());
+    //strings.sort_by_key(|(a, _)| a.clone());
     let left = strings
         .clone()
         .into_iter()
@@ -270,18 +274,18 @@ mod tests {
         push_line(
             full_directory.clone(),
             String::from("done"),
-            String::from("vigenere join permute;vigenere:3:3"),
+            String::from("Vigenere Join Permute;Vigenere:3:3"),
         );
         let cache = get_done_cache(
             String::from("cache-tests"),
-            prepare_cache_args(
-                String::from("STRING"),
-                vec![String::from("CLUE1"), String::from("CLUE2")],
-            ),
+            models::CacheArgs {
+                md5_string: md5_string.clone(),
+                md5_clues: md5_clues.clone(),
+            },
         );
         let done_line = models::DoneLine {
-            args: Some(String::from("vigenere:3:3")),
-            combinations: String::from("vigenere join"),
+            args: Some(String::from("Vigenere:3:3")),
+            combinations: String::from("Vigenere Join"),
         };
         assert_eq!(already_done(cache.clone(), done_line.clone()), false);
         push_done(
@@ -289,8 +293,8 @@ mod tests {
             cache.clone(),
             done_line.clone(),
             models::CacheArgs {
-                md5_string,
-                md5_clues,
+                md5_string: md5_string.clone(),
+                md5_clues: md5_clues.clone(),
             },
         );
         assert_eq!(already_done(cache.clone(), done_line.clone()), true);
@@ -312,7 +316,7 @@ mod tests {
                 vec![0, 1, 2]
             ),
             models::DoneLine {
-                combinations: String::from("Caesar Transpose Vigenere"),
+                combinations: String::from("Vigenere Transpose Caesar"),
                 args: Some(String::from("Vigenere:4:7"))
             }
         )

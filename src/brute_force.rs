@@ -149,7 +149,11 @@ fn threaded_function(
                 cache_args.clone(),
             );
         } else {
-            println!("")
+            println!(
+                "CACHE PRESENT {:?} {:?}",
+                done_cache.clone(),
+                done_line.clone()
+            )
         }
     }
     true
