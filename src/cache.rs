@@ -32,6 +32,8 @@ fn hits_string(
     )
 }
 
+pub fn to_hit() -> models::HitLine {}
+
 pub fn get_hits_cache(directory: String) -> Arc<Mutex<bool>> {
     Arc::new(Mutex::new(true))
 }
@@ -74,21 +76,14 @@ pub fn push_line(full_directory: String, file_name: String, line: String) {
     writeln!(file, "{}", line).unwrap();
 }
 
-pub fn push_hit(
-    directory: String,
-    cache_args: models::CacheArgs,
-    cache: Arc<Mutex<bool>>,
-    hit_line: models::HitLine,
-) {
+pub fn push_hit(directory: String, cache_args: models::CacheArgs, hit_line: models::HitLine) {
     let (hits_folder, hits_file) = hits_string(directory, cache_args);
 
-    if let Ok(c) = cache.try_lock() {
-        push_line(
-            format!("{}/{}", hits_folder, hits_file),
-            String::from("hits"),
-            hit_to_string(hit_line.clone()),
-        );
-    }
+    push_line(
+        format!("{}/{}", hits_folder, hits_file),
+        String::from("hits"),
+        hit_to_string(hit_line.clone()),
+    );
 }
 
 pub fn push_done(
@@ -148,6 +143,7 @@ fn hash(str: String) -> String {
 fn hit_to_string(hit_line: models::HitLine) -> String {
     format!("{};{}", hit_line.result, hit_line.args)
 }
+
 pub fn to_done(
     brute_force_cryptors: Vec<models::BruteForceCryptor>,
     combinations: Vec<u8>,

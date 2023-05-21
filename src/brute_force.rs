@@ -1,6 +1,7 @@
 use super::combinator;
 use crate::atbash;
 use crate::cache;
+use crate::cache::to_hit;
 use crate::caesar;
 use crate::candidates;
 use crate::cryptors;
@@ -140,6 +141,7 @@ fn threaded_function(
                 clues.clone(),
                 decryptors_filtered.clone(),
                 None,
+                cache_args.clone(),
             );
 
             cache::push_done(
@@ -188,6 +190,7 @@ fn loop_decrypt(
     // mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
     decryptors_filtered: Vec<BruteForceCryptor>,
     previous: Option<String>,
+    cache_args: models::CacheArgs,
 ) {
     if let Some(current) = to_use.pop() {
         let cryptor_name = decryptors_filtered
@@ -212,6 +215,7 @@ fn loop_decrypt(
                     clues.clone(),
                     cryptor_name.clone(),
                     new_str.clone(),
+                    cache_args.clone(),
                 );
 
                 loop_decrypt(
@@ -222,6 +226,7 @@ fn loop_decrypt(
                     clues.clone(),
                     decryptors_filtered.clone(),
                     Some(cryptor_name.clone()),
+                    cache_args.clone(),
                 );
             }
             BruteForceCryptor::Caesar => {
@@ -234,6 +239,7 @@ fn loop_decrypt(
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{}", s),
                         new_str.clone(),
+                        cache_args.clone(),
                     );
 
                     loop_decrypt(
@@ -244,6 +250,7 @@ fn loop_decrypt(
                         clues.clone(),
                         decryptors_filtered.clone(),
                         Some(cryptor_name.clone()),
+                        cache_args.clone(),
                     );
                 }
             }
@@ -262,6 +269,7 @@ fn loop_decrypt(
                     clues.clone(),
                     cryptor_name.clone(),
                     new_str.clone(),
+                    cache_args.clone(),
                 );
 
                 loop_decrypt(
@@ -272,6 +280,7 @@ fn loop_decrypt(
                     clues.clone(),
                     decryptors_filtered.clone(),
                     Some(cryptor_name),
+                    cache_args.clone(),
                 );
             }
             BruteForceCryptor::Transpose => {
@@ -286,6 +295,7 @@ fn loop_decrypt(
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{}", s),
                         new_str.clone(),
+                        cache_args.clone(),
                     );
 
                     loop_decrypt(
@@ -296,6 +306,7 @@ fn loop_decrypt(
                         clues.clone(),
                         decryptors_filtered.clone(),
                         Some(cryptor_name.clone()),
+                        cache_args.clone(),
                     );
                 }
             }
@@ -312,6 +323,7 @@ fn loop_decrypt(
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{}:{}", "TO", "FIX"),
                         new_str.clone(),
+                        cache_args.clone(),
                     );
 
                     loop_decrypt(
@@ -322,6 +334,7 @@ fn loop_decrypt(
                         clues.clone(),
                         decryptors_filtered.clone(),
                         Some(cryptor_name.clone()),
+                        cache_args.clone(),
                     );
                     current_args = next;
                 }
@@ -336,6 +349,7 @@ fn loop_decrypt(
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{}", s),
                         new_str.clone(),
+                        cache_args.clone(),
                     );
 
                     loop_decrypt(
@@ -346,6 +360,7 @@ fn loop_decrypt(
                         clues.clone(),
                         decryptors_filtered.clone(),
                         Some(cryptor_name.clone()),
+                        cache_args.clone(),
                     );
                 }
             }
@@ -364,6 +379,7 @@ fn loop_decrypt(
                     clues.clone(),
                     cryptor_name.clone(),
                     new_str.clone(),
+                    cache_args.clone(),
                 );
 
                 loop_decrypt(
@@ -374,6 +390,7 @@ fn loop_decrypt(
                     clues.clone(),
                     decryptors_filtered.clone(),
                     Some(cryptor_name.clone()),
+                    cache_args.clone(),
                 );
             }
             BruteForceCryptor::Permute(args) => {
@@ -393,6 +410,7 @@ fn loop_decrypt(
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{:?}", current_permutations),
                         new_str.clone(),
+                        cache_args.clone(),
                     );
 
                     loop_decrypt(
@@ -403,6 +421,7 @@ fn loop_decrypt(
                         clues.clone(),
                         decryptors_filtered.clone(),
                         Some(cryptor_name.clone()),
+                        cache_args.clone(),
                     );
                     current_permutations = next;
                 }
@@ -418,6 +437,7 @@ fn loop_decrypt(
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{:?}", current_order),
                         new_str.clone(),
+                        cache_args.clone(),
                     );
                     loop_decrypt(
                         res_acc.clone(),
@@ -427,6 +447,7 @@ fn loop_decrypt(
                         clues.clone(),
                         decryptors_filtered.clone(),
                         Some(cryptor_name.clone()),
+                        cache_args.clone(),
                     );
                     current_order = next;
                 }
@@ -443,6 +464,7 @@ fn process_new_str(
     // mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
     cryptor_str: String,
     new_str: Vec<String>,
+    cache_args: models::CacheArgs,
 ) -> Option<String> {
     let current_acc = acc
         .map(|existing| existing + " " + &cryptor_str.clone())
@@ -453,6 +475,14 @@ fn process_new_str(
     if candidates.len() > 0 {
         let local_arc = res_acc.clone();
         local_arc.lock().unwrap().insert(current_acc.clone());
+        cache::push_hit(
+            String::from("cache"),
+            cache_args,
+            models::HitLine {
+                args: acc.unwrap(),
+                result: new_str.clone().join(" "),
+            },
+        )
     }
     Some(current_acc)
 }
