@@ -132,7 +132,12 @@ fn threaded_function(
             i,
             done_line.clone()
         );
-        if !cache::already_done(done_cache.clone(), done_line.clone()) {
+        if skip_combination(vec.clone(), decryptors_filtered.clone()) {
+            eprintln!(
+                "SKIPPED combination: {:?}",
+                parse_combination(vec.clone(), decryptors_filtered.clone())
+            );
+        } else if !cache::already_done(done_cache.clone(), done_line.clone()) {
             loop_decrypt(
                 results_accumulator.clone(),
                 None,
@@ -146,11 +151,7 @@ fn threaded_function(
 
             cache::push_done(done_cache.clone(), done_line.clone(), cache_args.clone());
         } else {
-            println!(
-                "CACHE PRESENT {:?} {:?}",
-                done_cache.clone(),
-                done_line.clone()
-            )
+            eprintln!("CACHE present: {:?}", done_line.clone())
         }
     }
     true
@@ -182,24 +183,25 @@ fn loop_decrypt(
     mut to_use: Vec<u8>,
     strs: Vec<String>,
     clues: Vec<String>,
-    // mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
     decryptors_filtered: Vec<BruteForceCryptor>,
     previous: Option<String>,
     cache_args: models::CacheArgs,
 ) {
     if let Some(current) = to_use.pop() {
-        let cryptor_name = decryptors_filtered
+        let cryptor = decryptors_filtered
             .clone()
             .into_iter()
             .nth(current.into())
             .unwrap();
 
-        match cryptor_name {
+        match cryptor {
             BruteForceCryptor::AtBash => {
                 if previous
+                    .clone()
                     .map(|prev| atbash::skip_if_previous_in().contains(&prev))
                     .unwrap_or(false)
                 {
+                    eprintln!("skipped previous was:{:?} next is:{:?}", previous, cryptor);
                     return;
                 }
                 let new_str: Vec<String> = atbash::decrypt(strs.clone());
@@ -482,6 +484,38 @@ fn process_new_str(
     Some(current_acc)
 }
 
+fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> bool {
+    let cryp_combination = parse_combination(combination, cryptors);
+    let not_first = vec![Some(&BruteForceCryptor::Join)];
+    if not_first.contains(&cryp_combination.first()) {
+        return true;
+    }
+
+    let not_last = vec![
+        Some(&BruteForceCryptor::Join),
+        Some(&BruteForceCryptor::Cut),
+    ];
+    if not_last.contains(&cryp_combination.last()) {
+        return true;
+    }
+    // let not_sub = vec![BruteForceCryptor::Join, BruteForceCryptor::Join];
+    // if cryp_combination.slice(not_sub) {
+    //     return true;
+    // }
+
+    false
+}
+
+fn parse_combination(
+    combination: Vec<u8>,
+    cryptors: Vec<BruteForceCryptor>,
+) -> Vec<BruteForceCryptor> {
+    combination
+        .into_iter()
+        .map(|c| (cryptors.clone().into_iter().nth(c.into()).unwrap()))
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -517,19 +551,6 @@ mod tests {
             )
         );
     }
-
-    // #[test]
-    // fn it_works_2() {
-    //     let decryptors = cryptors::filter_decryptors(vec![]);
-    //     for (d, _, decrypt, encrypt) in decryptors.iter() {
-    //         assert_eq!(
-    //             decrypt(encrypt(vec!["SOME STRING 123 !".to_string()], 1), 1),
-    //             vec!["SOME STRING 123 !"],
-    //             "error with {}",
-    //             &d
-    //         )
-    //     }
-    // }
 
     #[test]
     fn brute_force_1() {

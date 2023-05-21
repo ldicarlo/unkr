@@ -1,5 +1,5 @@
 use crate::models::{self, DoneLine};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
@@ -186,6 +186,8 @@ pub fn combinations_string(
     let rights = strings
         .into_iter()
         .flat_map(|(_, b)| b)
+        .collect::<HashSet<String>>()
+        .into_iter()
         .collect::<Vec<String>>();
     let right = if rights.is_empty() {
         None
