@@ -56,7 +56,14 @@ fn main() {
             decryptors,
             steps,
             threads,
-        } => brute_force::brute_force_decrypt(string, clues, steps, decryptors, threads),
+        } => brute_force::brute_force_decrypt(
+            string,
+            clues,
+            steps,
+            decryptors,
+            threads,
+            String::from("cache"),
+        ),
         Commands::GetDecryptors { decryptors } => println!(
             "{:?}",
             if decryptors.len() == 0 {

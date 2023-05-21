@@ -6,36 +6,33 @@ use std::io::prelude::*;
 use std::sync::{Arc, Mutex};
 
 fn done_string(
-    cache_directory: String,
     models::CacheArgs {
         md5_clues,
         md5_string,
+        path,
     }: models::CacheArgs,
 ) -> (String, String) {
     (
-        format!("{}/{}/{}/", cache_directory, md5_string, md5_clues),
+        format!("{}/{}/{}/", path, md5_string, md5_clues),
         String::from("done"),
     )
 }
 
 fn hits_string(
-    cache_directory: String,
     models::CacheArgs {
         md5_clues,
         md5_string,
+        path,
     }: models::CacheArgs,
 ) -> (String, String) {
     (
-        format!("{}/{}/{}", cache_directory, md5_string, md5_clues),
+        format!("{}/{}/{}", path, md5_string, md5_clues),
         String::from("hits"),
     )
 }
 
-pub fn get_done_cache(
-    cache_directory: String,
-    cache_args: models::CacheArgs,
-) -> Arc<Mutex<BTreeSet<models::DoneLine>>> {
-    let (done_folder, done_file) = done_string(cache_directory, cache_args);
+pub fn get_done_cache(cache_args: models::CacheArgs) -> Arc<Mutex<BTreeSet<models::DoneLine>>> {
+    let (done_folder, done_file) = done_string(cache_args);
     fs::create_dir_all(done_folder.clone()).unwrap();
     OpenOptions::new()
         .create(true)
@@ -70,19 +67,19 @@ pub fn push_line(full_directory: String, file_name: String, line: String) {
     writeln!(file, "{}", line).unwrap();
 }
 
-pub fn push_hit(directory: String, cache_args: models::CacheArgs, hit_line: models::HitLine) {
-    let (hits_folder, hits_file) = hits_string(directory, cache_args);
+pub fn push_hit(cache_args: models::CacheArgs, hit_line: models::HitLine) {
+    let (hits_folder, hits_file) = hits_string(cache_args);
 
     push_line(hits_folder, hits_file, hit_to_string(hit_line.clone()));
 }
 
 pub fn push_done(
-    directory: String,
     cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
     done_line: DoneLine,
     models::CacheArgs {
         md5_clues,
         md5_string,
+        path,
     }: models::CacheArgs,
 ) {
     if let Ok(mut c) = cache.try_lock() {
@@ -97,7 +94,7 @@ pub fn push_done(
             .trim()
             .to_string();
         push_line(
-            format!("{}/{}/{}", directory, md5_string, md5_clues),
+            format!("{}/{}/{}", path, md5_string, md5_clues),
             String::from("done"),
             result,
         );
@@ -107,16 +104,15 @@ pub fn push_done(
 
 pub fn already_done(cache: Arc<Mutex<BTreeSet<models::DoneLine>>>, done_line: DoneLine) -> bool {
     if let Ok(c) = cache.try_lock() {
-        println!("{:?}", c);
-        println!("{:?}", done_line);
         c.contains(&done_line)
     } else {
         false
     }
 }
 
-pub fn prepare_cache_args(str: String, clues: Vec<String>) -> models::CacheArgs {
+pub fn prepare_cache_args(path: String, str: String, clues: Vec<String>) -> models::CacheArgs {
     models::CacheArgs {
+        path,
         md5_string: hash(str),
         md5_clues: hash(unique_sorted_clues(clues)),
     }
@@ -219,7 +215,7 @@ pub fn combination(
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use std::fs;
 
     use crate::{
@@ -229,14 +225,24 @@ mod tests {
 
     use super::{already_done, get_done_cache, push_line, to_done};
 
+    pub fn test_cache_name() -> String {
+        String::from("cache-tests")
+    }
+
+    pub fn empty_test_cache() {
+        fs::remove_dir_all(test_cache_name()).expect("cannot remove dir");
+    }
+
     #[test]
     fn cache_parameters() {
         assert_eq!(
             prepare_cache_args(
+                test_cache_name(),
                 String::from("STRING"),
                 vec![String::from("CLUE1"), String::from("CLUE2")]
             ),
             models::CacheArgs {
+                path: test_cache_name(),
                 md5_string: String::from("63b588d5559f64f89a416e656880b949"),
                 md5_clues: String::from("27a711f10fa00512ba38ad3608352b37")
             }
@@ -261,41 +267,41 @@ mod tests {
     #[test]
     fn done_workflow() {
         let models::CacheArgs {
+            path,
             md5_string,
             md5_clues,
         } = prepare_cache_args(
+            test_cache_name(),
             String::from("STRING"),
             vec![String::from("CLUE1"), String::from("CLUE2")],
         );
-        let full_directory = format!("cache-tests/{}/{}", md5_string, md5_clues);
+        let full_directory = format!("{}/{}/{}", test_cache_name(), md5_string, md5_clues);
         push_line(
             full_directory.clone(),
             String::from("done"),
             String::from("Vigenere Join Permute;Vigenere:3:3"),
         );
-        let cache = get_done_cache(
-            String::from("cache-tests"),
-            models::CacheArgs {
-                md5_string: md5_string.clone(),
-                md5_clues: md5_clues.clone(),
-            },
-        );
+        let cache = get_done_cache(models::CacheArgs {
+            path: path.clone(),
+            md5_string: md5_string.clone(),
+            md5_clues: md5_clues.clone(),
+        });
         let done_line = models::DoneLine {
             args: Some(String::from("Vigenere:3:3")),
             combinations: String::from("Vigenere Join"),
         };
         assert_eq!(already_done(cache.clone(), done_line.clone()), false);
         push_done(
-            String::from("cache-tests"),
             cache.clone(),
             done_line.clone(),
             models::CacheArgs {
+                path: path.clone(),
                 md5_string: md5_string.clone(),
                 md5_clues: md5_clues.clone(),
             },
         );
         assert_eq!(already_done(cache.clone(), done_line.clone()), true);
-        fs::remove_file(format!("{}/done", full_directory)).expect("cannot delete file");
+        empty_test_cache()
     }
 
     #[test]

@@ -8,6 +8,7 @@ use crate::cut;
 use crate::join;
 use crate::models;
 use crate::models::BruteForceCryptor;
+use crate::models::CacheArgs;
 use crate::parser;
 use crate::permute;
 use crate::reverse;
@@ -29,15 +30,16 @@ pub fn brute_force_decrypt(
     steps: u8,
     decryptors: Vec<String>,
     threads: u8,
+    cache_name: String,
 ) {
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
-    let cache_args = cache::prepare_cache_args(str.clone(), clues.clone());
-    let done_cache = cache::get_done_cache(String::from("cache"), cache_args.clone());
+    let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
+    let done_cache = cache::get_done_cache(cache_args.clone());
     eprintln!("{:?}", decr);
-    let result = brute_force_strings(str, clues, steps, decr, threads, done_cache);
+    let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, cache_args);
     eprintln!("Result: {:?}", result);
 }
 
@@ -48,8 +50,8 @@ pub fn internal_brute_force_decrypt(
     decryptors_filtered: Vec<BruteForceCryptor>,
     threads: u8,
     done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
+    cache_args: CacheArgs,
 ) -> BTreeSet<String> {
-    let cache_args = cache::prepare_cache_args(str.clone(), clues.clone());
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decryptors = if decryptors_filtered.len() == 0 {
         cryptors::get_decryptors()
@@ -137,12 +139,7 @@ fn threaded_function(
                 cache_args.clone(),
             );
 
-            cache::push_done(
-                String::from("cache"),
-                done_cache.clone(),
-                done_line.clone(),
-                cache_args.clone(),
-            );
+            cache::push_done(done_cache.clone(), done_line.clone(), cache_args.clone());
         } else {
             println!(
                 "CACHE PRESENT {:?} {:?}",
@@ -161,6 +158,7 @@ fn brute_force_strings(
     decryptors_filtered: Vec<BruteForceCryptor>,
     threads: u8,
     done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
+    cache_args: CacheArgs,
 ) -> BTreeSet<String> {
     internal_brute_force_decrypt(
         str,
@@ -169,6 +167,7 @@ fn brute_force_strings(
         decryptors_filtered.clone(),
         threads,
         done_cache,
+        cache_args,
     )
 }
 
@@ -312,7 +311,7 @@ fn loop_decrypt(
                         res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
-                        cryptor_name.clone() + &format!(":{}:{}", "TO", "FIX"),
+                        cryptor_name.clone() + &format!(":{}:{}", next.key, next.alphabet),
                         new_str.clone(),
                         cache_args.clone(),
                     );
@@ -468,7 +467,6 @@ fn process_new_str(
         let local_arc = res_acc.clone();
         local_arc.lock().unwrap().insert(current_acc.clone());
         cache::push_hit(
-            String::from("cache"),
             cache_args,
             models::HitLine {
                 args: current_acc.clone(),
@@ -481,6 +479,8 @@ fn process_new_str(
 
 #[cfg(test)]
 mod tests {
+
+    use crate::cache::{prepare_cache_args, tests::test_cache_name};
 
     use super::*;
     #[test]
@@ -499,6 +499,16 @@ mod tests {
                 vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
                 1,
                 Arc::new(Mutex::new(BTreeSet::new())),
+                prepare_cache_args(
+                    test_cache_name(),
+                    "str".to_string(),
+                    vec![
+                        "CLOCK".to_string(),
+                        "BERLIN".to_string(),
+                        "NORTH".to_string(),
+                        "EAST".to_string(),
+                    ],
+                )
             )
         );
     }
@@ -532,6 +542,16 @@ mod tests {
                 vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
                 1,
                 Arc::new(Mutex::new(BTreeSet::new())),
+                prepare_cache_args(
+                    test_cache_name(),
+                    "TQDJMH".to_string(),
+                    vec![
+                        "CLOCK".to_string(),
+                        "BERLIN".to_string(),
+                        "NORTH".to_string(),
+                        "EAST".to_string(),
+                    ],
+                )
             ),
             vec![
                 "Caesar:5 AtBash".to_string(),
