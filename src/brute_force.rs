@@ -205,6 +205,9 @@ fn loop_decrypt(
                     return;
                 }
                 let new_str: Vec<String> = atbash::decrypt(strs.clone());
+                if strs == new_str {
+                    return;
+                }
                 let cryptor_name = String::from("AtBash");
                 let current_acc = process_new_str(
                     res_acc.clone(),
@@ -230,6 +233,11 @@ fn loop_decrypt(
                 for s in 0..26 {
                     let new_str = caesar::decrypt(strs.clone(), models::NumberArgs { number: s });
                     let cryptor_name = String::from("Caesar");
+
+                    if strs == new_str {
+                        continue;
+                    }
+
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
@@ -259,6 +267,9 @@ fn loop_decrypt(
                     return;
                 }
                 let new_str = reverse::decrypt(strs.clone());
+                if strs == new_str {
+                    return;
+                }
                 let cryptor_name = String::from("Reverse");
                 let current_acc = process_new_str(
                     res_acc.clone(),
@@ -284,6 +295,9 @@ fn loop_decrypt(
                 for s in 1..strs.first().map(|s| s.len()).unwrap_or(0) {
                     let new_str =
                         transpose::decrypt(strs.clone(), models::NumberArgs { number: s });
+                    if strs == new_str {
+                        continue;
+                    }
                     let cryptor_name = String::from("Transpose");
 
                     let current_acc = process_new_str(
@@ -314,6 +328,9 @@ fn loop_decrypt(
                     vigenere::next(current_args.clone(), brute_force_vigenere_args)
                 {
                     let new_str = vigenere::decrypt(strs.clone(), next.clone());
+                    if strs == new_str {
+                        continue;
+                    }
                     let current_acc = process_new_str(
                         res_acc.clone(),
                         acc.clone(),
@@ -339,6 +356,9 @@ fn loop_decrypt(
             BruteForceCryptor::Cut => {
                 for s in 0..strs.first().map(|s| s.len()).unwrap_or(0) {
                     let new_str = cut::encrypt(strs.clone(), models::NumberArgs { number: s });
+                    if strs == new_str {
+                        continue;
+                    }
                     let cryptor_name = String::from("Cut");
                     let current_acc = process_new_str(
                         res_acc.clone(),
@@ -368,6 +388,10 @@ fn loop_decrypt(
                 {
                     return;
                 }
+                if strs.len() == 1 {
+                    return;
+                }
+
                 let new_str = join::decrypt(strs.clone());
                 let cryptor_name = String::from("Join");
                 let current_acc = process_new_str(
@@ -400,6 +424,11 @@ fn loop_decrypt(
                 let mut current_permutations = permute::init();
                 while let Some(next) = permute::next(current_permutations.clone(), args.clone()) {
                     let new_str = permute::decrypt(strs.clone(), next.clone());
+
+                    if strs == new_str {
+                        continue;
+                    }
+
                     let cryptor_name = String::from("Permute");
                     let current_acc = process_new_str(
                         res_acc.clone(),
