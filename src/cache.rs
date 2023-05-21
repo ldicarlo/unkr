@@ -158,10 +158,33 @@ pub fn to_done(
 pub fn combinations_string(
     brute_force_cryptors: Vec<models::BruteForceCryptor>,
 ) -> (String, String) {
-    let strings: Vec<(String, String)> = brute_force_cryptors
+    let mut strings: Vec<(String, Option<String>)> = brute_force_cryptors
         .iter()
-        .map(|c| (String::new(), String::new()))
+        .map(|c| match c {
+            models::BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
+                alphabet_depth,
+                key_depth,
+            }) => (
+                String::from("Vigenere"),
+                Some(format!("Vigenere:{}:{}", alphabet_depth, key_depth)),
+            ),
+            models::BruteForceCryptor::Cut => (String::from("Cut"), None),
+            models::BruteForceCryptor::Caesar => (String::from("Caesar"), None),
+            models::BruteForceCryptor::Transpose => (String::from("Transpose"), None),
+            models::BruteForceCryptor::AtBash => (String::from("AtBash"), None),
+            models::BruteForceCryptor::Reverse => (String::from("Reverse"), None),
+            models::BruteForceCryptor::Swap => (String::from("Swap"), None),
+            models::BruteForceCryptor::Join => (String::from("Join"), None),
+            models::BruteForceCryptor::IndexCrypt => (String::from("IndexCrypt"), None),
+            models::BruteForceCryptor::Permute(models::BruteForcePermuteArgs {
+                max_permutations,
+            }) => (
+                String::from("Permute"),
+                Some(format!("Permute:{}", max_permutations)),
+            ),
+        })
         .collect();
+    strings.sort_by_key(|(a, _)| a.clone());
     let left = strings
         .clone()
         .into_iter()
@@ -170,7 +193,7 @@ pub fn combinations_string(
         .join(" ");
     let right = strings
         .into_iter()
-        .map(|(_, b)| b)
+        .flat_map(|(_, b)| b)
         .collect::<Vec<String>>()
         .join(" ");
     (left, right)
@@ -203,7 +226,7 @@ mod tests {
         models,
     };
 
-    use super::{already_done, get_done_cache, push_line};
+    use super::{already_done, get_done_cache, push_line, to_done};
 
     #[test]
     fn cache_parameters() {
@@ -236,8 +259,16 @@ mod tests {
 
     #[test]
     fn done_workflow() {
+        let models::CacheArgs {
+            md5_string,
+            md5_clues,
+        } = prepare_cache_args(
+            String::from("STRING"),
+            vec![String::from("CLUE1"), String::from("CLUE2")],
+        );
+        let full_directory = format!("cache-tests/{}/{}", md5_string, md5_clues);
         push_line(
-            String::from("cache-tests"),
+            full_directory.clone(),
             String::from("done"),
             String::from("vigenere join permute;vigenere:3:3"),
         );
@@ -258,11 +289,32 @@ mod tests {
             cache.clone(),
             done_line.clone(),
             models::CacheArgs {
-                md5_string: String::from("abc"),
-                md5_clues: String::from("123"),
+                md5_string,
+                md5_clues,
             },
         );
         assert_eq!(already_done(cache.clone(), done_line.clone()), true);
-        fs::remove_file("cache-tests/abc/123/done").expect("cannot delete file");
+        fs::remove_file(format!("{}/done", full_directory)).expect("cannot delete file");
+    }
+
+    #[test]
+    fn to_done_works() {
+        assert_eq!(
+            to_done(
+                vec![
+                    models::BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
+                        alphabet_depth: 4,
+                        key_depth: 7
+                    },),
+                    models::BruteForceCryptor::Transpose,
+                    models::BruteForceCryptor::Caesar,
+                ],
+                vec![0, 1, 2]
+            ),
+            models::DoneLine {
+                combinations: String::from("Caesar Transpose Vigenere"),
+                args: Some(String::from("Vigenere:4:7"))
+            }
+        )
     }
 }
