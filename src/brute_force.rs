@@ -132,7 +132,7 @@ fn threaded_function(
     // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
         eprintln!("THREAD {}\tcombination: {} ", thread_number, i);
-        let done_line = cache::to_done(clues, decryptors_filtered);
+        let done_line = cache::to_done(clues, vec.clone(), decryptors_filtered);
         if !cache::already_done(done_cache, done_line) {
             loop_decrypt(
                 results_accumulator.clone(),
@@ -145,6 +145,8 @@ fn threaded_function(
             );
 
             cache::push_done(String::from("cache"), done_cache, done_line, cache_args);
+        } else {
+            println!("")
         }
     }
     true

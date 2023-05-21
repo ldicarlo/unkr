@@ -146,8 +146,19 @@ fn hit_to_string(hit_line: models::HitLine) -> String {
 }
 pub fn to_done(
     brute_force_args: Vec<models::BruteForceCryptor>,
-    combinations: String,
+    combinations: Vec<u8>,
+    decryptors_filtered: Vec<models::BruteForceCryptor>,
 ) -> models::DoneLine {
+}
+
+pub fn to_decryptor_string(
+    decryptors_filtered: Vec<models::BruteForceCryptor>,
+    combinations: Vec<u8>,
+) -> String {
+    let mut string = String::new();
+    for n in combinations.iter() {}
+
+    string
 }
 
 #[cfg(test)]
