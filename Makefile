@@ -31,13 +31,13 @@ brute-force-k3: ## Bruteforce k3
 	@cargo run -- brute-force --string "$$(cat panels/kr3clear)" --clues=SLOWLYDESPARATELY --steps=5 --threads=16 --decryptors=transpose --decryptors=join --decryptors=reverse
 
 benchmark-1: ## Benchmark t1
-	@cargo run -- brute-force --string "$$(cat benchmark/test1)" --clues=HELLOTEST --steps=5 --threads=16 --decryptors=transpose --decryptors=join --decryptors=reverse
+	@flamegraph -- cargo run -- brute-force --string "$$(cat benchmark/test1)" --clues=HELLOTEST --steps=5 --threads=16 --decryptors=transpose --decryptors=join --decryptors=reverse
 
 benchmark-2: ## Benchmark t2
-	@cargo run -- brute-force --string "$$(cat benchmark/test2)" --clues=HELLOBILOUTE --steps=1 --threads=16 --decryptors=permute
+	@flamegraph -- cargo run -- brute-force --string "$$(cat benchmark/test2)" --clues=HELLOBILOUTE --steps=1 --threads=16 --decryptors=permute:2
 
 benchmark-3: ## Benchmark t3
-	@cargo run -- brute-force --string "$$(cat benchmark/test3)" --clues=HELLOTEST --steps=2 --threads=16 --decryptors=transpose --decryptors=swap
+	@flamegraph -- cargo run -- brute-force --string "$$(cat benchmark/test3)" --clues=HELLOTEST --steps=2 --threads=16 --decryptors=transpose --decryptors=swap
 
 install: ## Install
 	@cargo install --path .

@@ -1,4 +1,5 @@
 /target
 cache
-perf.data
+perf.data*
 cache-tests
+flamegraph.svg
