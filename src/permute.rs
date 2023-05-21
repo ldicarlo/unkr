@@ -1,7 +1,7 @@
 use crate::{char_utils, fuzzer, models};
 
 pub fn skip_if_previous_in() -> Vec<String> {
-    vec![String::from("permute")]
+    vec![String::from("Permute")]
 }
 
 pub fn init() -> models::PermuteArgs {

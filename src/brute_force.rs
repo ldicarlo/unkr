@@ -36,7 +36,6 @@ pub fn brute_force_decrypt(
         .collect();
     let cache_args = cache::prepare_cache_args(str.clone(), clues.clone());
     let done_cache = cache::get_done_cache(String::from("cache"), cache_args.clone());
-
     eprintln!("{:?}", decr);
     let result = brute_force_strings(str, clues, steps, decr, threads, done_cache);
     eprintln!("Result: {:?}", result);
@@ -123,7 +122,6 @@ fn threaded_function(
     done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
     cache_args: models::CacheArgs,
 ) -> bool {
-    // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
         eprintln!("THREAD {}\tcombination: {} ", thread_number, i);
         let done_line = cache::to_done(decryptors_filtered.clone(), vec.clone());
@@ -473,7 +471,7 @@ fn process_new_str(
             String::from("cache"),
             cache_args,
             models::HitLine {
-                args: acc.clone().unwrap(),
+                args: current_acc.clone(),
                 result: new_str.clone().join(" "),
             },
         )

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 pub fn skip_if_previous_in() -> Vec<String> {
-    vec![String::from("atbash")]
+    vec![String::from("AtBash")]
 }
 
 pub fn decrypt(strs: Vec<String>) -> Vec<String> {

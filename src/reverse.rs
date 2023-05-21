@@ -1,5 +1,5 @@
 pub fn skip_if_previous_in() -> Vec<String> {
-    vec![String::from("reverse")]
+    vec![String::from("Reverse")]
 }
 
 pub fn decrypt(strs: Vec<String>) -> Vec<String> {

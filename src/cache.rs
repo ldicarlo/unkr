@@ -36,11 +36,12 @@ pub fn get_done_cache(
     cache_args: models::CacheArgs,
 ) -> Arc<Mutex<BTreeSet<models::DoneLine>>> {
     let (done_folder, done_file) = done_string(cache_directory, cache_args);
+    fs::create_dir_all(done_folder.clone()).unwrap();
     OpenOptions::new()
         .create(true)
         .write(true)
         .open(format!("{}/{}", done_folder, done_file))
-        .unwrap();
+        .expect(&format!("Not found: {}/{}", done_folder, done_file));
     let mut cache: BTreeSet<models::DoneLine> = BTreeSet::new();
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -50,7 +51,6 @@ pub fn get_done_cache(
         .unwrap();
 
     for result in rdr.records() {
-        println!("{:?}", result);
         let record: models::DoneLine = result
             .expect("Failed to deserialize element.")
             .deserialize(None)
@@ -73,11 +73,7 @@ pub fn push_line(full_directory: String, file_name: String, line: String) {
 pub fn push_hit(directory: String, cache_args: models::CacheArgs, hit_line: models::HitLine) {
     let (hits_folder, hits_file) = hits_string(directory, cache_args);
 
-    push_line(
-        format!("{}/{}", hits_folder, hits_file),
-        String::from("hits"),
-        hit_to_string(hit_line.clone()),
-    );
+    push_line(hits_folder, hits_file, hit_to_string(hit_line.clone()));
 }
 
 pub fn push_done(
@@ -94,9 +90,12 @@ pub fn push_done(
             .has_headers(false)
             .delimiter(b';')
             .from_writer(vec![]);
+
         writer.serialize(done_line.clone()).expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
-            .expect("Cannot convert utf8");
+            .expect("Cannot convert utf8")
+            .trim()
+            .to_string();
         push_line(
             format!("{}/{}/{}", directory, md5_string, md5_clues),
             String::from("done"),
@@ -108,6 +107,8 @@ pub fn push_done(
 
 pub fn already_done(cache: Arc<Mutex<BTreeSet<models::DoneLine>>>, done_line: DoneLine) -> bool {
     if let Ok(c) = cache.try_lock() {
+        println!("{:?}", c);
+        println!("{:?}", done_line);
         c.contains(&done_line)
     } else {
         false
@@ -145,13 +146,13 @@ pub fn to_done(
     let (left, right) = combinations_string(combination(brute_force_cryptors, combinations));
     models::DoneLine {
         combinations: left,
-        args: Some(right),
+        args: right,
     }
 }
 
 pub fn combinations_string(
     brute_force_cryptors: Vec<models::BruteForceCryptor>,
-) -> (String, String) {
+) -> (String, Option<String>) {
     let strings: Vec<(String, Option<String>)> = brute_force_cryptors
         .iter()
         .map(|c| match c {
@@ -185,11 +186,17 @@ pub fn combinations_string(
         .map(|(a, _)| a)
         .collect::<Vec<String>>()
         .join(" ");
-    let right = strings
+
+    let rights = strings
         .into_iter()
         .flat_map(|(_, b)| b)
-        .collect::<Vec<String>>()
-        .join(" ");
+        .collect::<Vec<String>>();
+    let right = if rights.is_empty() {
+        None
+    } else {
+        Some(rights.join(" "))
+    };
+
     (left, right)
 }
 
@@ -308,6 +315,23 @@ mod tests {
             models::DoneLine {
                 combinations: String::from("Vigenere Transpose Caesar"),
                 args: Some(String::from("Vigenere:4:7"))
+            }
+        )
+    }
+
+    #[test]
+    fn to_done_no_args_works() {
+        assert_eq!(
+            to_done(
+                vec![
+                    models::BruteForceCryptor::Transpose,
+                    models::BruteForceCryptor::Caesar,
+                ],
+                vec![0, 1]
+            ),
+            models::DoneLine {
+                combinations: String::from("Transpose Caesar"),
+                args: None
             }
         )
     }
