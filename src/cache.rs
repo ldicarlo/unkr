@@ -3,7 +3,6 @@ use std::collections::{BTreeSet, HashSet};
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
-use std::sync::{Arc, Mutex};
 
 fn done_string(
     models::CacheArgs {

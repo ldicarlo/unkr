@@ -98,7 +98,6 @@ pub fn internal_brute_force_decrypt(
         let local_str = str.clone();
         let local_clues = clues.clone();
         let local_decryptors = decryptors.clone();
-        let local_done_cache = done_cache.clone();
         let local_cache_args = cache_args.clone();
         eprintln!(
             "THREAD {}\tstart {} combinations",
@@ -114,7 +113,6 @@ pub fn internal_brute_force_decrypt(
                     local_str,
                     local_clues,
                     local_decryptors,
-                    local_done_cache,
                     local_cache_args,
                 ))
                 .unwrap();
@@ -135,7 +133,6 @@ fn threaded_function(
     str: String,
     clues: Vec<String>,
     decryptors_filtered: Vec<BruteForceCryptor>,
-    done_cache: BTreeSet<models::DoneLine>,
     cache_args: models::CacheArgs,
 ) -> bool {
     for (i, vec) in combinations.iter().enumerate() {
