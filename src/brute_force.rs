@@ -38,16 +38,7 @@ pub fn brute_force_decrypt(
     let done_cache = cache::get_done_cache(String::from("cache"), cache_args.clone());
     let hits_cache = cache::get_hits_cache(String::from("cache"));
     eprintln!("{:?}", decr);
-    let result = brute_force_strings(
-        str,
-        clues,
-        steps,
-        decr,
-        threads,
-        done_cache,
-        hits_cache,
-        cache_args.clone(),
-    );
+    let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, hits_cache);
     eprintln!("Result: {:?}", result);
 }
 
@@ -59,8 +50,8 @@ pub fn internal_brute_force_decrypt(
     threads: u8,
     done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
     hits_cache: Arc<Mutex<bool>>,
-    cache_args: models::CacheArgs,
 ) -> BTreeSet<String> {
+    let cache_args = cache::prepare_cache_args(str.clone(), clues.clone());
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decryptors = if decryptors_filtered.len() == 0 {
         cryptors::get_decryptors()
@@ -172,7 +163,6 @@ fn brute_force_strings(
     threads: u8,
     done_cache: Arc<Mutex<BTreeSet<models::DoneLine>>>,
     hits_cache: Arc<Mutex<bool>>,
-    cache_args: models::CacheArgs,
 ) -> BTreeSet<String> {
     internal_brute_force_decrypt(
         str,
@@ -182,7 +172,6 @@ fn brute_force_strings(
         threads,
         done_cache,
         hits_cache,
-        cache_args,
     )
 }
 

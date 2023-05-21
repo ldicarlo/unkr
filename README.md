@@ -5,7 +5,7 @@
   - [?] enigma
   - [x] indexcrypt
   - [x] vigenere
-    - [ ] next impl
+    - [x] next impl
   - [ ] asciimorse?
   - [x] permutations
 - [x] cut message in parts
@@ -54,3 +54,7 @@ http://kryptools.com/hints.htm
   - [ ] hits file line `vigenere:ABC:DEF join;RESULT`
   - [ ] done file line `vigenere join cut;vigenere:3:3` (only applying params)
   - [ ] (always save in done)
+
+# Perf
+
+- [ ] use a multiproducer channel to get hits ?
