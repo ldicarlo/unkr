@@ -125,8 +125,13 @@ fn threaded_function(
     cache_args: models::CacheArgs,
 ) -> bool {
     for (i, vec) in combinations.iter().enumerate() {
-        eprintln!("THREAD {}\tcombination: {} ", thread_number, i);
         let done_line = cache::to_done(decryptors_filtered.clone(), vec.clone());
+        eprintln!(
+            "THREAD {}\tcombination: {} {:?}",
+            thread_number,
+            i,
+            done_line.clone()
+        );
         if !cache::already_done(done_cache.clone(), done_line.clone()) {
             loop_decrypt(
                 results_accumulator.clone(),
