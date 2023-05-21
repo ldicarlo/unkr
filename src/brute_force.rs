@@ -34,12 +34,19 @@ pub fn brute_force_decrypt(
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
-    let cache_args = cache::prepare_cache_args(str, clues);
-    let done_cache = cache::get_done_cache(String::from("cache"), cache_args);
+    let cache_args = cache::prepare_cache_args(str.clone(), clues.clone());
+    let done_cache = cache::get_done_cache(String::from("cache"), cache_args.clone());
     let hits_cache = cache::get_hits_cache(String::from("cache"));
     eprintln!("{:?}", decr);
     let result = brute_force_strings(
-        str, clues, steps, decr, threads, done_cache, hits_cache, cache_args,
+        str,
+        clues,
+        steps,
+        decr,
+        threads,
+        done_cache,
+        hits_cache,
+        cache_args.clone(),
     );
     eprintln!("Result: {:?}", result);
 }
@@ -132,8 +139,8 @@ fn threaded_function(
     // let cache = BTreeSet::new();
     for (i, vec) in combinations.iter().enumerate() {
         eprintln!("THREAD {}\tcombination: {} ", thread_number, i);
-        let done_line = cache::to_done(clues, vec.clone(), decryptors_filtered);
-        if !cache::already_done(done_cache, done_line) {
+        let done_line = cache::to_done(decryptors_filtered.clone(), vec.clone());
+        if !cache::already_done(done_cache.clone(), done_line.clone()) {
             loop_decrypt(
                 results_accumulator.clone(),
                 None,
@@ -144,7 +151,12 @@ fn threaded_function(
                 None,
             );
 
-            cache::push_done(String::from("cache"), done_cache, done_line, cache_args);
+            cache::push_done(
+                String::from("cache"),
+                done_cache.clone(),
+                done_line.clone(),
+                cache_args.clone(),
+            );
         } else {
             println!("")
         }

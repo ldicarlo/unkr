@@ -145,20 +145,53 @@ fn hit_to_string(hit_line: models::HitLine) -> String {
     format!("{};{}", hit_line.result, hit_line.args)
 }
 pub fn to_done(
-    brute_force_args: Vec<models::BruteForceCryptor>,
+    brute_force_cryptors: Vec<models::BruteForceCryptor>,
     combinations: Vec<u8>,
-    decryptors_filtered: Vec<models::BruteForceCryptor>,
 ) -> models::DoneLine {
+    let (left, right) = combinations_string(combination(brute_force_cryptors, combinations));
+    models::DoneLine {
+        combinations: left,
+        args: Some(right),
+    }
 }
 
-pub fn to_decryptor_string(
-    decryptors_filtered: Vec<models::BruteForceCryptor>,
-    combinations: Vec<u8>,
-) -> String {
-    let mut string = String::new();
-    for n in combinations.iter() {}
+pub fn combinations_string(
+    brute_force_cryptors: Vec<models::BruteForceCryptor>,
+) -> (String, String) {
+    let strings: Vec<(String, String)> = brute_force_cryptors
+        .iter()
+        .map(|c| (String::new(), String::new()))
+        .collect();
+    let left = strings
+        .clone()
+        .into_iter()
+        .map(|(a, _)| a)
+        .collect::<Vec<String>>()
+        .join(" ");
+    let right = strings
+        .into_iter()
+        .map(|(_, b)| b)
+        .collect::<Vec<String>>()
+        .join(" ");
+    (left, right)
+}
 
-    string
+pub fn combination(
+    brute_force_cryptors: Vec<models::BruteForceCryptor>,
+    combinations: Vec<u8>,
+) -> Vec<models::BruteForceCryptor> {
+    let mut result = Vec::new();
+    for n in combinations.into_iter() {
+        result.push(
+            brute_force_cryptors
+                .clone()
+                .into_iter()
+                .nth(n.into())
+                .expect("Did not find cryptor index"),
+        );
+    }
+
+    result
 }
 
 #[cfg(test)]
