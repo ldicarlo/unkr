@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
-pub fn skip_if_previous_in() -> Vec<String> {
-    vec![String::from("AtBash")]
+use crate::models;
+
+pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
+    vec![models::BruteForceCryptor::AtBash]
 }
 
 pub fn decrypt(strs: Vec<String>) -> Vec<String> {

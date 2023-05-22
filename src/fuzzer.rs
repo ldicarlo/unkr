@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use crate::{
     base,
     char_utils::{self, get_alphabet_prefixed},
@@ -72,7 +70,14 @@ pub fn fuzz_next(str: Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> {
 }
 
 pub fn unique_letters(str: Vec<u8>) -> bool {
-    str.len() == str.into_iter().collect::<HashSet<u8>>().len()
+    let mut vec = vec![];
+    for num in str.into_iter() {
+        if vec.contains(&num) {
+            return false;
+        }
+        vec.push(num);
+    }
+    return true;
 }
 
 pub fn pair_length(str: Vec<u8>) -> bool {

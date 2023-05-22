@@ -199,14 +199,6 @@ fn loop_decrypt(
 
         match cryptor {
             BruteForceCryptor::AtBash => {
-                if previous
-                    .clone()
-                    .map(|prev| atbash::skip_if_previous_in().contains(&prev))
-                    .unwrap_or(false)
-                {
-                    eprintln!("skipped previous was:{:?} next is:{:?}", previous, cryptor);
-                    return;
-                }
                 let new_str: Vec<String> = atbash::decrypt(strs.clone());
                 if strs == new_str {
                     return;
@@ -263,12 +255,6 @@ fn loop_decrypt(
                 }
             }
             BruteForceCryptor::Reverse => {
-                if previous
-                    .map(|prev: String| reverse::skip_if_previous_in().contains(&prev))
-                    .unwrap_or(false)
-                {
-                    return;
-                }
                 let new_str = reverse::decrypt(strs.clone());
                 if strs == new_str {
                     return;
@@ -385,12 +371,6 @@ fn loop_decrypt(
                 }
             }
             BruteForceCryptor::Join => {
-                if previous
-                    .map(|prev| join::skip_if_previous_in().contains(&prev))
-                    .unwrap_or(false)
-                {
-                    return;
-                }
                 if strs.len() == 1 {
                     return;
                 }
@@ -418,12 +398,6 @@ fn loop_decrypt(
                 );
             }
             BruteForceCryptor::Permute(args) => {
-                if previous
-                    .map(|prev: String| permute::skip_if_previous_in().contains(&prev))
-                    .unwrap_or(false)
-                {
-                    return;
-                }
                 let mut current_permutations = permute::init();
                 while let Some(next) = permute::next(current_permutations.clone(), args.clone()) {
                     let new_str = permute::decrypt(strs.clone(), next.clone());
@@ -530,10 +504,29 @@ fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> b
     if not_last.contains(&cryp_combination.last()) {
         return true;
     }
-    // let not_sub = vec![BruteForceCryptor::Join, BruteForceCryptor::Join];
-    // if cryp_combination.slice(not_sub) {
-    //     return true;
-    // }
+    let mut last = None;
+
+    for next in cryp_combination.into_iter() {
+        if last
+            .clone()
+            .map(|prev: BruteForceCryptor| match next {
+                BruteForceCryptor::Vigenere(_) => false,
+                BruteForceCryptor::Cut => false,
+                BruteForceCryptor::Caesar => false, // maybe yes
+                BruteForceCryptor::Transpose => false,
+                BruteForceCryptor::AtBash => atbash::skip_if_previous_in().contains(&prev),
+                BruteForceCryptor::Reverse => reverse::skip_if_previous_in().contains(&prev),
+                BruteForceCryptor::Swap => false,
+                BruteForceCryptor::Join => join::skip_if_previous_in().contains(&prev),
+                BruteForceCryptor::IndexCrypt => false,
+                BruteForceCryptor::Permute(_) => permute::skip_if_previous_in().contains(&prev),
+            })
+            .unwrap_or(false)
+        {
+            return true;
+        }
+        last = Some(next);
+    }
 
     false
 }

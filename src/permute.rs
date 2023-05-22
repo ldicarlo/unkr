@@ -1,7 +1,11 @@
 use crate::{char_utils, fuzzer, models};
 
-pub fn skip_if_previous_in() -> Vec<String> {
-    vec![String::from("Permute")]
+pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
+    vec![models::BruteForceCryptor::Permute(
+        models::BruteForcePermuteArgs {
+            max_permutations: 1,
+        },
+    )]
 }
 
 pub fn init() -> models::PermuteArgs {
