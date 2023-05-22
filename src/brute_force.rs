@@ -603,4 +603,20 @@ mod tests {
             .collect::<BTreeSet<String>>(),
         );
     }
+
+    #[test]
+    fn skip_combination_works() {
+        assert_eq!(
+            skip_combination(
+                vec![1, 0, 0],
+                vec![
+                    models::BruteForceCryptor::Permute(models::BruteForcePermuteArgs {
+                        max_permutations: 4
+                    },),
+                    models::BruteForceCryptor::AtBash
+                ]
+            ),
+            true
+        )
+    }
 }
