@@ -9,7 +9,7 @@ pub fn next(SwapArgs { order }: SwapArgs, str_count: usize) -> Option<SwapArgs> 
         order,
         str_count,
         str_count,
-        vec![Box::new(fuzzer::unique_letters)],
+        &vec![Box::new(fuzzer::unique_letters)],
     )
     .map(|r| SwapArgs { order: r })
 }

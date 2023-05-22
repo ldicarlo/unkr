@@ -5,18 +5,20 @@ use crate::{
     char_utils::{self, get_alphabet_prefixed},
 };
 
-pub fn fuzz_from(str: String, len_max: usize, base: usize) {
+pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
+    let mut effective_rules: Vec<Box<dyn Fn(Vec<u8>) -> bool>> = vec![];
+    if rules.contains(&String::from("UniqueLetters")) {
+        effective_rules.push(Box::new(unique_letters));
+    }
+    if rules.contains(&String::from("EvenCount")) {
+        effective_rules.push(Box::new(pair_length));
+    }
+    if rules.contains(&String::from("SortedLettersByPair")) {
+        effective_rules.push(Box::new(sorted_letters_by_pair));
+    }
+
     let mut last = str;
-    while let Some(next) = fuzz_next_string_ruled(
-        last.clone(),
-        len_max,
-        base,
-        vec![
-            // Box::new(pair_length),
-            // Box::new(unique_letters),
-            // Box::new(sorted_letters_by_pair),
-        ],
-    ) {
+    while let Some(next) = fuzz_next_string_ruled(last.clone(), len_max, base, &effective_rules) {
         println!("{}", next);
         last = next;
     }
@@ -26,7 +28,7 @@ pub fn fuzz_next_string_ruled(
     str: String,
     len_max: usize,
     base: usize,
-    rules: Vec<Box<dyn Fn(Vec<u8>) -> bool>>,
+    rules: &Vec<Box<dyn Fn(Vec<u8>) -> bool>>,
 ) -> Option<String> {
     fuzz_next_r(
         str.chars()
@@ -49,7 +51,7 @@ pub fn fuzz_next_r(
     str: Vec<u8>,
     len_max: usize,
     base: usize,
-    rules: Vec<Box<dyn Fn(Vec<u8>) -> bool>>,
+    rules: &Vec<Box<dyn Fn(Vec<u8>) -> bool>>,
 ) -> Option<Vec<u8>> {
     let mut last = str;
     while let Some(result) = fuzz_next(last, len_max, base) {
@@ -96,15 +98,15 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            super::fuzz_next_string_ruled("KRYPTOR".to_string(), 7, 27, vec![]),
+            super::fuzz_next_string_ruled("KRYPTOR".to_string(), 7, 27, &vec![]),
             Some("KRYPTOS".to_string())
         );
         assert_eq!(
-            super::fuzz_next_string_ruled("ZZZ".to_string(), 3, 27, vec![]),
+            super::fuzz_next_string_ruled("ZZZ".to_string(), 3, 27, &vec![]),
             None
         );
         assert_eq!(
-            super::fuzz_next_string_ruled("ZZ".to_string(), 3, 27, vec![]),
+            super::fuzz_next_string_ruled("ZZ".to_string(), 3, 27, &vec![]),
             Some("AAA".to_string())
         );
     }

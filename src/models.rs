@@ -100,3 +100,10 @@ pub struct DoneLine {
     pub combinations: String,
     pub args: Option<String>,
 }
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
+pub enum FuzzerRule {
+    UniqueLetters,
+    EvenCount,
+    SortedLettersByPair,
+}

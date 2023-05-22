@@ -20,7 +20,7 @@ pub fn next(
             .collect::<String>(),
         max_permutations,
         27,
-        vec![
+        &vec![
             Box::new(fuzzer::pair_length),
             Box::new(fuzzer::unique_letters),
             Box::new(fuzzer::sorted_letters_by_pair),

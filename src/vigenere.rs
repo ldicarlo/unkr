@@ -17,13 +17,13 @@ pub fn next(
         alphabet_depth,
     }: models::BruteForceVigenereArgs,
 ) -> Option<models::VigenereArgs> {
-    fuzzer::fuzz_next_string_ruled(key, key_depth, 27, vec![])
+    fuzzer::fuzz_next_string_ruled(key, key_depth, 27, &vec![])
         .map(|k| models::VigenereArgs {
             key: k,
             alphabet: alphabet.clone(),
         })
         .or_else(|| {
-            fuzzer::fuzz_next_string_ruled(alphabet, alphabet_depth, 27, vec![]).map(|a| {
+            fuzzer::fuzz_next_string_ruled(alphabet, alphabet_depth, 27, &vec![]).map(|a| {
                 models::VigenereArgs {
                     key: String::from("A"),
                     alphabet: a,

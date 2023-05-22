@@ -80,7 +80,7 @@ fn main() {
             elements_count,
             picks,
         } => combinator::print_combine_elements(elements_count, picks),
-        Commands::Fuzz { length } => fuzzer::fuzz_from("".to_string(), length, 27),
+        Commands::Fuzz { length, rules } => fuzzer::fuzz_from("".to_string(), length, 27, rules),
     };
 }
 
@@ -142,7 +142,12 @@ enum Commands {
         picks: u8,
     },
     Fuzz {
+        /// max_length of output
         #[arg(short, long)]
         length: usize,
+
+        /// Rules to restrict output
+        #[arg(long)]
+        rules: Vec<String>,
     },
 }
