@@ -151,7 +151,6 @@ fn threaded_function(
             vec![str.clone()],
             clues.clone(),
             decryptors_filtered.clone(),
-            None,
             cache_args.clone(),
         );
 
@@ -187,7 +186,6 @@ fn loop_decrypt(
     strs: Vec<String>,
     clues: Vec<String>,
     decryptors_filtered: Vec<BruteForceCryptor>,
-    previous: Option<String>,
     cache_args: models::CacheArgs,
 ) {
     if let Some(current) = to_use.pop() {
@@ -220,7 +218,6 @@ fn loop_decrypt(
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
-                    Some(cryptor_name.clone()),
                     cache_args.clone(),
                 );
             }
@@ -249,7 +246,6 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
-                        Some(cryptor_name.clone()),
                         cache_args.clone(),
                     );
                 }
@@ -276,7 +272,6 @@ fn loop_decrypt(
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
-                    Some(cryptor_name),
                     cache_args.clone(),
                 );
             }
@@ -305,7 +300,6 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
-                        Some(cryptor_name.clone()),
                         cache_args.clone(),
                     );
                 }
@@ -336,7 +330,6 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
-                        Some(cryptor_name.clone()),
                         cache_args.clone(),
                     );
                     current_args = next;
@@ -365,7 +358,6 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
-                        Some(cryptor_name.clone()),
                         cache_args.clone(),
                     );
                 }
@@ -393,7 +385,6 @@ fn loop_decrypt(
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
-                    Some(cryptor_name.clone()),
                     cache_args.clone(),
                 );
             }
@@ -423,7 +414,6 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
-                        Some(cryptor_name.clone()),
                         cache_args.clone(),
                     );
                     current_permutations = next;
@@ -449,7 +439,6 @@ fn loop_decrypt(
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
-                        Some(cryptor_name.clone()),
                         cache_args.clone(),
                     );
                     current_order = next;
@@ -509,7 +498,7 @@ fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> b
     for next in cryp_combination.into_iter() {
         if last
             .clone()
-            .map(|prev: BruteForceCryptor| match next {
+            .map(|prev: BruteForceCryptor| match next.clone() {
                 BruteForceCryptor::Vigenere(_) => false,
                 BruteForceCryptor::Cut => false,
                 BruteForceCryptor::Caesar => false, // maybe yes
@@ -519,7 +508,9 @@ fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> b
                 BruteForceCryptor::Swap => false,
                 BruteForceCryptor::Join => join::skip_if_previous_in().contains(&prev),
                 BruteForceCryptor::IndexCrypt => false,
-                BruteForceCryptor::Permute(_) => permute::skip_if_previous_in().contains(&prev),
+                BruteForceCryptor::Permute(args) => {
+                    permute::skip_if_previous_in(args).contains(&prev)
+                }
             })
             .unwrap_or(false)
         {
