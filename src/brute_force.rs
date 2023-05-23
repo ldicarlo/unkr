@@ -505,7 +505,7 @@ fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> b
                 BruteForceCryptor::Transpose => false,
                 BruteForceCryptor::AtBash => atbash::skip_if_previous_in().contains(&prev),
                 BruteForceCryptor::Reverse => reverse::skip_if_previous_in().contains(&prev),
-                BruteForceCryptor::Swap => false,
+                BruteForceCryptor::Swap => swap::skip_if_previous_in().contains(&prev),
                 BruteForceCryptor::Join => join::skip_if_previous_in().contains(&prev),
                 BruteForceCryptor::IndexCrypt => false,
                 BruteForceCryptor::Permute(args) => {

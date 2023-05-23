@@ -1,4 +1,14 @@
-use crate::{fuzzer, models::SwapArgs};
+use crate::{
+    fuzzer,
+    models::{self, SwapArgs},
+};
+
+pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
+    vec![
+        models::BruteForceCryptor::Swap,
+        models::BruteForceCryptor::Join,
+    ]
+}
 
 pub fn init() -> SwapArgs {
     SwapArgs { order: vec![0] }
