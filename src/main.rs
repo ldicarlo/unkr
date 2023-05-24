@@ -22,6 +22,7 @@ mod swap;
 mod transpose;
 mod vigenere;
 use std::io;
+mod console;
 
 use clap::{Parser, Subcommand};
 mod permute;
