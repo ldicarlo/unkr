@@ -12,6 +12,7 @@ mod cut;
 mod decrypt;
 mod dispatcher;
 mod encrypt;
+mod enigma;
 mod fuzzer;
 mod indexcrypt;
 mod join;
