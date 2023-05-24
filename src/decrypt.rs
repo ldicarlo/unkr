@@ -7,7 +7,6 @@ use crate::caesar;
 use crate::colorize;
 use crate::indexcrypt;
 use crate::join;
-use crate::models::StringArgs;
 use crate::permute;
 use crate::reverse;
 use crate::swap;
@@ -27,9 +26,7 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::Cryptor::Swap(order) => swap::decrypt(acc, order),
             models::Cryptor::Join => join::decrypt(acc),
             models::Cryptor::Colors(letters) => colorize::colorize_letters(acc, letters),
-            models::Cryptor::IndexCrypt(StringArgs { letters }) => {
-                indexcrypt::decrypt(acc, letters)
-            }
+            models::Cryptor::IndexCrypt(letters) => indexcrypt::decrypt(acc, letters),
             models::Cryptor::Permute(permutations) => permute::decrypt(acc, permutations),
         })
         .into_iter()

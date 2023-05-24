@@ -1,14 +1,20 @@
-use crate::char_utils;
+use crate::{char_utils, models};
 
-pub fn _encrypt(strs: Vec<String>, base: String) -> Vec<String> {
+pub fn encrypt(
+    strs: Vec<String>,
+    models::StringArgs { letters }: models::StringArgs,
+) -> Vec<String> {
     strs.into_iter()
-        .map(|str| decrypt_string(str, base.clone()))
+        .map(|str| decrypt_string(str, letters.clone()))
         .collect()
 }
 
-pub fn decrypt(strs: Vec<String>, base: String) -> Vec<String> {
+pub fn decrypt(
+    strs: Vec<String>,
+    models::StringArgs { letters }: models::StringArgs,
+) -> Vec<String> {
     strs.into_iter()
-        .map(|str| decrypt_string(str, base.clone()))
+        .map(|str| decrypt_string(str, letters.clone()))
         .collect()
 }
 
