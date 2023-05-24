@@ -6,11 +6,12 @@ pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
 
 pub fn init() -> EnigmaArgs {
     EnigmaArgs {
-        rotors: vec![('A', 0)],
-        reflector: 'B',
+        rotors: vec![(Rotor::I, 0)],
+        reflector: Reflector::A,
     }
 }
 
+/// https://cryptomuseum.com/crypto/enigma/wiring.htm
 ///
 ///
 ///  rotor A: (shifts:[+1,-3,+4 ... ], notches:[1,3])
@@ -47,7 +48,73 @@ pub fn decrypt(strs: Vec<String>, EnigmaArgs { rotors, reflector }: EnigmaArgs) 
     strs
 }
 
+pub fn encrypt_string(str: String, EnigmaArgs { rotors, reflector }: EnigmaArgs) -> String {
+    for i in str.chars() {}
+
+    str
+}
+
+fn pass_through_rotors(
+    char: char,
+    EnigmaArgs { rotors, reflector }: EnigmaArgs,
+) -> (char, EnigmaArgs) {
+    for rotor in rotors.clone() {
+        pass_through_rotor(char, rotor);
+    }
+    let c = pass_through_reflector(char, reflector.clone());
+    for rotor in rotors.clone() {
+        pass_through_rotor(char, rotor);
+    }
+    let new_rotors = increment_rotors(rotors);
+    (
+        char,
+        EnigmaArgs {
+            rotors: new_rotors,
+            reflector,
+        },
+    )
+}
+
+fn pass_through_rotor(char: char, rotor: (Rotor, u8)) -> (char, (Rotor, u8)) {
+    (char, rotor)
+}
+
+fn pass_through_reflector(char: char, reflector: Reflector) -> char {
+    char
+}
+
+fn increment_rotors(rotors: Vec<(Rotor, u8)>) -> Vec<(Rotor, u8)> {
+    rotors
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct EnigmaArgs {
-    rotors: Vec<(char, u8)>,
-    reflector: char,
+    reflector: Reflector,
+    rotors: Vec<(Rotor, u8)>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum Rotor {
+    I,
+    II,
+    III,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum Reflector {
+    A,
+    B,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::enigma::Rotor;
+
+    #[test]
+    fn it_works() {
+        assert_eq!(
+            vec![(Rotor::I, 3), (Rotor::II, 3), (Rotor::III, 3)],
+            super::increment_rotors(vec![(Rotor::I, 3), (Rotor::II, 3), (Rotor::III, 3)]),
+        );
+    }
 }
