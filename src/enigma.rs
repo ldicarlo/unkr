@@ -13,7 +13,7 @@ pub fn init() -> EnigmaArgs {
 
 ///
 ///
-///  rotor A: (shifts:[+1,-3,+4 ... ], notches:[3])
+///  rotor A: (shifts:[+1,-3,+4 ... ], notches:[1,3])
 ///
 ///
 ///
