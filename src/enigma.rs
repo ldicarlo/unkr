@@ -58,6 +58,7 @@ fn pass_through_rotors(
     char: char,
     EnigmaArgs { rotors, reflector }: EnigmaArgs,
 ) -> (char, EnigmaArgs) {
+    let new_rotors = increment_rotors(rotors);
     for rotor in rotors.clone() {
         pass_through_rotor(char, rotor);
     }
@@ -65,7 +66,6 @@ fn pass_through_rotors(
     for rotor in rotors.clone() {
         pass_through_rotor(char, rotor);
     }
-    let new_rotors = increment_rotors(rotors);
     (
         char,
         EnigmaArgs {
