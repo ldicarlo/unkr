@@ -91,22 +91,35 @@ fn increment_rotors_m3(
         r_rotor: (r_r, r_i),
     }: M3_settings,
 ) -> M3_settings {
-    let new_l_rotor = (l_i + 1) % 26;
-    let new_m_rotor = (m_i + 1) % 26;
-    let new_r_rotor = (r_i + 1) % 26;
+    let new_r_rotor_i = (r_i + 1) % 26;
+
+    let r_notches = get_notches(r_r.clone());
+
+    let new_m_rotor_i = if r_notches.contains(&l_i) || new_r_rotor_i == 0 {
+        (m_i + 1) % 26
+    } else {
+        m_i
+    };
+    let m_notches = get_notches(m_r.clone());
+    let new_l_rotor_i = if m_notches.contains(&m_i) || (new_m_rotor_i == 0 && m_i != 0) {
+        (l_i + 1) % 26
+    } else {
+        l_i
+    };
+
     M3_settings {
         reflector,
-        l_rotor: (l_r, new_l_rotor),
-        m_rotor: (m_r, new_m_rotor),
-        r_rotor: (r_r, new_r_rotor),
+        l_rotor: (l_r, new_l_rotor_i),
+        m_rotor: (m_r, new_m_rotor_i),
+        r_rotor: (r_r, new_r_rotor_i),
     }
 }
 
 fn get_notches(r: Rotor) -> Vec<u8> {
     match r {
-        Rotor::I => vec![2],
-        Rotor::II => vec![5],
-        Rotor::III => vec![7],
+        Rotor::I => vec![16],
+        Rotor::II => vec![4],
+        Rotor::III => vec![21],
     }
 }
 
@@ -139,13 +152,23 @@ pub enum Reflector {
 
 #[cfg(test)]
 mod tests {
-    use crate::enigma::Rotor;
+    use crate::enigma::{M3_settings, Reflector, Rotor};
 
     #[test]
     fn it_works() {
         assert_eq!(
-            vec![(Rotor::I, 3), (Rotor::II, 3), (Rotor::III, 3)],
-            super::increment_rotors(vec![(Rotor::I, 3), (Rotor::II, 3), (Rotor::III, 3)]),
+            M3_settings {
+                reflector: Reflector::A,
+                l_rotor: (Rotor::I, 0),
+                m_rotor: (Rotor::II, 1),
+                r_rotor: (Rotor::III, 17)
+            },
+            super::increment_rotors_m3(M3_settings {
+                reflector: Reflector::A,
+                l_rotor: (Rotor::I, 0),
+                m_rotor: (Rotor::II, 0),
+                r_rotor: (Rotor::III, 16)
+            }),
         );
     }
 }
