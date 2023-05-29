@@ -3,3 +3,4 @@ cache
 perf.data*
 cache-tests
 flamegraph.svg
+.data
