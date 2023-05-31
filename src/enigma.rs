@@ -1,4 +1,4 @@
-use crate::models;
+use crate::{char_utils, models};
 
 pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
     vec![]
@@ -14,13 +14,10 @@ pub fn init() -> EnigmaArgs {
 }
 
 /// https://cryptomuseum.com/crypto/enigma/wiring.htm
+/// https://www.cryptomuseum.com/people/hamer/files/double_stepping.pdf
+/// https://en.wikipedia.org/wiki/Enigma_rotor_details
 ///
-///
-///  rotor A: (shifts:[+1,-3,+4 ... ], notches:[1,3])
-///
-///
-///
-pub fn next(enigma_args: EnigmaArgs) -> Option<models::PermuteArgs> {
+pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     // let next = fuzzer::fuzz_next_string_ruled(
     //     char_utils::pairs_to_vec(permutations)
     //         .into_iter()
@@ -56,8 +53,8 @@ pub fn encrypt_string(str: String, enigma_args: EnigmaArgs) -> String {
     str
 }
 
-fn pass_through_rotors(char: char, enigma_args: EnigmaArgs) -> (char, EnigmaArgs) {
-    // let new_rotors = increment_rotors(rotors);
+fn pass_through_rotors_m3(char: char, rotors: M3_settings) -> (char, M3_settings) {
+    // let new_rotors = increment_rotors_m3(rotors);
     // for rotor in rotors.clone() {
     //     pass_through_rotor(char, rotor);
     // }
@@ -72,7 +69,7 @@ fn pass_through_rotors(char: char, enigma_args: EnigmaArgs) -> (char, EnigmaArgs
     //         reflector,
     //     },
     // )
-    (char, enigma_args)
+    (char, rotors)
 }
 
 fn pass_through_rotor(char: char, rotor: (Rotor, u8)) -> (char, (Rotor, u8)) {
@@ -95,13 +92,14 @@ fn increment_rotors_m3(
 
     let r_notches = get_notches(r_r.clone());
 
-    let new_m_rotor_i = if r_notches.contains(&l_i) || new_r_rotor_i == 0 {
+    let m_notches = get_notches(m_r.clone());
+    let new_m_rotor_i = if r_notches.contains(&r_i) || m_notches.contains(&m_i) {
         (m_i + 1) % 26
     } else {
         m_i
     };
-    let m_notches = get_notches(m_r.clone());
-    let new_l_rotor_i = if m_notches.contains(&m_i) || (new_m_rotor_i == 0 && m_i != 0) {
+    let l_notches = get_notches(r_r.clone());
+    let new_l_rotor_i = if m_notches.contains(&m_i) || l_notches.contains(&r_i) {
         (l_i + 1) % 26
     } else {
         l_i
@@ -118,8 +116,16 @@ fn increment_rotors_m3(
 fn get_notches(r: Rotor) -> Vec<u8> {
     match r {
         Rotor::I => vec![16],
-        Rotor::II => vec![4],
-        Rotor::III => vec![21],
+        Rotor::II => vec![5],
+        Rotor::III => vec![22],
+    }
+}
+// let's ignore minus, and use only plus
+fn get_rotor(r: Rotor) -> Vec<u8> {
+    match r {
+        Rotor::I => vec![],
+        Rotor::II => vec![],
+        Rotor::III => vec![],
     }
 }
 
@@ -150,25 +156,60 @@ pub enum Reflector {
     B,
 }
 
+fn print_rotors(key: &str, str: &str) {
+    let mut offsets = Vec::new();
+    for (i, c) in str.chars().enumerate() {
+        offsets.push(char_utils::char_position_base(c).unwrap() + 25 - i);
+    }
+    println!("{}:\tvec!{:?}", key, offsets);
+}
+
 #[cfg(test)]
 mod tests {
     use crate::enigma::{M3_settings, Reflector, Rotor};
 
     #[test]
-    fn it_works() {
+    fn increment_1() {
         assert_eq!(
             M3_settings {
                 reflector: Reflector::A,
-                l_rotor: (Rotor::I, 0),
+                l_rotor: (Rotor::III, 0),
                 m_rotor: (Rotor::II, 1),
-                r_rotor: (Rotor::III, 17)
+                r_rotor: (Rotor::I, 17)
             },
             super::increment_rotors_m3(M3_settings {
                 reflector: Reflector::A,
-                l_rotor: (Rotor::I, 0),
+                l_rotor: (Rotor::III, 0),
                 m_rotor: (Rotor::II, 0),
-                r_rotor: (Rotor::III, 16)
+                r_rotor: (Rotor::I, 16)
             }),
         );
+    }
+
+    #[test]
+    fn increment_double_step() {
+        assert_eq!(
+            M3_settings {
+                reflector: Reflector::A,
+                l_rotor: (Rotor::I, 1),
+                m_rotor: (Rotor::II, 6),
+                r_rotor: (Rotor::III, 24)
+            },
+            super::increment_rotors_m3(super::increment_rotors_m3(M3_settings {
+                reflector: Reflector::A,
+                l_rotor: (Rotor::I, 0),
+                m_rotor: (Rotor::II, 4),
+                r_rotor: (Rotor::III, 22)
+            })),
+        );
+    }
+
+    #[test]
+    fn display_rotors() {
+        super::print_rotors("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
+        super::print_rotors("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
+        super::print_rotors("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
+        super::print_rotors("A", "EJMZALYXVBWFCRQUONTSPIKHGD");
+        super::print_rotors("B", "YRUHQSLDPXNGOKMIEBFZCWVJAT");
     }
 }
