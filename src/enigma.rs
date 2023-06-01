@@ -18,6 +18,7 @@ pub fn init() -> EnigmaArgs {
 /// https://cryptomuseum.com/crypto/enigma/wiring.htm
 /// https://www.cryptomuseum.com/people/hamer/files/double_stepping.pdf
 /// https://en.wikipedia.org/wiki/Enigma_rotor_details
+/// https://piotte13.github.io/enigma-cipher/
 ///
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     // let next = fuzzer::fuzz_next_string_ruled(
