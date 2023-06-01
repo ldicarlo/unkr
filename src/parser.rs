@@ -93,7 +93,7 @@ pub fn read_parameters(mut str: String) -> Cryptor {
     if str.len() > 0 {
         str.drain(0..1);
     }
-    match type_name.as_str() {
+    match type_name.to_lowercase().as_str() {
         "vigenere" => read(str, CryptorTypeWithArgs::Vigenere),
         "cut" => read(str, CryptorTypeWithArgs::Cut),
         "transpose" => read(str, CryptorTypeWithArgs::Transpose),
@@ -104,6 +104,7 @@ pub fn read_parameters(mut str: String) -> Cryptor {
         "colors" => read(str, CryptorTypeWithArgs::Colors),
         "indexcrypt" => read(str, CryptorTypeWithArgs::IndexCrypt),
         "permute" => read(str, CryptorTypeWithArgs::Permute),
+        "enigma" => read(str, CryptorTypeWithArgs::Enigma),
         _ => panic!("Cannot parse: {}", str),
     }
 }
@@ -155,7 +156,7 @@ pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
 #[cfg(test)]
 mod tests {
 
-    use crate::models::{BruteForceCryptor, PermuteArgs, SwapArgs};
+    use crate::{models::{BruteForceCryptor, PermuteArgs, SwapArgs}, enigma::{EnigmaArgs, M3_settings, Reflector, Rotor}};
 
     use super::{read, Cryptor, VigenereArgs};
 
@@ -271,6 +272,27 @@ mod tests {
                     key_depth: 5,
                 },
             ))
+            .expect("FAIL");
+        let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
+            .expect("Cannot convert utf8");
+
+        assert_eq!(result, "Vigenere:4:5\n".to_string())
+    }
+
+    #[test]
+    fn enigma_serialize() {
+        let mut writer = csv::WriterBuilder::new()
+            .has_headers(false)
+            .delimiter(b':')
+            .from_writer(vec![]);
+
+        writer
+            .serialize(Cryptor::Enigma( EnigmaArgs::M3(M3_settings {
+              reflector: Reflector::B,
+              l_rotor: (Rotor::I, 0),
+              m_rotor: (Rotor::II, 0),
+              r_rotor: (Rotor::III, 0)
+          })))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");

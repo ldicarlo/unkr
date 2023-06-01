@@ -194,10 +194,10 @@ pub enum EnigmaArgs {
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 
 pub struct M3_settings {
-    reflector: Reflector,
-    l_rotor: (Rotor, u8),
-    m_rotor: (Rotor, u8),
-    r_rotor: (Rotor, u8),
+   pub reflector: Reflector,
+   pub l_rotor: (Rotor, u8),
+   pub m_rotor: (Rotor, u8),
+   pub r_rotor: (Rotor, u8),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
