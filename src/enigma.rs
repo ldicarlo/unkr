@@ -98,19 +98,19 @@ fn pass_through_rotors_m3(char: char, rotors: M3_settings) -> (char, M3_settings
         char_utils::get_alphabet()[(new_char_4 % 26) as usize]
     );
     let new_char_5 =
-        get_reversed_rotor(l_r.clone())[(new_char_4 as usize + (l_i as usize)) % 26];
+        new_char_4 + get_reversed_rotor(l_r.clone())[(new_char_4 as usize + (l_i as usize)) % 26];
     println!(
         "Char5: {}",
         char_utils::get_alphabet()[(new_char_5 % 26) as usize]
     );
     let new_char_6 =
-         get_reversed_rotor(m_r.clone())[(new_char_5 as usize + (m_i as usize)) % 26];
+        new_char_5 + get_reversed_rotor(m_r.clone())[(new_char_5 as usize + (m_i as usize)) % 26];
     println!(
         "Char6: {}",
         char_utils::get_alphabet()[(new_char_6 % 26) as usize]
     );
     let new_char_7 =
-        get_reversed_rotor(r_r.clone())[(new_char_6 as usize + (r_i as usize)) % 26];
+        new_char_6 + get_reversed_rotor(r_r.clone())[(new_char_6 as usize + (r_i as usize)) % 26];
     println!(
         "Char7: {}",
         char_utils::get_alphabet()[(new_char_7 % 26) as usize]
@@ -186,16 +186,16 @@ fn get_rotor(r: Rotor) -> Vec<u8> {
 fn get_reversed_rotor(r: Rotor) -> Vec<u8> {
     match r {
         Rotor::I => vec![
-            20, 22, 24, 6, 0, 3, 5, 15, 21, 25, 1, 4, 2, 10, 12, 19, 7, 23, 18, 11, 17, 8, 13, 16,
-            14, 9,
+            20, 21, 22, 3, 22, 24, 25, 8, 13, 16, 17, 19, 16, 23, 24, 4, 17, 6, 0, 18, 23, 13, 17,
+            19, 16, 10,
         ],
         Rotor::II => vec![
-            0, 9, 15, 2, 25, 22, 17, 11, 5, 1, 3, 10, 14, 19, 24, 20, 16, 6, 4, 13, 7, 23, 12, 8,
-            21, 18,
+            0, 8, 13, 25, 21, 17, 11, 4, 23, 18, 19, 25, 2, 6, 10, 5, 0, 15, 12, 20, 13, 2, 16, 11,
+            23, 19,
         ],
         Rotor::III => vec![
-            19, 0, 6, 1, 15, 2, 18, 3, 16, 4, 20, 5, 21, 13, 25, 7, 24, 8, 23, 9, 22, 11, 17, 10,
-            14, 12,
+            19, 25, 4, 24, 11, 23, 12, 22, 8, 21, 10, 20, 9, 0, 11, 18, 8, 17, 5, 16, 2, 16, 21,
+            13, 16, 13,
         ],
     }
 }
@@ -265,7 +265,8 @@ fn print_reverse(prefix: &str, key: &str, str: &str) {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
     for (i, c) in str.chars().enumerate() {
-        offsets[char_utils::char_position_base(c).unwrap()] = (26 + i) % 26;
+        offsets[char_utils::char_position_base(c).unwrap()] =
+            (26 + i - char_utils::char_position_base(c).unwrap()) % 26;
     }
     println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
 }
@@ -326,7 +327,7 @@ mod tests {
     #[test]
     fn m3_works_1() {
         assert_eq!(
-            String::from("MFNCZXHUM"),
+            String::from("ILBDARKFH"),
             super::encrypt_string(
                 String::from("HELLOTEST"),
                 super::EnigmaArgs::M3(M3_settings {
@@ -342,7 +343,7 @@ mod tests {
     #[test]
     fn m3_works_2() {
         assert_eq!(
-            String::from("FUV"),
+            String::from("BJE"),
             super::encrypt_string(
                 String::from("ABC"),
                 super::EnigmaArgs::M3(M3_settings {
