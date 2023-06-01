@@ -126,7 +126,7 @@ fn increment_rotors_m3(
         m_i
     };
     let l_notches = get_notches(r_r.clone());
-    let new_l_rotor_i = if m_notches.contains(&m_i) || l_notches.contains(&r_i) {
+    let new_l_rotor_i = if m_notches.contains(&m_i) || l_notches.contains(&l_i) {
         (l_i + 1) % 26
     } else {
         l_i
@@ -262,7 +262,7 @@ mod tests {
     }
 
   //  #[test]
-    fn display_rotors() {
+    fn _display_rotors() {
         super::print_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
         super::print_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
         super::print_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
