@@ -11,7 +11,7 @@ pub fn init() -> EnigmaArgs {
         l_rotor: (Rotor::I, 0),
         m_rotor: (Rotor::I, 0),
         r_rotor: (Rotor::I, 0),
-        reflector: Reflector::A,
+        reflector: Reflector::B,
     })
 }
 
@@ -73,31 +73,50 @@ fn pass_through_rotors_m3(char: char, rotors: M3_settings) -> (char, M3_settings
         r_rotor: (r_r, r_i),
     } = increment_rotors_m3(rotors);
 
-    let new_char_1 = get_rotor(r_r.clone())[(char as usize + (r_i as usize)) % 26];
-    let new_char_2 = get_rotor(m_r.clone())[(new_char_1 as usize + (r_i as usize)) % 26];
-    let new_char_3 = get_rotor(l_r.clone())[(new_char_2 as usize + (m_i as usize)) % 26];
-    let new_char_4 = get_reflector(reflector.clone())[(new_char_3 as usize + (l_i as usize)) % 26];
-    // reverse reflectors !
-    let new_char_5 = get_rotor(l_r.clone())[(new_char_4 as usize - (l_i as usize)) % 26];
-    let new_char_6 = get_rotor(m_r.clone())[(new_char_5 as usize - (m_i as usize)) % 26];
-    let new_char_7 = get_rotor(r_r.clone())[(new_char_6 as usize - (r_i as usize)) % 26];
-
-    // for rotor in rotors.clone() {
-    //     pass_through_rotor(char, rotor);
-    // }
-    // let c = pass_through_reflector(char, reflector.clone());
-    // for rotor in rotors.clone() {
-    //     pass_through_rotor(char, rotor);
-    // }
-    // (
-    //     char,
-    //     EnigmaArgs {
-    //         rotors: new_rotors,
-    //         reflector,
-    //     },
-    // )
+    let new_char_1 = char_utils::char_position_base(char).unwrap() as u8
+        + get_rotor(r_r.clone())
+            [(char_utils::char_position_base(char).unwrap() + (r_i as usize)) % 26];
+    println!(
+        "Char1: {}",
+        char_utils::get_alphabet()[(new_char_1 % 26) as usize]
+    );
+    let new_char_2 =
+        new_char_1 + get_rotor(m_r.clone())[(new_char_1 as usize + (m_i as usize)) % 26];
+    println!(
+        "Char2: {}",
+        char_utils::get_alphabet()[(new_char_2 % 26) as usize]
+    );
+    let new_char_3 =
+        new_char_2 + get_rotor(l_r.clone())[(new_char_2 as usize + (l_i as usize)) % 26];
+    println!(
+        "Char3: {}",
+        char_utils::get_alphabet()[(new_char_3 % 26) as usize]
+    );
+    let new_char_4 = new_char_3 + get_reflector(reflector.clone())[(new_char_3 as usize) % 26];
+    println!(
+        "Char4: {}",
+        char_utils::get_alphabet()[(new_char_4 % 26) as usize]
+    );
+    let new_char_5 =
+        get_reversed_rotor(l_r.clone())[(new_char_4 as usize + (l_i as usize)) % 26];
+    println!(
+        "Char5: {}",
+        char_utils::get_alphabet()[(new_char_5 % 26) as usize]
+    );
+    let new_char_6 =
+         get_reversed_rotor(m_r.clone())[(new_char_5 as usize + (m_i as usize)) % 26];
+    println!(
+        "Char6: {}",
+        char_utils::get_alphabet()[(new_char_6 % 26) as usize]
+    );
+    let new_char_7 =
+        get_reversed_rotor(r_r.clone())[(new_char_6 as usize + (r_i as usize)) % 26];
+    println!(
+        "Char7: {}",
+        char_utils::get_alphabet()[(new_char_7 % 26) as usize]
+    );
     (
-        char_utils::get_alphabet()[(new_char_7 % 26 )as usize],
+        char_utils::get_alphabet()[(new_char_7 % 26) as usize],
         M3_settings {
             reflector,
             l_rotor: (l_r, l_i),
@@ -151,29 +170,41 @@ fn get_notches(r: Rotor) -> Vec<u8> {
 fn get_rotor(r: Rotor) -> Vec<u8> {
     match r {
         Rotor::I => vec![
-            29, 34, 35, 27, 32, 26, 22, 34, 38, 41, 28, 33, 27, 34, 35, 17, 32, 28, 25, 21, 5, 12,
-            4, 19, 3, 9,
+            4, 9, 10, 2, 7, 1, 23, 9, 13, 16, 3, 8, 2, 9, 10, 18, 7, 3, 0, 22, 6, 13, 5, 20, 4, 10,
         ],
         Rotor::II => vec![
-            25, 33, 26, 32, 39, 28, 36, 38, 40, 17, 26, 21, 35, 31, 23, 12, 25, 14, 32, 19, 20, 28,
-            8, 23, 15, 4,
+            0, 8, 1, 7, 14, 3, 11, 13, 15, 18, 1, 22, 10, 6, 24, 13, 0, 15, 7, 20, 21, 3, 9, 24,
+            16, 5,
         ],
         Rotor::III => vec![
-            26, 27, 28, 29, 30, 31, 21, 33, 34, 35, 38, 35, 38, 25, 35, 14, 17, 30, 13, 6, 15, 16,
-            23, 20, 17, 14,
+            1, 2, 3, 4, 5, 6, 22, 8, 9, 10, 13, 10, 13, 0, 10, 15, 18, 5, 14, 7, 16, 17, 24, 21,
+            18, 15,
+        ],
+    }
+}
+
+fn get_reversed_rotor(r: Rotor) -> Vec<u8> {
+    match r {
+        Rotor::I => vec![
+            20, 22, 24, 6, 0, 3, 5, 15, 21, 25, 1, 4, 2, 10, 12, 19, 7, 23, 18, 11, 17, 8, 13, 16,
+            14, 9,
+        ],
+        Rotor::II => vec![
+            0, 9, 15, 2, 25, 22, 17, 11, 5, 1, 3, 10, 14, 19, 24, 20, 16, 6, 4, 13, 7, 23, 12, 8,
+            21, 18,
+        ],
+        Rotor::III => vec![
+            19, 0, 6, 1, 15, 2, 18, 3, 16, 4, 20, 5, 21, 13, 25, 7, 24, 8, 23, 9, 22, 11, 17, 10,
+            14, 12,
         ],
     }
 }
 
 fn get_reflector(r: Reflector) -> Vec<u8> {
     match r {
-        Reflector::A => vec![
-            29, 33, 35, 47, 21, 31, 43, 41, 38, 17, 37, 19, 15, 29, 27, 30, 23, 21, 26, 24, 20, 12,
-            13, 9, 7, 3,
-        ],
         Reflector::B => vec![
-            49, 41, 43, 29, 37, 38, 30, 21, 32, 39, 28, 20, 27, 22, 23, 18, 13, 9, 12, 31, 7, 26,
-            24, 11, 1, 19,
+            24, 16, 18, 4, 12, 13, 5, 22, 7, 14, 3, 21, 2, 23, 24, 19, 14, 10, 13, 6, 8, 1, 25, 12,
+            2, 20,
         ],
     }
 }
@@ -201,7 +232,7 @@ pub enum Rotor {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub enum Reflector {
-    A,
+    //   A,
     B,
 }
 
@@ -216,7 +247,25 @@ fn print_reflector(key: &str, str: &str) {
 fn print_any(prefix: &str, key: &str, str: &str) {
     let mut offsets = Vec::new();
     for (i, c) in str.chars().enumerate() {
-        offsets.push(char_utils::char_position_base(c).unwrap() + 25 - i);
+        offsets.push((char_utils::char_position_base(c).unwrap() + 26 - i) % 26);
+    }
+    println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
+}
+
+fn print_reverse_rotor(key: &str, str: &str) {
+    print_reverse("Rotor", key, str)
+}
+
+fn print_reverse_reflector(key: &str, str: &str) {
+    print_reverse("Reflector", key, str)
+}
+
+fn print_reverse(prefix: &str, key: &str, str: &str) {
+    let mut offsets = vec![
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+    for (i, c) in str.chars().enumerate() {
+        offsets[char_utils::char_position_base(c).unwrap()] = (26 + i) % 26;
     }
     println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
 }
@@ -229,13 +278,13 @@ mod tests {
     fn increment_1() {
         assert_eq!(
             M3_settings {
-                reflector: Reflector::A,
+                reflector: Reflector::B,
                 l_rotor: (Rotor::III, 0),
                 m_rotor: (Rotor::II, 1),
                 r_rotor: (Rotor::I, 17)
             },
             super::increment_rotors_m3(M3_settings {
-                reflector: Reflector::A,
+                reflector: Reflector::B,
                 l_rotor: (Rotor::III, 0),
                 m_rotor: (Rotor::II, 0),
                 r_rotor: (Rotor::I, 16)
@@ -247,13 +296,13 @@ mod tests {
     fn increment_double_step() {
         assert_eq!(
             M3_settings {
-                reflector: Reflector::A,
+                reflector: Reflector::B,
                 l_rotor: (Rotor::I, 1),
                 m_rotor: (Rotor::II, 6),
                 r_rotor: (Rotor::III, 24)
             },
             super::increment_rotors_m3(super::increment_rotors_m3(M3_settings {
-                reflector: Reflector::A,
+                reflector: Reflector::B,
                 l_rotor: (Rotor::I, 0),
                 m_rotor: (Rotor::II, 4),
                 r_rotor: (Rotor::III, 22)
@@ -261,19 +310,23 @@ mod tests {
         );
     }
 
-  //  #[test]
+    #[test]
     fn _display_rotors() {
         super::print_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
         super::print_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
         super::print_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
-        super::print_reflector("A", "EJMZALYXVBWFCRQUONTSPIKHGD");
+        // super::print_reflector("A", "EJMZALYXVBWFCRQUONTSPIKHGD");
         super::print_reflector("B", "YRUHQSLDPXNGOKMIEBFZCWVJAT");
+        println!("---- REVERSE ----");
+        super::print_reverse_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
+        super::print_reverse_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
+        super::print_reverse_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
     }
 
     #[test]
-    fn m3_works() {
+    fn m3_works_1() {
         assert_eq!(
-            String::from("ILBDARKFH"),
+            String::from("MFNCZXHUM"),
             super::encrypt_string(
                 String::from("HELLOTEST"),
                 super::EnigmaArgs::M3(M3_settings {
@@ -282,6 +335,46 @@ mod tests {
                     m_rotor: (Rotor::II, 0),
                     r_rotor: (Rotor::III, 0)
                 })
+            )
+        );
+    }
+
+    #[test]
+    fn m3_works_2() {
+        assert_eq!(
+            String::from("FUV"),
+            super::encrypt_string(
+                String::from("ABC"),
+                super::EnigmaArgs::M3(M3_settings {
+                    reflector: Reflector::B,
+                    l_rotor: (Rotor::I, 0),
+                    m_rotor: (Rotor::II, 0),
+                    r_rotor: (Rotor::III, 0)
+                })
+            )
+        );
+    }
+
+    #[test]
+    fn pass_through_rotors_m3_works() {
+        assert_eq!(
+            super::pass_through_rotors_m3(
+                'N',
+                super::M3_settings {
+                    reflector: Reflector::B,
+                    l_rotor: (Rotor::I, 0),
+                    m_rotor: (Rotor::II, 0),
+                    r_rotor: (Rotor::III, 0)
+                }
+            ),
+            (
+                'Y',
+                super::M3_settings {
+                    reflector: Reflector::B,
+                    l_rotor: (Rotor::I, 0),
+                    m_rotor: (Rotor::II, 0),
+                    r_rotor: (Rotor::III, 1)
+                }
             )
         );
     }
