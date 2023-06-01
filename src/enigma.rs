@@ -1,3 +1,5 @@
+use clap::Args;
+
 use crate::{char_utils, models};
 
 pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
@@ -48,29 +50,37 @@ pub fn decrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
 }
 
 pub fn encrypt_string(str: String, enigma_args: EnigmaArgs) -> String {
-    for i in str.chars() {}
+    match enigma_args {
+        EnigmaArgs::M3(args) => {
+            let mut result = Vec::new();
+            let mut current_args = args;
+            for i in str.chars() {
+                let (next_char, next_rotors) = pass_through_rotors_m3(i, current_args);
+                result.push(next_char);
+                current_args = next_rotors;
+            }
 
-    str
+            result.iter().collect()
+        }
+    }
 }
 
 fn pass_through_rotors_m3(char: char, rotors: M3_settings) -> (char, M3_settings) {
-    let  M3_settings {
-      reflector,
-      l_rotor: (l_r, l_i),
-      m_rotor: (m_r, m_i),
-      r_rotor: (r_r, r_i),
-  } = increment_rotors_m3(rotors);
+    let M3_settings {
+        reflector,
+        l_rotor: (l_r, l_i),
+        m_rotor: (m_r, m_i),
+        r_rotor: (r_r, r_i),
+    } = increment_rotors_m3(rotors);
 
-
-
-let new_char_1 =  get_rotor(r_r)[( char as usize + (r_i as usize) ) % 26 ];
-let new_char_2 =  get_rotor(r_r)[( new_char_1 as usize + (r_i as usize) ) % 26 ];
-let new_char_3 =  get_rotor(r_r)[( new_char_2 as usize + (r_i as usize) ) % 26 ];
-let new_char_4 =  get_reflector(reflector)[( new_char_3 as usize + (r_i as usize) ) % 26 ];
-// reverse reflectors !
-let new_char_5 =  get_rotor(r_r)[( new_char_4 as usize + (r_i as usize) ) % 26 ];
-let new_char_6 =  get_rotor(r_r)[( new_char_5 as usize + (r_i as usize) ) % 26 ];
-let new_char_7 =  get_rotor(r_r)[( new_char_6 as usize + (r_i as usize) ) % 26 ];
+    let new_char_1 = get_rotor(r_r.clone())[(char as usize + (r_i as usize)) % 26];
+    let new_char_2 = get_rotor(m_r.clone())[(new_char_1 as usize + (r_i as usize)) % 26];
+    let new_char_3 = get_rotor(l_r.clone())[(new_char_2 as usize + (m_i as usize)) % 26];
+    let new_char_4 = get_reflector(reflector.clone())[(new_char_3 as usize + (l_i as usize)) % 26];
+    // reverse reflectors !
+    let new_char_5 = get_rotor(l_r.clone())[(new_char_4 as usize - (l_i as usize)) % 26];
+    let new_char_6 = get_rotor(m_r.clone())[(new_char_5 as usize - (m_i as usize)) % 26];
+    let new_char_7 = get_rotor(r_r.clone())[(new_char_6 as usize - (r_i as usize)) % 26];
 
     // for rotor in rotors.clone() {
     //     pass_through_rotor(char, rotor);
@@ -86,10 +96,16 @@ let new_char_7 =  get_rotor(r_r)[( new_char_6 as usize + (r_i as usize) ) % 26 ]
     //         reflector,
     //     },
     // )
-    (char, rotors)
+    (
+        char_utils::get_alphabet()[(new_char_7 % 26 )as usize],
+        M3_settings {
+            reflector,
+            l_rotor: (l_r, l_i),
+            m_rotor: (m_r, m_i),
+            r_rotor: (r_r, r_i),
+        },
+    )
 }
-
-
 
 fn increment_rotors_m3(
     M3_settings {
@@ -134,17 +150,32 @@ fn get_notches(r: Rotor) -> Vec<u8> {
 // let's ignore minus, and use only plus
 fn get_rotor(r: Rotor) -> Vec<u8> {
     match r {
-        Rotor::I => vec![],
-        Rotor::II => vec![],
-        Rotor::III => vec![],
+        Rotor::I => vec![
+            29, 34, 35, 27, 32, 26, 22, 34, 38, 41, 28, 33, 27, 34, 35, 17, 32, 28, 25, 21, 5, 12,
+            4, 19, 3, 9,
+        ],
+        Rotor::II => vec![
+            25, 33, 26, 32, 39, 28, 36, 38, 40, 17, 26, 21, 35, 31, 23, 12, 25, 14, 32, 19, 20, 28,
+            8, 23, 15, 4,
+        ],
+        Rotor::III => vec![
+            26, 27, 28, 29, 30, 31, 21, 33, 34, 35, 38, 35, 38, 25, 35, 14, 17, 30, 13, 6, 15, 16,
+            23, 20, 17, 14,
+        ],
     }
 }
 
 fn get_reflector(r: Reflector) -> Vec<u8> {
-  match r {
-    Reflector::A => todo!(),
-    Reflector::B => todo!(),
-}
+    match r {
+        Reflector::A => vec![
+            29, 33, 35, 47, 21, 31, 43, 41, 38, 17, 37, 19, 15, 29, 27, 30, 23, 21, 26, 24, 20, 12,
+            13, 9, 7, 3,
+        ],
+        Reflector::B => vec![
+            49, 41, 43, 29, 37, 38, 30, 21, 32, 39, 28, 20, 27, 22, 23, 18, 13, 9, 12, 31, 7, 26,
+            24, 11, 1, 19,
+        ],
+    }
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -175,22 +206,20 @@ pub enum Reflector {
 }
 
 fn print_rotor(key: &str, str: &str) {
-   print_any("Rotor", key, str)
+    print_any("Rotor", key, str)
 }
-
 
 fn print_reflector(key: &str, str: &str) {
-  print_any("Reflector", key, str)
+    print_any("Reflector", key, str)
 }
 
-fn print_any(prefix:&str, key: &str, str: &str) {
-  let mut offsets = Vec::new();
-  for (i, c) in str.chars().enumerate() {
-      offsets.push(char_utils::char_position_base(c).unwrap() + 25 - i);
-  }
-  println!("{}::{} =>\tvec!{:?},",prefix, key, offsets);
+fn print_any(prefix: &str, key: &str, str: &str) {
+    let mut offsets = Vec::new();
+    for (i, c) in str.chars().enumerate() {
+        offsets.push(char_utils::char_position_base(c).unwrap() + 25 - i);
+    }
+    println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -232,12 +261,28 @@ mod tests {
         );
     }
 
-    #[test]
+  //  #[test]
     fn display_rotors() {
         super::print_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
         super::print_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
         super::print_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
         super::print_reflector("A", "EJMZALYXVBWFCRQUONTSPIKHGD");
         super::print_reflector("B", "YRUHQSLDPXNGOKMIEBFZCWVJAT");
+    }
+
+    #[test]
+    fn m3_works() {
+        assert_eq!(
+            String::from("ILBDARKFH"),
+            super::encrypt_string(
+                String::from("HELLOTEST"),
+                super::EnigmaArgs::M3(M3_settings {
+                    reflector: Reflector::B,
+                    l_rotor: (Rotor::I, 0),
+                    m_rotor: (Rotor::II, 0),
+                    r_rotor: (Rotor::III, 0)
+                })
+            )
+        );
     }
 }
