@@ -2,7 +2,8 @@
   - [x] clue,clue2 1,2
 - [ ] cryptors
   - [x] fold
-  - [?] enigma
+  - [ ] enigma
+    - [ ] `echo HELLOTEST | cargo run -- decrypt -- enigma:M3:B:I:0:II:0:III:0`
   - [x] indexcrypt
   - [x] vigenere
     - [x] next impl
