@@ -1,4 +1,4 @@
-use clap::Args;
+
 
 use crate::{char_utils, models};
 
@@ -42,11 +42,15 @@ pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
 }
 
 pub fn encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
-    strs
+    strs.into_iter()
+        .map(|s| encrypt_string(s, enigma_args.clone()))
+        .collect()
 }
 
 pub fn decrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
-    strs
+    strs.into_iter()
+        .map(|s| encrypt_string(s, enigma_args.clone()))
+        .collect()
 }
 
 pub fn encrypt_string(str: String, enigma_args: EnigmaArgs) -> String {
@@ -76,45 +80,18 @@ fn pass_through_rotors_m3(char: char, rotors: M3_settings) -> (char, M3_settings
     let new_char_1 = char_utils::char_position_base(char).unwrap() as u8
         + get_rotor(r_r.clone())
             [(char_utils::char_position_base(char).unwrap() + (r_i as usize)) % 26];
-    println!(
-        "Char1: {}",
-        char_utils::get_alphabet()[(new_char_1 % 26) as usize]
-    );
+
     let new_char_2 =
         new_char_1 + get_rotor(m_r.clone())[(new_char_1 as usize + (m_i as usize)) % 26];
-    println!(
-        "Char2: {}",
-        char_utils::get_alphabet()[(new_char_2 % 26) as usize]
-    );
     let new_char_3 =
         new_char_2 + get_rotor(l_r.clone())[(new_char_2 as usize + (l_i as usize)) % 26];
-    println!(
-        "Char3: {}",
-        char_utils::get_alphabet()[(new_char_3 % 26) as usize]
-    );
     let new_char_4 = new_char_3 + get_reflector(reflector.clone())[(new_char_3 as usize) % 26];
-    println!(
-        "Char4: {}",
-        char_utils::get_alphabet()[(new_char_4 % 26) as usize]
-    );
     let new_char_5 =
         new_char_4 + get_reversed_rotor(l_r.clone())[(new_char_4 as usize + (l_i as usize)) % 26];
-    println!(
-        "Char5: {}",
-        char_utils::get_alphabet()[(new_char_5 % 26) as usize]
-    );
     let new_char_6 =
         new_char_5 + get_reversed_rotor(m_r.clone())[(new_char_5 as usize + (m_i as usize)) % 26];
-    println!(
-        "Char6: {}",
-        char_utils::get_alphabet()[(new_char_6 % 26) as usize]
-    );
     let new_char_7 =
         new_char_6 + get_reversed_rotor(r_r.clone())[(new_char_6 as usize + (r_i as usize)) % 26];
-    println!(
-        "Char7: {}",
-        char_utils::get_alphabet()[(new_char_7 % 26) as usize]
-    );
     (
         char_utils::get_alphabet()[(new_char_7 % 26) as usize],
         M3_settings {
@@ -236,15 +213,15 @@ pub enum Reflector {
     B,
 }
 
-fn print_rotor(key: &str, str: &str) {
-    print_any("Rotor", key, str)
+fn _print_rotor(key: &str, str: &str) {
+    _print_any("Rotor", key, str)
 }
 
-fn print_reflector(key: &str, str: &str) {
-    print_any("Reflector", key, str)
+fn _print_reflector(key: &str, str: &str) {
+    _print_any("Reflector", key, str)
 }
 
-fn print_any(prefix: &str, key: &str, str: &str) {
+fn _print_any(prefix: &str, key: &str, str: &str) {
     let mut offsets = Vec::new();
     for (i, c) in str.chars().enumerate() {
         offsets.push((char_utils::char_position_base(c).unwrap() + 26 - i) % 26);
@@ -252,15 +229,15 @@ fn print_any(prefix: &str, key: &str, str: &str) {
     println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
 }
 
-fn print_reverse_rotor(key: &str, str: &str) {
-    print_reverse("Rotor", key, str)
+fn _print_reverse_rotor(key: &str, str: &str) {
+    _print_reverse("Rotor", key, str)
 }
 
-fn print_reverse_reflector(key: &str, str: &str) {
-    print_reverse("Reflector", key, str)
+fn _print_reverse_reflector(key: &str, str: &str) {
+    _print_reverse("Reflector", key, str)
 }
 
-fn print_reverse(prefix: &str, key: &str, str: &str) {
+fn _print_reverse(prefix: &str, key: &str, str: &str) {
     let mut offsets = vec![
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
@@ -311,17 +288,20 @@ mod tests {
         );
     }
 
-    #[test]
+    //    #[test]
     fn _display_rotors() {
-        super::print_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
-        super::print_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
-        super::print_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
-        // super::print_reflector("A", "EJMZALYXVBWFCRQUONTSPIKHGD");
-        super::print_reflector("B", "YRUHQSLDPXNGOKMIEBFZCWVJAT");
-        println!("---- REVERSE ----");
-        super::print_reverse_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
-        super::print_reverse_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
-        super::print_reverse_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
+        println!("--------- ROTORS --------");
+        super::_print_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
+        super::_print_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
+        super::_print_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
+
+        println!("------ REFLECTORS -------");
+        super::_print_reflector("B", "YRUHQSLDPXNGOKMIEBFZCWVJAT");
+
+        println!("---- REVERSED ROTORS ----");
+        super::_print_reverse_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
+        super::_print_reverse_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
+        super::_print_reverse_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
     }
 
     #[test]

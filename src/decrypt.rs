@@ -5,6 +5,7 @@ use super::vigenere;
 use crate::atbash;
 use crate::caesar;
 use crate::colorize;
+use crate::enigma;
 use crate::indexcrypt;
 use crate::join;
 use crate::permute;
@@ -28,6 +29,7 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::Cryptor::Colors(letters) => colorize::colorize_letters(acc, letters),
             models::Cryptor::IndexCrypt(letters) => indexcrypt::decrypt(acc, letters),
             models::Cryptor::Permute(permutations) => permute::decrypt(acc, permutations),
+            models::Cryptor::Enigma(enigma_args) => enigma::decrypt(acc, enigma_args),
         })
         .into_iter()
         .filter(|s| !s.is_empty())

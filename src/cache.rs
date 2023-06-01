@@ -164,6 +164,7 @@ pub fn combinations_string(
                 String::from("Permute"),
                 Some(format!("Permute:{}", max_permutations)),
             ),
+            models::BruteForceCryptor::Enigma => (String::from("Enigma"), None),
         })
         .collect();
     //strings.sort_by_key(|(a, _)| a.clone());

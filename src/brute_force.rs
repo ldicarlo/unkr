@@ -6,6 +6,7 @@ use crate::candidates;
 use crate::cryptors;
 use crate::cut;
 use crate::dispatcher;
+use crate::enigma;
 use crate::join;
 use crate::models;
 use crate::models::BruteForceCryptor;
@@ -445,6 +446,31 @@ fn loop_decrypt(
                 }
             }
             BruteForceCryptor::IndexCrypt => todo!(),
+            BruteForceCryptor::Enigma => {
+              let mut current_args = enigma::init();
+              while let Some(next) = enigma::next(current_args.clone()) {
+                  let new_str = enigma::decrypt(strs.clone(), next.clone());
+                  let cryptor_name = String::from("Enigma");
+                  let current_acc = process_new_str(
+                      res_acc.clone(),
+                      acc.clone(),
+                      clues.clone(),
+                      cryptor_name.clone() + &format!(":{:?}", current_args),
+                      new_str.clone(),
+                      cache_args.clone(),
+                  );
+                  loop_decrypt(
+                      res_acc.clone(),
+                      current_acc,
+                      to_use.clone(),
+                      new_str.clone(),
+                      clues.clone(),
+                      decryptors_filtered.clone(),
+                      cache_args.clone(),
+                  );
+                  current_args = next;
+              }
+            },
         }
     }
 }
@@ -511,6 +537,7 @@ fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> b
                 BruteForceCryptor::Permute(args) => {
                     permute::skip_if_previous_in(args).contains(&prev)
                 }
+                BruteForceCryptor::Enigma => enigma::skip_if_previous_in().contains(&prev),
             })
             .unwrap_or(false)
         {

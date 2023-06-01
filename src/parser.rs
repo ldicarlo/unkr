@@ -1,7 +1,10 @@
 use super::models::{Cryptor, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
-use crate::models::{
-    BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs,
-    CryptorTypeWithBruteForceArgs, PermuteArgs, StringArgs, SwapArgs,
+use crate::{
+    enigma::EnigmaArgs,
+    models::{
+        BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs,
+        CryptorTypeWithBruteForceArgs, PermuteArgs, StringArgs, SwapArgs,
+    },
 };
 
 fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
@@ -72,6 +75,14 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .unwrap()
                 .expect("cannot find record")
                 .deserialize::<PermuteArgs>(None)
+                .expect("cannot deserialize"),
+        ),
+        CryptorTypeWithArgs::Enigma => Cryptor::Enigma(
+            rdr.records()
+                .find(|_| true)
+                .unwrap()
+                .expect("cannot find record")
+                .deserialize::<EnigmaArgs>(None)
                 .expect("cannot deserialize"),
         ),
     }
