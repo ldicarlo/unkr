@@ -1,6 +1,6 @@
 use super::models::{Cryptor, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
 use crate::{
-    enigma::EnigmaArgs,
+    enigma::{EnigmaArgs, M3Settings},
     models::{
         BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs,
         CryptorTypeWithBruteForceArgs, PermuteArgs, StringArgs, SwapArgs,
@@ -77,14 +77,14 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<PermuteArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Enigma => Cryptor::Enigma(
+        CryptorTypeWithArgs::Enigma => Cryptor::Enigma(EnigmaArgs::M3(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<EnigmaArgs>(None)
+                .deserialize::<M3Settings>(None)
                 .expect("cannot deserialize"),
-        ),
+        )),
     }
 }
 
@@ -149,6 +149,7 @@ pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
         "join" => BruteForceCryptor::Join,
         "indexcrypt" => BruteForceCryptor::IndexCrypt,
         "permute" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Permute),
+        "enigma" => BruteForceCryptor::Enigma,
         _ => panic!("Cannot parse: {}", str),
     }
 }
@@ -292,6 +293,7 @@ mod tests {
         writer
             .serialize(EnigmaArgs::M3(M3Settings {
                 reflector: Reflector::B,
+                l0_rotor: None,
                 l_rotor: (Rotor::I, 0),
                 m_rotor: (Rotor::II, 0),
                 r_rotor: (Rotor::III, 0),
@@ -300,6 +302,28 @@ mod tests {
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");
 
-        assert_eq!(result, "B:I:0:II:0:III:0\n".to_string())
+        assert_eq!(result, "B::I:0:II:0:III:0\n".to_string())
+    }
+
+    #[test]
+    fn enigma_serialize_4_rotors() {
+        let mut writer = csv::WriterBuilder::new()
+            .has_headers(false)
+            .delimiter(b':')
+            .from_writer(vec![]);
+
+        writer
+            .serialize(EnigmaArgs::M3(M3Settings {
+                reflector: Reflector::B,
+                l0_rotor: Some((Rotor::I, 0)),
+                l_rotor: (Rotor::I, 0),
+                m_rotor: (Rotor::II, 0),
+                r_rotor: (Rotor::III, 0),
+            }))
+            .expect("FAIL");
+        let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
+            .expect("Cannot convert utf8");
+
+        assert_eq!(result, "B:I:0:I:0:II:0:III:0\n".to_string())
     }
 }

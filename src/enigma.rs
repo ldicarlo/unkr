@@ -1,5 +1,3 @@
-
-
 use crate::{char_utils, models};
 
 pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
@@ -8,10 +6,11 @@ pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
 
 pub fn init() -> EnigmaArgs {
     EnigmaArgs::M3(M3Settings {
+        reflector: Reflector::B,
+        l0_rotor: None,
         l_rotor: (Rotor::I, 0),
         m_rotor: (Rotor::I, 0),
         r_rotor: (Rotor::I, 0),
-        reflector: Reflector::B,
     })
 }
 
@@ -73,6 +72,7 @@ pub fn encrypt_string(str: String, enigma_args: EnigmaArgs) -> String {
 fn pass_through_rotors_m3(char: char, rotors: M3Settings) -> (char, M3Settings) {
     let M3Settings {
         reflector,
+        l0_rotor: _,
         l_rotor: (l_r, l_i),
         m_rotor: (m_r, m_i),
         r_rotor: (r_r, r_i),
@@ -97,6 +97,7 @@ fn pass_through_rotors_m3(char: char, rotors: M3Settings) -> (char, M3Settings) 
         char_utils::get_alphabet()[(new_char_7 % 26) as usize],
         M3Settings {
             reflector,
+            l0_rotor: None,
             l_rotor: (l_r, l_i),
             m_rotor: (m_r, m_i),
             r_rotor: (r_r, r_i),
@@ -105,8 +106,9 @@ fn pass_through_rotors_m3(char: char, rotors: M3Settings) -> (char, M3Settings) 
 }
 
 fn increment_rotors_m3(
-  M3Settings {
+    M3Settings {
         reflector,
+        l0_rotor: _,
         l_rotor: (l_r, l_i),
         m_rotor: (m_r, m_i),
         r_rotor: (r_r, r_i),
@@ -131,6 +133,7 @@ fn increment_rotors_m3(
 
     M3Settings {
         reflector,
+        l0_rotor: None,
         l_rotor: (l_r, new_l_rotor_i),
         m_rotor: (m_r, new_m_rotor_i),
         r_rotor: (r_r, new_r_rotor_i),
@@ -195,10 +198,11 @@ pub enum EnigmaArgs {
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 
 pub struct M3Settings {
-   pub reflector: Reflector,
-   pub l_rotor: (Rotor, u8),
-   pub m_rotor: (Rotor, u8),
-   pub r_rotor: (Rotor, u8),
+    pub reflector: Reflector,
+    pub l0_rotor: Option<(Rotor, u8)>,
+    pub l_rotor: (Rotor, u8),
+    pub m_rotor: (Rotor, u8),
+    pub r_rotor: (Rotor, u8),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -256,13 +260,15 @@ mod tests {
     #[test]
     fn increment_1() {
         assert_eq!(
-          M3Settings {
+            M3Settings {
                 reflector: Reflector::B,
+                l0_rotor: None,
                 l_rotor: (Rotor::III, 0),
                 m_rotor: (Rotor::II, 1),
                 r_rotor: (Rotor::I, 17)
             },
             super::increment_rotors_m3(M3Settings {
+                l0_rotor: None,
                 reflector: Reflector::B,
                 l_rotor: (Rotor::III, 0),
                 m_rotor: (Rotor::II, 0),
@@ -274,14 +280,16 @@ mod tests {
     #[test]
     fn increment_double_step() {
         assert_eq!(
-          M3Settings {
+            M3Settings {
                 reflector: Reflector::B,
+                l0_rotor: None,
                 l_rotor: (Rotor::I, 1),
                 m_rotor: (Rotor::II, 6),
                 r_rotor: (Rotor::III, 24)
             },
             super::increment_rotors_m3(super::increment_rotors_m3(M3Settings {
                 reflector: Reflector::B,
+                l0_rotor: None,
                 l_rotor: (Rotor::I, 0),
                 m_rotor: (Rotor::II, 4),
                 r_rotor: (Rotor::III, 22)
@@ -313,6 +321,7 @@ mod tests {
                 String::from("HELLOTEST"),
                 super::EnigmaArgs::M3(M3Settings {
                     reflector: Reflector::B,
+                    l0_rotor: None,
                     l_rotor: (Rotor::I, 0),
                     m_rotor: (Rotor::II, 0),
                     r_rotor: (Rotor::III, 0)
@@ -329,6 +338,7 @@ mod tests {
                 String::from("ABC"),
                 super::EnigmaArgs::M3(M3Settings {
                     reflector: Reflector::B,
+                    l0_rotor: None,
                     l_rotor: (Rotor::I, 0),
                     m_rotor: (Rotor::II, 0),
                     r_rotor: (Rotor::III, 0)
@@ -344,6 +354,7 @@ mod tests {
                 'N',
                 super::M3Settings {
                     reflector: Reflector::B,
+                    l0_rotor: None,
                     l_rotor: (Rotor::I, 0),
                     m_rotor: (Rotor::II, 0),
                     r_rotor: (Rotor::III, 0)
@@ -353,6 +364,7 @@ mod tests {
                 'Y',
                 super::M3Settings {
                     reflector: Reflector::B,
+                    l0_rotor: None,
                     l_rotor: (Rotor::I, 0),
                     m_rotor: (Rotor::II, 0),
                     r_rotor: (Rotor::III, 1)
