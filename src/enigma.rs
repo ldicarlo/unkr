@@ -5,13 +5,13 @@ pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
 }
 
 pub fn init() -> EnigmaArgs {
-    EnigmaArgs::M3(M3Settings {
+    EnigmaArgs {
         reflector: Reflector::B,
         l0_rotor: None,
         l_rotor: (Rotor::I, 0),
         m_rotor: (Rotor::I, 0),
         r_rotor: (Rotor::I, 0),
-    })
+    }
 }
 
 /// https://cryptomuseum.com/crypto/enigma/wiring.htm
@@ -20,26 +20,15 @@ pub fn init() -> EnigmaArgs {
 /// https://piotte13.github.io/enigma-cipher/
 ///
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
-    // let next = fuzzer::fuzz_next_string_ruled(
-    //     char_utils::pairs_to_vec(permutations)
-    //         .into_iter()
-    //         .collect::<String>(),
-    //     max_permutations,
-    //     27,
-    //     &vec![
-    //         Box::new(fuzzer::pair_length),
-    //         Box::new(fuzzer::unique_letters),
-    //         Box::new(fuzzer::sorted_letters_by_pair),
-    //     ],
-    // );
-    // next.map(|str| models::PermuteArgs {
-    //     permutations: char_utils::vec_to_pairs(str.chars().collect())
-    //         .into_iter()
-    //         .map(|(a, b)| (a as char, b as char))
-    //         .collect(),
-    // })
+    // Reflector Rotor 1 : index 1
+    // ABAABACA
+    // pairs
     None
 }
+
+fn args_to_string(enigma_args: EnigmaArgs) {}
+
+fn rotors_list() {}
 
 pub fn encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
     strs.into_iter()
@@ -54,23 +43,19 @@ pub fn decrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
 }
 
 pub fn encrypt_string(str: String, enigma_args: EnigmaArgs) -> String {
-    match enigma_args {
-        EnigmaArgs::M3(args) => {
-            let mut result = Vec::new();
-            let mut current_args = args;
-            for i in str.chars() {
-                let (next_char, next_rotors) = pass_through_rotors_m3(i, current_args);
-                result.push(next_char);
-                current_args = next_rotors;
-            }
-
-            result.iter().collect()
-        }
+    let mut result = Vec::new();
+    let mut current_args = enigma_args;
+    for i in str.chars() {
+        let (next_char, next_rotors) = pass_through_rotors_m3(i, current_args);
+        result.push(next_char);
+        current_args = next_rotors;
     }
+
+    result.iter().collect()
 }
 
-fn pass_through_rotors_m3(char: char, rotors: M3Settings) -> (char, M3Settings) {
-    let M3Settings {
+fn pass_through_rotors_m3(char: char, rotors: EnigmaArgs) -> (char, EnigmaArgs) {
+    let EnigmaArgs {
         reflector,
         l0_rotor: _,
         l_rotor: (l_r, l_i),
@@ -95,7 +80,7 @@ fn pass_through_rotors_m3(char: char, rotors: M3Settings) -> (char, M3Settings) 
         new_char_6 + get_reversed_rotor(r_r.clone())[(new_char_6 as usize + (r_i as usize)) % 26];
     (
         char_utils::get_alphabet()[(new_char_7 % 26) as usize],
-        M3Settings {
+        EnigmaArgs {
             reflector,
             l0_rotor: None,
             l_rotor: (l_r, l_i),
@@ -106,14 +91,14 @@ fn pass_through_rotors_m3(char: char, rotors: M3Settings) -> (char, M3Settings) 
 }
 
 fn increment_rotors_m3(
-    M3Settings {
+    EnigmaArgs {
         reflector,
         l0_rotor: _,
         l_rotor: (l_r, l_i),
         m_rotor: (m_r, m_i),
         r_rotor: (r_r, r_i),
-    }: M3Settings,
-) -> M3Settings {
+    }: EnigmaArgs,
+) -> EnigmaArgs {
     let new_r_rotor_i = (r_i + 1) % 26;
 
     let r_notches = get_notches(r_r.clone());
@@ -131,7 +116,7 @@ fn increment_rotors_m3(
         l_i
     };
 
-    M3Settings {
+    EnigmaArgs {
         reflector,
         l0_rotor: None,
         l_rotor: (l_r, new_l_rotor_i),
@@ -191,13 +176,7 @@ fn get_reflector(r: Reflector) -> Vec<u8> {
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
-pub enum EnigmaArgs {
-    M3(M3Settings),
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
-
-pub struct M3Settings {
+pub struct EnigmaArgs {
     pub reflector: Reflector,
     pub l0_rotor: Option<(Rotor, u8)>,
     pub l_rotor: (Rotor, u8),
@@ -255,19 +234,19 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
 
 #[cfg(test)]
 mod tests {
-    use crate::enigma::{M3Settings, Reflector, Rotor};
+    use crate::enigma::{EnigmaArgs, Reflector, Rotor};
 
     #[test]
     fn increment_1() {
         assert_eq!(
-            M3Settings {
+            EnigmaArgs {
                 reflector: Reflector::B,
                 l0_rotor: None,
                 l_rotor: (Rotor::III, 0),
                 m_rotor: (Rotor::II, 1),
                 r_rotor: (Rotor::I, 17)
             },
-            super::increment_rotors_m3(M3Settings {
+            super::increment_rotors_m3(EnigmaArgs {
                 l0_rotor: None,
                 reflector: Reflector::B,
                 l_rotor: (Rotor::III, 0),
@@ -280,14 +259,14 @@ mod tests {
     #[test]
     fn increment_double_step() {
         assert_eq!(
-            M3Settings {
+            EnigmaArgs {
                 reflector: Reflector::B,
                 l0_rotor: None,
                 l_rotor: (Rotor::I, 1),
                 m_rotor: (Rotor::II, 6),
                 r_rotor: (Rotor::III, 24)
             },
-            super::increment_rotors_m3(super::increment_rotors_m3(M3Settings {
+            super::increment_rotors_m3(super::increment_rotors_m3(EnigmaArgs {
                 reflector: Reflector::B,
                 l0_rotor: None,
                 l_rotor: (Rotor::I, 0),
@@ -319,13 +298,13 @@ mod tests {
             String::from("ILBDARKFH"),
             super::encrypt_string(
                 String::from("HELLOTEST"),
-                super::EnigmaArgs::M3(M3Settings {
+                super::EnigmaArgs {
                     reflector: Reflector::B,
                     l0_rotor: None,
                     l_rotor: (Rotor::I, 0),
                     m_rotor: (Rotor::II, 0),
                     r_rotor: (Rotor::III, 0)
-                })
+                }
             )
         );
     }
@@ -336,13 +315,13 @@ mod tests {
             String::from("BJE"),
             super::encrypt_string(
                 String::from("ABC"),
-                super::EnigmaArgs::M3(M3Settings {
+                super::EnigmaArgs {
                     reflector: Reflector::B,
                     l0_rotor: None,
                     l_rotor: (Rotor::I, 0),
                     m_rotor: (Rotor::II, 0),
                     r_rotor: (Rotor::III, 0)
-                })
+                }
             )
         );
     }
@@ -352,7 +331,7 @@ mod tests {
         assert_eq!(
             super::pass_through_rotors_m3(
                 'N',
-                super::M3Settings {
+                EnigmaArgs {
                     reflector: Reflector::B,
                     l0_rotor: None,
                     l_rotor: (Rotor::I, 0),
@@ -362,7 +341,7 @@ mod tests {
             ),
             (
                 'Y',
-                super::M3Settings {
+                EnigmaArgs {
                     reflector: Reflector::B,
                     l0_rotor: None,
                     l_rotor: (Rotor::I, 0),

@@ -1,6 +1,6 @@
 use super::models::{Cryptor, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
 use crate::{
-    enigma::{EnigmaArgs, M3Settings},
+    enigma::EnigmaArgs,
     models::{
         BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs,
         CryptorTypeWithBruteForceArgs, PermuteArgs, StringArgs, SwapArgs,
@@ -77,14 +77,14 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<PermuteArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Enigma => Cryptor::Enigma(EnigmaArgs::M3(
+        CryptorTypeWithArgs::Enigma => Cryptor::Enigma(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<M3Settings>(None)
+                .deserialize::<EnigmaArgs>(None)
                 .expect("cannot deserialize"),
-        )),
+        ),
     }
 }
 
@@ -158,7 +158,7 @@ pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
 mod tests {
 
     use crate::{
-        enigma::{EnigmaArgs, M3Settings, Reflector, Rotor},
+        enigma::{EnigmaArgs, Reflector, Rotor},
         models::{BruteForceCryptor, PermuteArgs, SwapArgs},
     };
 
@@ -291,13 +291,13 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(EnigmaArgs::M3(M3Settings {
+            .serialize(EnigmaArgs {
                 reflector: Reflector::B,
                 l0_rotor: None,
                 l_rotor: (Rotor::I, 0),
                 m_rotor: (Rotor::II, 0),
                 r_rotor: (Rotor::III, 0),
-            }))
+            })
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");
@@ -313,13 +313,13 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(EnigmaArgs::M3(M3Settings {
+            .serialize(EnigmaArgs {
                 reflector: Reflector::B,
                 l0_rotor: Some((Rotor::I, 0)),
                 l_rotor: (Rotor::I, 0),
                 m_rotor: (Rotor::II, 0),
                 r_rotor: (Rotor::III, 0),
-            }))
+            })
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");
