@@ -1,4 +1,4 @@
-use crate::{char_utils, models};
+use crate::{char_utils, fuzzer, models};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
@@ -24,16 +24,56 @@ pub fn init() -> EnigmaArgs {
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     // Reflector Rotor 1 : index 1
     // ABAABACA
-    // pairs
-    None
+    // odds only
+    // A AB AB AB (AB)
+    // length 7 or 9
+
+    let maybe_next =
+        fuzzer::fuzz_next_string_ruled(args_to_string(enigma_args), 9, 26, &Vec::new());
+
+    maybe_next.map(|next| string_to_args(next))
 }
 
-fn args_to_string(enigma_args: EnigmaArgs) {
-    // enigma_args.l_rotor
+fn args_to_string(enigma_args: EnigmaArgs) -> String {
+    let mut vec = Vec::new();
+
+    vec.push(rotor_to_char(enigma_args.l_rotor.0));
+
+    vec.iter().collect()
 }
 
-fn rotors_list() {
-    Rotor::iter();
+fn string_to_args(str: String) -> EnigmaArgs {
+    init()
+}
+
+fn rotor_to_char(r: Rotor) -> char {
+    match r {
+        Rotor::I => 'A',
+        Rotor::II => 'B',
+        Rotor::III => 'C',
+    }
+}
+
+fn char_to_rotor(c: char) -> Option<Rotor> {
+    match c {
+        'A' => Some(Rotor::I),
+        'B' => Some(Rotor::II),
+        'C' => Some(Rotor::III),
+        _ => None,
+    }
+}
+
+fn reflector_to_char(r: Reflector) -> char {
+    match r {
+        Reflector::B => 'A',
+    }
+}
+
+fn char_to_reflector(c: char) -> Option<Reflector> {
+    match c {
+        'A' => Some(Reflector::B),
+        _ => None,
+    }
 }
 
 pub fn encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
@@ -197,7 +237,7 @@ pub enum Rotor {
     III,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, EnumIter)]
 pub enum Reflector {
     //   A,
     B,
@@ -241,6 +281,9 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
 #[cfg(test)]
 mod tests {
     use crate::enigma::{EnigmaArgs, Reflector, Rotor};
+    use strum::IntoEnumIterator;
+
+    use super::{args_to_string, rotor_to_char};
 
     #[test]
     fn increment_1() {
@@ -355,6 +398,45 @@ mod tests {
                     r_rotor: (Rotor::III, 1)
                 }
             )
+        );
+    }
+    #[test]
+    fn parse_rotors() {
+        let _ = Rotor::iter()
+            .map(|r| {
+                assert_eq!(
+                    Some(r.clone()),
+                    super::char_to_rotor(super::rotor_to_char(r.clone()))
+                );
+                r
+            })
+            .collect::<Vec<Rotor>>();
+    }
+
+    #[test]
+    fn parse_reflectors() {
+        let _ = Reflector::iter()
+            .map(|r| {
+                assert_eq!(
+                    Some(r.clone()),
+                    super::char_to_reflector(super::reflector_to_char(r.clone()))
+                );
+                r
+            })
+            .collect::<Vec<Reflector>>();
+    }
+
+    #[test]
+    fn args_to_strign_works() {
+        assert_eq!(
+            args_to_string(EnigmaArgs {
+                reflector: Reflector::B, // A
+                l0_rotor: None,
+                l_rotor: (Rotor::I, 3), // A, D
+                m_rotor: (Rotor::II, 2), // B, C
+                r_rotor: (Rotor::III, 12), // C, M
+            }),
+            String::from("AADBCCM")
         );
     }
 }

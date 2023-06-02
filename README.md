@@ -38,6 +38,7 @@
 - [ ] ASD coin
 - [ ] numbers in chars ??
 - [ ] fuzzer rules in CLI params
+- [ ] use EnumIter everywhere ?
 
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `
@@ -51,10 +52,14 @@ http://kryptools.com/hints.htm
 
 # Caching
 
-- [ ] save combinations in the form `./md5string/md5clues/{hits,done}`:
-  - [ ] hits file line `vigenere:ABC:DEF join;RESULT`
-  - [ ] done file line `vigenere join cut;vigenere:3:3` (only applying params)
-  - [ ] (always save in done)
+- [x] save combinations in the form `./md5string/md5clues/{hits,done}`:
+  - [x] hits file line `vigenere:ABC:DEF join;RESULT`
+  - [x] done file line `vigenere join cut;vigenere:3:3` (only applying params)
+  - [x] (always save in done)
+- [ ] partial cache
+  - [ ] `vigenere join cut;vigenere:3:3`
+  - [ ] see how to do that:
+    BruteForceArgs -> "up to AAB"
 
 # Perf
 
