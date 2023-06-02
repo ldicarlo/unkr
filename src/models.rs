@@ -1,4 +1,4 @@
-use crate::enigma::EnigmaArgs;
+use crate::enigma::{EnigmaArgs, ParseableEnigmaArgs};
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 #[serde(tag = "name", deny_unknown_fields)]
@@ -14,7 +14,7 @@ pub enum Cryptor {
     Colors(StringArgs),
     IndexCrypt(StringArgs),
     Permute(PermuteArgs),
-    Enigma(EnigmaArgs),
+    Enigma(ParseableEnigmaArgs),
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub enum CryptorTypeWithArgs {

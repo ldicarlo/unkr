@@ -1,6 +1,6 @@
 use super::models::{Cryptor, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
 use crate::{
-    enigma::EnigmaArgs,
+    enigma::{EnigmaArgs, ParseableEnigmaArgs},
     models::{
         BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs,
         CryptorTypeWithBruteForceArgs, PermuteArgs, StringArgs, SwapArgs,
@@ -82,7 +82,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<EnigmaArgs>(None)
+                .deserialize::<ParseableEnigmaArgs>(None)
                 .expect("cannot deserialize"),
         ),
     }
@@ -156,7 +156,12 @@ pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
 #[cfg(test)]
 mod tests {
 
-    use crate::{models::{BruteForceCryptor, PermuteArgs, SwapArgs}, enigma::{EnigmaArgs, M3_settings, Reflector, Rotor}};
+    use crate::{
+        enigma::{
+            EnigmaArgs, M3_settings, ParseableEnigmaArgs, ParseableM3Settings, Reflector, Rotor,
+        },
+        models::{BruteForceCryptor, PermuteArgs, SwapArgs},
+    };
 
     use super::{read, Cryptor, VigenereArgs};
 
@@ -287,12 +292,12 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(Cryptor::Enigma( EnigmaArgs::M3(M3_settings {
-              reflector: Reflector::B,
-              l_rotor: (Rotor::I, 0),
-              m_rotor: (Rotor::II, 0),
-              r_rotor: (Rotor::III, 0)
-          })))
+            .serialize(ParseableEnigmaArgs::M3(
+                ParseableM3Settings {
+                    reflector: Reflector::B,
+                    rotors: vec![(Rotor::I, 0), (Rotor::II, 0), (Rotor::III, 0)],
+                },
+            ))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");

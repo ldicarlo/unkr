@@ -1,5 +1,3 @@
-
-
 use crate::{char_utils, models};
 
 pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
@@ -187,33 +185,6 @@ fn get_reflector(r: Reflector) -> Vec<u8> {
     }
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
-pub enum EnigmaArgs {
-    M3(M3_settings),
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
-
-pub struct M3_settings {
-   pub reflector: Reflector,
-   pub l_rotor: (Rotor, u8),
-   pub m_rotor: (Rotor, u8),
-   pub r_rotor: (Rotor, u8),
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
-pub enum Rotor {
-    I,
-    II,
-    III,
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
-pub enum Reflector {
-    //   A,
-    B,
-}
-
 fn _print_rotor(key: &str, str: &str) {
     _print_any("Rotor", key, str)
 }
@@ -247,6 +218,54 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
             (26 + i - char_utils::char_position_base(c).unwrap()) % 26;
     }
     println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
+}
+
+pub fn parse_args(
+    ParseableEnigmaArgs::M3(ParseableM3Settings { reflector, rotors }): ParseableEnigmaArgs,
+) -> EnigmaArgs {
+    EnigmaArgs::M3(M3_settings {
+        reflector,
+        l_rotor: rotors[0].clone(),
+        m_rotor: rotors[1].clone(),
+        r_rotor: rotors[2].clone(),
+    })
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum ParseableEnigmaArgs {
+    M3(ParseableM3Settings),
+}
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub struct ParseableM3Settings {
+    pub reflector: Reflector,
+    pub rotors: Vec<(Rotor, u8)>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum EnigmaArgs {
+    M3(M3_settings),
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+
+pub struct M3_settings {
+    pub reflector: Reflector,
+    pub l_rotor: (Rotor, u8),
+    pub m_rotor: (Rotor, u8),
+    pub r_rotor: (Rotor, u8),
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum Rotor {
+    I,
+    II,
+    III,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum Reflector {
+    //   A,
+    B,
 }
 
 #[cfg(test)]

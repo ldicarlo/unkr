@@ -29,7 +29,9 @@ pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::Cryptor::Colors(letters) => colorize::colorize_letters(acc, letters),
             models::Cryptor::IndexCrypt(letters) => indexcrypt::decrypt(acc, letters),
             models::Cryptor::Permute(permutations) => permute::decrypt(acc, permutations),
-            models::Cryptor::Enigma(enigma_args) => enigma::decrypt(acc, enigma_args),
+            models::Cryptor::Enigma(enigma_args) => {
+                enigma::decrypt(acc, enigma::parse_args(enigma_args))
+            }
         })
         .into_iter()
         .filter(|s| !s.is_empty())

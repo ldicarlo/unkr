@@ -29,7 +29,7 @@ pub fn encrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
             models::Cryptor::Colors(letters) => colorize::colorize_letters(acc, letters),
             models::Cryptor::IndexCrypt(string) => indexcrypt::encrypt(acc, string),
             models::Cryptor::Permute(permutations) => permute::decrypt(acc, permutations),
-            models::Cryptor::Enigma(enigma_args) => enigma::encrypt (acc, enigma_args),
+            models::Cryptor::Enigma(enigma_args) => enigma::encrypt (acc, enigma::parse_args(enigma_args)),
         })
         .into_iter()
         .filter(|s| !s.is_empty())
