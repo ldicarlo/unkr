@@ -11,3 +11,5 @@ clap = { version = "4.0.22", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 rand = "0.8.5"
 md5 = "0.7.0"
+strum = "0.24.1"
+strum_macros = "0.24.1"

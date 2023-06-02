@@ -1,4 +1,6 @@
 use crate::{char_utils, models};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
     vec![]
@@ -26,9 +28,13 @@ pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     None
 }
 
-fn args_to_string(enigma_args: EnigmaArgs) {}
+fn args_to_string(enigma_args: EnigmaArgs) {
+    // enigma_args.l_rotor
+}
 
-fn rotors_list() {}
+fn rotors_list() {
+    Rotor::iter();
+}
 
 pub fn encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
     strs.into_iter()
@@ -184,7 +190,7 @@ pub struct EnigmaArgs {
     pub r_rotor: (Rotor, u8),
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, EnumIter)]
 pub enum Rotor {
     I,
     II,
