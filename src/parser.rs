@@ -156,7 +156,10 @@ pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
 #[cfg(test)]
 mod tests {
 
-    use crate::{models::{BruteForceCryptor, PermuteArgs, SwapArgs}, enigma::{EnigmaArgs, M3_settings, Reflector, Rotor}};
+    use crate::{
+        enigma::{EnigmaArgs, M3Settings, Reflector, Rotor},
+        models::{BruteForceCryptor, PermuteArgs, SwapArgs},
+    };
 
     use super::{read, Cryptor, VigenereArgs};
 
@@ -287,16 +290,16 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(Cryptor::Enigma( EnigmaArgs::M3(M3_settings {
-              reflector: Reflector::B,
-              l_rotor: (Rotor::I, 0),
-              m_rotor: (Rotor::II, 0),
-              r_rotor: (Rotor::III, 0)
-          })))
+            .serialize(EnigmaArgs::M3(M3Settings {
+                reflector: Reflector::B,
+                l_rotor: (Rotor::I, 0),
+                m_rotor: (Rotor::II, 0),
+                r_rotor: (Rotor::III, 0),
+            }))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");
 
-        assert_eq!(result, "Vigenere:4:5\n".to_string())
+        assert_eq!(result, "B:I:0:II:0:III:0\n".to_string())
     }
 }
