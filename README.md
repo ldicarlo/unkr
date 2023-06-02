@@ -17,7 +17,7 @@
 - [ ] fix test method names
 - [ ] perfs monitoring
 - [x] multithreading
-- [ ] profiling
+- [~] profiling
 - [ ] when a thread is done, reallocate from another
 - [x] move to `get_next`
 - [x] read from stdin by default
@@ -46,6 +46,7 @@
   - [x] `cargo run -- encrypt --string HELLOHELLO -- cut:5 vigenere:KEY:ALPHABET transpose:12 swap:0:5:6:4:2:3:1`
 - [ ] `unkr decryptor <decryptor>` shows doc for decryptor
 - [ ] `unkr bruteforce --clues-file ./words`
+- [ ] `unkr bruteforce-combination --clue clue --string string -- permute:4 vigenere:2:3`
 
 https://kryptosfan.wordpress.com/k3/k3-solution-3/
 http://kryptools.com/hints.htm
@@ -57,9 +58,14 @@ http://kryptools.com/hints.htm
   - [x] done file line `vigenere join cut;vigenere:3:3` (only applying params)
   - [x] (always save in done)
 - [ ] partial cache
+  - [ ] Partial BruteForce
+    - [ ] First I do Permute length=3, then length=5 -> cache applies
+  - [ ] Partial Checkpoint
+    - [ ] When using Ctrl + C, write all current permutations to cache as
+      `vigenere join cut;vigenere:3:3;partial vigenere:ABC:ALPHABET join cut:3`
   - [ ] `vigenere join cut;vigenere:3:3`
-  - [ ] see how to do that:
-    BruteForceArgs -> "up to AAB"
+
+
 
 # Perf
 
