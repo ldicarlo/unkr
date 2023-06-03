@@ -2,6 +2,7 @@ use crate::{
     char_utils::{self, char_position_base},
     fuzzer, models,
 };
+use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
@@ -24,8 +25,12 @@ pub fn init() -> EnigmaArgs {
 /// https://piotte13.github.io/enigma-cipher/
 ///
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
-    let maybe_next =
-        fuzzer::fuzz_next_string_ruled(args_to_string(enigma_args), 9, 26, &Vec::new());
+    let maybe_next = fuzzer::fuzz_next_string_ruled(
+        args_to_string(enigma_args),
+        9,
+        26,
+        &vec![Box::new(enigma_rules)],
+    );
 
     maybe_next.map(|next| string_to_args(next))
 }
@@ -331,6 +336,26 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
     println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
 }
 
+fn enigma_rules(str: Vec<u8>) -> bool {
+    let len = str.len();
+    if len != 7 || len != 9 {
+        return false;
+    }
+    if str[0] >= Reflector::iter().len() as u8 {
+        return false;
+    }
+
+    let rotor_max = Rotor::iter().len() as u8;
+    if str[1] >= rotor_max || str[3] >= rotor_max || str[5] >= rotor_max {
+        return false;
+    }
+    if len == 9 && str[7] >= rotor_max {
+        return false;
+    }
+
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use crate::enigma::{EnigmaArgs, Reflector, Rotor};
@@ -521,5 +546,10 @@ mod tests {
         assert_eq!(args_to_string(input.clone()), result);
 
         assert_eq!(super::string_to_args(result), input);
+    }
+
+    #[test]
+    fn enigma_rules_works() {
+        assert_eq!(super::enigma_rules(vec![1, 1, 1, 1, 1, 1, 1]), true);
     }
 }
