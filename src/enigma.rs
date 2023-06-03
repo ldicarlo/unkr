@@ -1,5 +1,7 @@
-use crate::{char_utils, fuzzer, models};
-use strum::IntoEnumIterator;
+use crate::{
+    char_utils::{self, char_position_base},
+    fuzzer, models,
+};
 use strum_macros::EnumIter;
 
 pub fn skip_if_previous_in() -> Vec<models::BruteForceCryptor> {
@@ -22,12 +24,6 @@ pub fn init() -> EnigmaArgs {
 /// https://piotte13.github.io/enigma-cipher/
 ///
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
-    // Reflector Rotor 1 : index 1
-    // ABAABACA
-    // odds only
-    // A AB AB AB (AB)
-    // length 7 or 9
-
     let maybe_next =
         fuzzer::fuzz_next_string_ruled(args_to_string(enigma_args), 9, 26, &Vec::new());
 
@@ -53,14 +49,50 @@ fn args_to_string(enigma_args: EnigmaArgs) -> String {
 
     if let Some((r, i)) = enigma_args.l0_rotor {
         vec.push(rotor_to_char(r));
-        vec.push(char_utils::get_alphabet()[enigma_args.l_rotor.1 as usize]);
+        vec.push(char_utils::get_alphabet()[i as usize]);
     }
 
     vec.iter().collect()
 }
 
 fn string_to_args(str: String) -> EnigmaArgs {
-    init()
+    let chars: Vec<char> = str.chars().collect();
+    let reflector = char_to_reflector(chars[0]).unwrap();
+    let l_rotor = (
+        char_to_rotor_unwraped(chars[1]),
+        char_position_base(chars[2]).unwrap() as u8,
+    );
+    let m_rotor = (
+        char_to_rotor_unwraped(chars[3]),
+        char_position_base(chars[4]).unwrap() as u8,
+    );
+    let r_rotor = (
+        char_to_rotor_unwraped(chars[5]),
+        char_position_base(chars[6]).unwrap() as u8,
+    );
+
+    let l0_rotor: Option<(Rotor, u8)> = chars
+        .clone()
+        .into_iter()
+        .nth(7)
+        .into_iter()
+        .flat_map(|c1| {
+            chars.clone().into_iter().nth(8).map(|c2| {
+                (
+                    char_to_rotor_unwraped(c1),
+                    char_position_base(c2).unwrap() as u8,
+                )
+            })
+        })
+        .nth(0);
+
+    EnigmaArgs {
+        reflector,
+        l0_rotor,
+        l_rotor,
+        m_rotor,
+        r_rotor,
+    }
 }
 
 fn rotor_to_char(r: Rotor) -> char {
@@ -69,6 +101,10 @@ fn rotor_to_char(r: Rotor) -> char {
         Rotor::II => 'B',
         Rotor::III => 'C',
     }
+}
+
+fn char_to_rotor_unwraped(c: char) -> Rotor {
+    char_to_rotor(c).unwrap()
 }
 
 fn char_to_rotor(c: char) -> Option<Rotor> {
@@ -300,7 +336,7 @@ mod tests {
     use crate::enigma::{EnigmaArgs, Reflector, Rotor};
     use strum::IntoEnumIterator;
 
-    use super::{args_to_string, rotor_to_char};
+    use super::args_to_string;
 
     #[test]
     fn increment_1() {
@@ -459,15 +495,31 @@ mod tests {
 
     #[test]
     fn args_to_string_works_2() {
-        assert_eq!(
-            args_to_string(EnigmaArgs {
-                reflector: Reflector::B, // A
-                l0_rotor: Some((Rotor::III, 7)),
-                l_rotor: (Rotor::I, 3),    // A, D
-                m_rotor: (Rotor::II, 2),   // B, C
-                r_rotor: (Rotor::III, 12), // C, M
-            }),
-            String::from("AADBCCMCD")
-        );
+        let input = EnigmaArgs {
+            reflector: Reflector::B, // A
+            l0_rotor: Some((Rotor::III, 7)),
+            l_rotor: (Rotor::I, 3),    // A, D
+            m_rotor: (Rotor::II, 2),   // B, C
+            r_rotor: (Rotor::III, 12), // C, M
+        };
+        let result = String::from("AADBCCMCH");
+        assert_eq!(args_to_string(input.clone()), result);
+
+        assert_eq!(super::string_to_args(result), input);
+    }
+
+    #[test]
+    fn args_to_string_works_3() {
+        let input = EnigmaArgs {
+            reflector: Reflector::B, // A
+            l0_rotor: None,
+            l_rotor: (Rotor::I, 0), // A, D
+            m_rotor: (Rotor::I, 0), // B, C
+            r_rotor: (Rotor::I, 0), // C, M
+        };
+        let result = String::from("AAAAAAA");
+        assert_eq!(args_to_string(input.clone()), result);
+
+        assert_eq!(super::string_to_args(result), input);
     }
 }
