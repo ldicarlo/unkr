@@ -24,6 +24,10 @@ pub fn init() -> EnigmaArgs {
 /// https://en.wikipedia.org/wiki/Enigma_rotor_details
 /// https://piotte13.github.io/enigma-cipher/
 ///
+///
+///
+///
+/// Change bases in Vec<u8> fuzz to Vec<base>
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     let maybe_next = fuzzer::fuzz_next_string_ruled(
         args_to_string(enigma_args),
@@ -32,7 +36,11 @@ pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
         &vec![Box::new(enigma_rules)],
     );
 
-    maybe_next.map(|next| string_to_args(next))
+    maybe_next.map(|next| {
+        let n = string_to_args(next);
+        println!("{:?}", n);
+        n
+    })
 }
 
 fn args_to_string(enigma_args: EnigmaArgs) -> String {
@@ -338,7 +346,7 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
 
 fn enigma_rules(str: Vec<u8>) -> bool {
     let len = str.len();
-    if len != 7 || len != 9 {
+    if len != 7 && len != 9 {
         return false;
     }
     if str[0] >= Reflector::iter().len() as u8 {
@@ -550,6 +558,6 @@ mod tests {
 
     #[test]
     fn enigma_rules_works() {
-        assert_eq!(super::enigma_rules(vec![1, 1, 1, 1, 1, 1, 1]), true);
+        assert_eq!(super::enigma_rules(vec![0, 1, 1, 1, 1, 1, 1]), true);
     }
 }
