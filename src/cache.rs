@@ -260,6 +260,7 @@ pub mod tests {
 
     #[test]
     fn done_workflow() {
+        empty_test_cache();
         let models::CacheArgs {
             path,
             md5_string,
@@ -299,7 +300,6 @@ pub mod tests {
             md5_clues: md5_clues.clone(),
         });
         assert_eq!(already_done(updated_cache, done_line.clone()), true);
-        empty_test_cache()
     }
 
     #[test]

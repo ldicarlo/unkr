@@ -37,7 +37,24 @@ pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
 fn args_to_string(enigma_args: EnigmaArgs) -> String {
     let mut vec = Vec::new();
 
+    vec.push(reflector_to_char(enigma_args.reflector));
+
     vec.push(rotor_to_char(enigma_args.l_rotor.0));
+
+    vec.push(char_utils::get_alphabet()[enigma_args.l_rotor.1 as usize]);
+
+    vec.push(rotor_to_char(enigma_args.m_rotor.0));
+
+    vec.push(char_utils::get_alphabet()[enigma_args.m_rotor.1 as usize]);
+
+    vec.push(rotor_to_char(enigma_args.r_rotor.0));
+
+    vec.push(char_utils::get_alphabet()[enigma_args.r_rotor.1 as usize]);
+
+    if let Some((r, i)) = enigma_args.l0_rotor {
+        vec.push(rotor_to_char(r));
+        vec.push(char_utils::get_alphabet()[enigma_args.l_rotor.1 as usize]);
+    }
 
     vec.iter().collect()
 }
@@ -427,16 +444,30 @@ mod tests {
     }
 
     #[test]
-    fn args_to_strign_works() {
+    fn args_to_string_works() {
         assert_eq!(
             args_to_string(EnigmaArgs {
                 reflector: Reflector::B, // A
                 l0_rotor: None,
-                l_rotor: (Rotor::I, 3), // A, D
-                m_rotor: (Rotor::II, 2), // B, C
+                l_rotor: (Rotor::I, 3),    // A, D
+                m_rotor: (Rotor::II, 2),   // B, C
                 r_rotor: (Rotor::III, 12), // C, M
             }),
             String::from("AADBCCM")
+        );
+    }
+
+    #[test]
+    fn args_to_string_works_2() {
+        assert_eq!(
+            args_to_string(EnigmaArgs {
+                reflector: Reflector::B, // A
+                l0_rotor: Some((Rotor::III, 7)),
+                l_rotor: (Rotor::I, 3),    // A, D
+                m_rotor: (Rotor::II, 2),   // B, C
+                r_rotor: (Rotor::III, 12), // C, M
+            }),
+            String::from("AADBCCMCD")
         );
     }
 }
