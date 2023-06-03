@@ -27,7 +27,7 @@ pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     let maybe_next =
         fuzzer::fuzz_next_string_ruled(args_to_string(enigma_args), 9, 26, &Vec::new());
 
-    maybe_next.map(|next| string_to_args(next))
+    maybe_next.into_iter().flat_map(|next| string_to_args(next))
 }
 
 fn args_to_string(enigma_args: EnigmaArgs) -> String {
@@ -55,19 +55,20 @@ fn args_to_string(enigma_args: EnigmaArgs) -> String {
     vec.iter().collect()
 }
 
-fn string_to_args(str: String) -> EnigmaArgs {
+fn string_to_args(str: String) -> Option<EnigmaArgs> {
     let chars: Vec<char> = str.chars().collect();
-    let reflector = char_to_reflector(chars[0]).unwrap();
-    let l_rotor = (
-        char_to_rotor_unwraped(chars[1]),
+    let maybe_reflector = char_to_reflector(chars[0]).unwrap();
+
+    let maybe_l_rotor = (
+        char_to_rotor(chars[1]),
         char_position_base(chars[2]).unwrap() as u8,
     );
-    let m_rotor = (
-        char_to_rotor_unwraped(chars[3]),
+    let maybe_m_rotor = (
+        char_to_rotor(chars[3]),
         char_position_base(chars[4]).unwrap() as u8,
     );
-    let r_rotor = (
-        char_to_rotor_unwraped(chars[5]),
+    let maybe_r_rotor = (
+        char_to_rotor(chars[5]),
         char_position_base(chars[6]).unwrap() as u8,
     );
 
@@ -86,13 +87,19 @@ fn string_to_args(str: String) -> EnigmaArgs {
         })
         .nth(0);
 
-    EnigmaArgs {
-        reflector,
-        l0_rotor,
-        l_rotor,
-        m_rotor,
-        r_rotor,
-    }
+    maybe_l_rotor.0.into_iter().map(|l_rotor|
+        maybe_m_rotor.0.into_iter().flat_map(|m_rotor|
+            maybe_r_rotor.0.into_iter().map(|r_rotor|
+              maybe_reflector.into_inter().map(|reflector|
+              EnigmaArgs {
+                reflector,
+                l0_rotor,
+                l_rotor: (l_rotor, maybe_l_rotor.1),
+                m_rotor: (m_rotor, maybe_m_rotor.1),
+                r_rotor: (r_rotor, maybe_r_rotor.1),
+            }))
+        )
+    ).collect()
 }
 
 fn rotor_to_char(r: Rotor) -> char {
