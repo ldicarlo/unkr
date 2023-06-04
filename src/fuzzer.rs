@@ -69,6 +69,36 @@ pub fn fuzz_next(str: Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> {
     Some(base::increment(vector, base))
 }
 
+pub fn fuzz_next_string_bases(str: String, bases: Vec<usize>) -> Option<String> {
+    fuzz_next_bases(
+        str.chars()
+            .into_iter()
+            .flat_map(|c| char_utils::char_position(c, get_alphabet_prefixed()))
+            .map(|c| c as u8)
+            .collect(),
+        bases,
+    )
+    .map(|vec| {
+        vec.into_iter()
+            .map(|c| get_alphabet_prefixed()[c as usize])
+            .collect::<String>()
+    })
+}
+
+pub fn fuzz_next_bases(str: Vec<u8>, bases: Vec<usize>) -> Option<Vec<u8>> {
+    let vector: Vec<u8> = str.clone().into_iter().map(|c| c as u8).collect();
+    let bases_len = bases.len();
+    if vector
+        .clone()
+        .into_iter()
+        .enumerate()
+        .all(|(i, c)| c as usize == bases[bases_len - i - 1] - 1)
+    {
+        return None;
+    }
+    Some(base::increment_with_bases(vector, bases))
+}
+
 pub fn unique_letters(str: Vec<u8>) -> bool {
     let mut vec = vec![];
     for num in str.into_iter() {

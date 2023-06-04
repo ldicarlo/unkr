@@ -23,18 +23,20 @@ pub fn init() -> EnigmaArgs {
 /// https://www.cryptomuseum.com/people/hamer/files/double_stepping.pdf
 /// https://en.wikipedia.org/wiki/Enigma_rotor_details
 /// https://piotte13.github.io/enigma-cipher/
-///
-///
-///
-///
-/// Change bases in Vec<u8> fuzz to Vec<base>
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
-    let maybe_next = fuzzer::fuzz_next_string_ruled(
-        args_to_string(enigma_args),
-        9,
-        26,
-        &vec![Box::new(enigma_rules)],
-    );
+    let string_args = args_to_string(enigma_args.clone());
+    println!("{:?}", string_args);
+    let maybe_next = if let None = enigma_args.l0_rotor {
+        if let Some(result) =
+            fuzzer::fuzz_next_string_bases(string_args, vec![1, 3, 27, 3, 27, 3, 27])
+        {
+            Some(result)
+        } else {
+            Some(String::from("AAAAAAAAA"))
+        }
+    } else {
+        fuzzer::fuzz_next_string_bases(string_args, vec![1, 3, 27, 3, 27, 3, 27, 3, 27])
+    };
 
     maybe_next.map(|next| {
         let n = string_to_args(next);
@@ -70,7 +72,8 @@ fn args_to_string(enigma_args: EnigmaArgs) -> String {
 
 fn string_to_args(str: String) -> EnigmaArgs {
     let chars: Vec<char> = str.chars().collect();
-    let reflector = char_to_reflector(chars[0]).unwrap();
+    let reflector = char_to_reflector(chars[0])
+        .expect(&format!("Could not deserialize {} to reflector", chars[0]));
     let l_rotor = (
         char_to_rotor_unwraped(chars[1]),
         char_position_base(chars[2]).unwrap() as u8,
@@ -344,26 +347,6 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
     println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
 }
 
-fn enigma_rules(str: Vec<u8>) -> bool {
-    let len = str.len();
-    if len != 7 && len != 9 {
-        return false;
-    }
-    if str[0] >= Reflector::iter().len() as u8 {
-        return false;
-    }
-
-    let rotor_max = Rotor::iter().len() as u8;
-    if str[1] >= rotor_max || str[3] >= rotor_max || str[5] >= rotor_max {
-        return false;
-    }
-    if len == 9 && str[7] >= rotor_max {
-        return false;
-    }
-
-    true
-}
-
 #[cfg(test)]
 mod tests {
     use crate::enigma::{EnigmaArgs, Reflector, Rotor};
@@ -554,10 +537,5 @@ mod tests {
         assert_eq!(args_to_string(input.clone()), result);
 
         assert_eq!(super::string_to_args(result), input);
-    }
-
-    #[test]
-    fn enigma_rules_works() {
-        assert_eq!(super::enigma_rules(vec![0, 1, 1, 1, 1, 1, 1]), true);
     }
 }
