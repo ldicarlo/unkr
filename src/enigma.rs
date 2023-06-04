@@ -525,6 +525,26 @@ mod tests {
     }
 
     #[test]
+    fn next_works() {
+        let input = EnigmaArgs {
+            reflector: Reflector::B, // A
+            l0_rotor: Some((Rotor::III, 7)),
+            l_rotor: (Rotor::I, 3),    // A, D
+            m_rotor: (Rotor::II, 2),   // B, C
+            r_rotor: (Rotor::III, 12), // C, M
+        };
+        let expected = EnigmaArgs {
+            reflector: Reflector::B, // A
+            l0_rotor: Some((Rotor::III, 7)),
+            l_rotor: (Rotor::I, 3),    // A, D
+            m_rotor: (Rotor::II, 2),   // B, C
+            r_rotor: (Rotor::III, 13), // C, M
+        };
+
+        assert_eq!(super::next(input.clone()), Some(expected));
+    }
+
+    #[test]
     fn args_to_string_works_3() {
         let input = EnigmaArgs {
             reflector: Reflector::B, // A

@@ -447,30 +447,30 @@ fn loop_decrypt(
             }
             BruteForceCryptor::IndexCrypt => todo!(),
             BruteForceCryptor::Enigma => {
-              let mut current_args = enigma::init();
-              while let Some(next) = enigma::next(current_args.clone()) {
-                  let new_str = enigma::decrypt(strs.clone(), next.clone());
-                  let cryptor_name = String::from("Enigma");
-                  let current_acc = process_new_str(
-                      res_acc.clone(),
-                      acc.clone(),
-                      clues.clone(),
-                      cryptor_name.clone() + &format!(":{:?}", current_args),
-                      new_str.clone(),
-                      cache_args.clone(),
-                  );
-                  loop_decrypt(
-                      res_acc.clone(),
-                      current_acc,
-                      to_use.clone(),
-                      new_str.clone(),
-                      clues.clone(),
-                      decryptors_filtered.clone(),
-                      cache_args.clone(),
-                  );
-                  current_args = next;
-              }
-            },
+                let mut current_args = enigma::init();
+                while let Some(next) = enigma::next(current_args.clone()) {
+                    let new_str = enigma::decrypt(strs.clone(), next.clone());
+                    let cryptor_name = String::from("Enigma");
+                    let current_acc = process_new_str(
+                        res_acc.clone(),
+                        acc.clone(),
+                        clues.clone(),
+                        cryptor_name.clone() + &format!(":{:?}", current_args),
+                        new_str.clone(),
+                        cache_args.clone(),
+                    );
+                    loop_decrypt(
+                        res_acc.clone(),
+                        current_acc,
+                        to_use.clone(),
+                        new_str.clone(),
+                        clues.clone(),
+                        decryptors_filtered.clone(),
+                        cache_args.clone(),
+                    );
+                    current_args = next;
+                }
+            }
         }
     }
 }
