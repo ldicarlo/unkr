@@ -25,18 +25,53 @@ pub fn init() -> EnigmaArgs {
 /// https://piotte13.github.io/enigma-cipher/
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     let string_args = args_to_string(enigma_args.clone());
-
-    let maybe_next = if let None = enigma_args.l0_rotor {
-        if let Some(result) =
-            fuzzer::fuzz_next_string_bases(string_args, vec![1, 4, 27, 4, 27, 4, 27])
-        {
-            Some(result)
-        } else {
-            Some(String::from("AAAAAAAAA"))
-        }
-    } else {
-        fuzzer::fuzz_next_string_bases(string_args, vec![1, 4, 27, 4, 27, 4, 27, 4, 27])
-    };
+    let rotors_count = Rotor::iter().len() + 1;
+    let reflector_count = Reflector::iter().len() + 1;
+    let maybe_next = fuzzer::fuzz_next_string_bases(
+        string_args,
+        vec![
+            reflector_count,
+            rotors_count,
+            27,
+            rotors_count,
+            27,
+            rotors_count,
+            27,
+        ],
+    );
+    // let maybe_next = if let None = enigma_args.l0_rotor {
+    //     if let Some(result) = fuzzer::fuzz_next_string_bases(
+    //         string_args,
+    //         vec![
+    //             reflector_count,
+    //             rotors_count,
+    //             27,
+    //             rotors_count,
+    //             27,
+    //             rotors_count,
+    //             27,
+    //         ],
+    //     ) {
+    //         Some(result)
+    //     } else {
+    //         Some(String::from("AAAAAAAAA"))
+    //     }
+    // } else {
+    //     fuzzer::fuzz_next_string_bases(
+    //         string_args,
+    //         vec![
+    //             reflector_count,
+    //             rotors_count,
+    //             27,
+    //             rotors_count,
+    //             27,
+    //             rotors_count,
+    //             27,
+    //             rotors_count,
+    //             27,
+    //         ],
+    //     )
+    // };
 
     maybe_next.map(|next| string_to_args(next))
 }
@@ -112,6 +147,11 @@ fn rotor_to_char(r: Rotor) -> char {
         Rotor::I => 'A',
         Rotor::II => 'B',
         Rotor::III => 'C',
+        Rotor::IV => 'D',
+        Rotor::V => 'E',
+        Rotor::VI => 'F',
+        Rotor::VII => 'G',
+        Rotor::VIII => 'H',
     }
 }
 
@@ -124,6 +164,11 @@ fn char_to_rotor(c: char) -> Option<Rotor> {
         'A' => Some(Rotor::I),
         'B' => Some(Rotor::II),
         'C' => Some(Rotor::III),
+        'D' => Some(Rotor::IV),
+        'E' => Some(Rotor::V),
+        'F' => Some(Rotor::VI),
+        'G' => Some(Rotor::VII),
+        'H' => Some(Rotor::VIII),
         _ => None,
     }
 }
@@ -131,12 +176,14 @@ fn char_to_rotor(c: char) -> Option<Rotor> {
 fn reflector_to_char(r: Reflector) -> char {
     match r {
         Reflector::B => 'A',
+        Reflector::C => 'B',
     }
 }
 
 fn char_to_reflector(c: char) -> Option<Reflector> {
     match c {
         'A' => Some(Reflector::B),
+        'B' => Some(Reflector::C),
         _ => None,
     }
 }
@@ -177,7 +224,6 @@ fn pass_through_rotors_m3(char: char, rotors: EnigmaArgs) -> (char, EnigmaArgs) 
     let new_char_1 = char_utils::char_position_base(char).unwrap() as u8
         + get_rotor(r_r.clone())
             [(char_utils::char_position_base(char).unwrap() + (r_i as usize)) % 26];
-
     let new_char_2 =
         new_char_1 + get_rotor(m_r.clone())[(new_char_1 as usize + (m_i as usize)) % 26];
     let new_char_3 =
@@ -241,6 +287,11 @@ fn get_notches(r: Rotor) -> Vec<u8> {
         Rotor::I => vec![16],
         Rotor::II => vec![5],
         Rotor::III => vec![22],
+        Rotor::IV => vec![10],
+        Rotor::V => vec![26],
+        Rotor::VI => vec![26, 13],
+        Rotor::VII => vec![26, 13],
+        Rotor::VIII => vec![26, 13],
     }
 }
 // let's ignore minus, and use only plus
@@ -256,6 +307,26 @@ fn get_rotor(r: Rotor) -> Vec<u8> {
         Rotor::III => vec![
             1, 2, 3, 4, 5, 6, 22, 8, 9, 10, 13, 10, 13, 0, 10, 15, 18, 5, 14, 7, 16, 17, 24, 21,
             18, 15,
+        ],
+        Rotor::IV => vec![
+            4, 17, 12, 18, 11, 20, 3, 19, 16, 7, 10, 23, 5, 20, 9, 22, 23, 14, 1, 13, 16, 8, 6, 15,
+            24, 2,
+        ],
+        Rotor::V => vec![
+            21, 24, 25, 14, 2, 3, 13, 17, 12, 6, 8, 18, 1, 20, 23, 8, 10, 5, 20, 16, 22, 19, 9, 7,
+            4, 11,
+        ],
+        Rotor::VI => vec![
+            9, 14, 4, 18, 10, 15, 6, 24, 16, 7, 17, 19, 1, 20, 11, 2, 13, 19, 8, 25, 3, 16, 12, 5,
+            21, 23,
+        ],
+        Rotor::VII => vec![
+            13, 24, 7, 4, 2, 12, 22, 16, 4, 15, 8, 11, 15, 1, 6, 16, 10, 17, 3, 18, 21, 9, 14, 19,
+            5, 20,
+        ],
+        Rotor::VIII => vec![
+            5, 9, 14, 4, 15, 6, 17, 7, 20, 18, 25, 7, 3, 16, 11, 2, 10, 21, 12, 3, 19, 13, 24, 1,
+            8, 22,
         ],
     }
 }
@@ -274,6 +345,26 @@ fn get_reversed_rotor(r: Rotor) -> Vec<u8> {
             19, 25, 4, 24, 11, 23, 12, 22, 8, 21, 10, 20, 9, 0, 11, 18, 8, 17, 5, 16, 2, 16, 21,
             13, 16, 13,
         ],
+        Rotor::IV => vec![
+            7, 24, 20, 18, 22, 12, 13, 6, 3, 23, 10, 4, 11, 3, 14, 15, 19, 21, 9, 25, 16, 8, 2, 17,
+            10, 6,
+        ],
+        Rotor::V => vec![
+            16, 1, 22, 8, 19, 17, 24, 6, 23, 10, 15, 3, 6, 25, 7, 20, 4, 12, 18, 13, 14, 5, 21, 18,
+            9, 2,
+        ],
+        Rotor::VI => vec![
+            18, 9, 21, 13, 7, 2, 22, 6, 14, 17, 7, 10, 20, 25, 16, 12, 19, 24, 1, 5, 11, 8, 3, 23,
+            10, 15,
+        ],
+        Rotor::VII => vec![
+            16, 11, 4, 21, 17, 10, 24, 22, 9, 19, 12, 8, 22, 13, 25, 5, 7, 14, 18, 6, 20, 23, 15,
+            10, 11, 2,
+        ],
+        Rotor::VIII => vec![
+            16, 8, 6, 10, 14, 21, 18, 22, 13, 1, 17, 20, 5, 7, 19, 23, 12, 24, 19, 11, 2, 4, 23, 9,
+            25, 15,
+        ],
     }
 }
 
@@ -282,6 +373,10 @@ fn get_reflector(r: Reflector) -> Vec<u8> {
         Reflector::B => vec![
             24, 16, 18, 4, 12, 13, 5, 22, 7, 14, 3, 21, 2, 23, 24, 19, 14, 10, 13, 6, 8, 1, 25, 12,
             2, 20,
+        ],
+        Reflector::C => vec![
+            5, 20, 13, 6, 4, 21, 8, 17, 22, 20, 7, 14, 11, 9, 18, 13, 3, 19, 2, 23, 24, 6, 17, 15,
+            9, 12,
         ],
     }
 }
@@ -300,12 +395,18 @@ pub enum Rotor {
     I,
     II,
     III,
+    IV,
+    V,
+    VI,
+    VII,
+    VIII,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, EnumIter)]
 pub enum Reflector {
     //   A,
     B,
+    C,
 }
 
 fn _print_rotor(key: &str, str: &str) {
@@ -390,20 +491,31 @@ mod tests {
         );
     }
 
-    //    #[test]
+    // #[test]
     fn _display_rotors() {
         println!("--------- ROTORS --------");
         super::_print_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
         super::_print_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
         super::_print_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
 
+        super::_print_rotor("IV", "ESOVPZJAYQUIRHXLNFTGKDCMWB");
+        super::_print_rotor("V", "VZBRGITYUPSDNHLXAWMJQOFECK");
+        super::_print_rotor("VI", "JPGVOUMFYQBENHZRDKASXLICTW");
+        super::_print_rotor("VII", "NZJHGRCXMYSWBOUFAIVLPEKQDT");
+        super::_print_rotor("VIII", "FKQHTLXOCBJSPDZRAMEWNIUYGV");
+
         println!("------ REFLECTORS -------");
         super::_print_reflector("B", "YRUHQSLDPXNGOKMIEBFZCWVJAT");
-
+        super::_print_reflector("C", "FVPJIAOYEDRZXWGCTKUQSBNMHL");
         println!("---- REVERSED ROTORS ----");
         super::_print_reverse_rotor("I", "EKMFLGDQVZNTOWYHXUSPAIBRCJ");
         super::_print_reverse_rotor("II", "AJDKSIRUXBLHWTMCQGZNPYFVOE");
         super::_print_reverse_rotor("III", "BDFHJLCPRTXVZNYEIWGAKMUSQO");
+        super::_print_reverse_rotor("IV", "ESOVPZJAYQUIRHXLNFTGKDCMWB");
+        super::_print_reverse_rotor("V", "VZBRGITYUPSDNHLXAWMJQOFECK");
+        super::_print_reverse_rotor("VI", "JPGVOUMFYQBENHZRDKASXLICTW");
+        super::_print_reverse_rotor("VII", "NZJHGRCXMYSWBOUFAIVLPEKQDT");
+        super::_print_reverse_rotor("VIII", "FKQHTLXOCBJSPDZRAMEWNIUYGV");
     }
 
     #[test]

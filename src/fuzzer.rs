@@ -92,7 +92,7 @@ pub fn fuzz_next_bases(str: Vec<u8>, bases: Vec<usize>) -> Option<Vec<u8>> {
         .clone()
         .into_iter()
         .enumerate()
-        .all(|(i, c)| c as usize == bases[bases_len - i - 1] - 1)
+        .all(|(i, c)| c as usize == bases[i] - 1)
     {
         return None;
     }
@@ -152,5 +152,13 @@ mod tests {
         assert_eq!(super::sorted_letters_by_pair(vec![1, 2, 5, 4]), false);
         assert_eq!(super::sorted_letters_by_pair(vec![2, 1, 5, 4]), false);
         assert_eq!(super::sorted_letters_by_pair(vec![2, 1, 4, 5, 6, 3]), false);
+    }
+
+    #[test]
+    fn stop_at_end() {
+        assert_eq!(
+            super::fuzz_next_bases(vec![1, 3, 26, 3, 26, 3, 26], vec![2, 4, 27, 4, 27, 4, 27]),
+            None
+        );
     }
 }
