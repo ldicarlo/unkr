@@ -25,7 +25,7 @@ pub fn init() -> EnigmaArgs {
 /// https://piotte13.github.io/enigma-cipher/
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     let string_args = args_to_string(enigma_args.clone());
-    println!("{:?}", string_args);
+
     let maybe_next = if let None = enigma_args.l0_rotor {
         if let Some(result) =
             fuzzer::fuzz_next_string_bases(string_args, vec![1, 4, 27, 4, 27, 4, 27])
@@ -38,11 +38,7 @@ pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
         fuzzer::fuzz_next_string_bases(string_args, vec![1, 4, 27, 4, 27, 4, 27, 4, 27])
     };
 
-    maybe_next.map(|next| {
-        let n = string_to_args(next);
-        println!("{:?}", n);
-        n
-    })
+    maybe_next.map(|next| string_to_args(next))
 }
 
 fn args_to_string(enigma_args: EnigmaArgs) -> String {

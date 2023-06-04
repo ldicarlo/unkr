@@ -57,29 +57,6 @@ pub fn increment_with_bases(input: Vec<u8>, bases: Vec<usize>) -> Vec<u8> {
     result
 }
 
-fn from_digits_and_bases(input: Vec<u8>, bases: Vec<usize>) -> u64 {
-    let mut n = 0;
-    let base_len = bases.len();
-    input
-        .into_iter()
-        .enumerate()
-        .for_each(|(i, d)| n = n * bases[base_len - i - 1] as u64 + d as u64);
-    n
-}
-
-fn to_digits_and_bases(mut input: u64, bases: Vec<usize>) -> Vec<u8> {
-    let mut result = Vec::new();
-    let base_len = bases.len();
-    let mut i = 0;
-
-    while input > 0 {
-        i = i + 1;
-        result.insert(0, (input % bases[base_len - i] as u64) as u8);
-        input = input / bases[base_len - i] as u64;
-    }
-    result
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -89,11 +66,6 @@ mod tests {
         assert_eq!(super::to_digits(2, 2), vec![1, 0]);
         assert_eq!(super::increment(vec![23, 24, 25], 26), vec![23, 25, 1]);
         assert_eq!(super::increment(vec![23, 25, 25], 26), vec![24, 1, 1]);
-    }
-    #[test]
-    fn it_works_with_bases() {
-        // A, A => A, B
-        assert_eq!(super::to_digits_and_bases(3, vec![2, 2]), vec![1, 1]);
     }
 
     #[test]
@@ -134,19 +106,6 @@ mod tests {
         assert_eq!(
             super::increment_with_bases(vec![1, 1, 26, 3, 26, 3, 26], vec![1, 4, 27, 4, 27, 4, 27]),
             vec![1, 2, 1, 1, 1, 1, 1],
-        );
-    }
-
-    #[test]
-    fn to_digits_and_bases_works() {
-        assert_eq!(
-            super::to_digits_and_bases(
-                // B, C, Z
-                60292,
-                vec![1, 4, 27, 4, 27, 4, 27]
-            ),
-            // C,A,A
-            vec![1, 1, 4, 2, 3, 3, 14],
         );
     }
 }
