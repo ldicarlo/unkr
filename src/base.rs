@@ -32,14 +32,28 @@ pub fn from_digits(input: Vec<u8>, base: usize) -> u64 {
 }
 
 pub fn increment_with_bases(input: Vec<u8>, bases: Vec<usize>) -> Vec<u8> {
-    let mut number = from_digits_and_bases(input.clone(), bases.clone());
-
-    let mut result = to_digits_and_bases(number + 1, bases.clone());
-    while result.clone().into_iter().any(|a| a == 0) {
-        number = number + 1;
-        result = to_digits_and_bases(number, bases.clone());
+    let mut result = input.clone();
+    let input_len = input.len();
+    let bases_len = bases.len();
+    let mut last_inc = (result[input_len - 1] + 1) % (bases[bases_len - 1] as u8);
+    if last_inc == 0 {
+        last_inc = 1;
+        let mut inc = true;
+        let mut i = 2;
+        while inc {
+            let mut next = (result[input_len - i] + 1) % (bases[bases_len - i] as u8);
+            if next == 0 {
+                next = 1;
+                inc = true;
+            } else {
+                inc = false;
+            }
+            result[input_len - i] = next;
+            i = i + 1;
+        }
     }
-    println!("{:?} | {:?} || {:?} ||| {}", input, bases, result, number);
+    result[input_len - 1] = last_inc;
+
     result
 }
 
@@ -104,6 +118,35 @@ mod tests {
             ),
             // C,A,A
             vec![3, 1, 1]
+        );
+    }
+
+    #[test]
+    fn multiple_bases_works_2() {
+        assert_eq!(
+            super::increment_with_bases(vec![1, 1, 4, 2, 3, 3, 13], vec![1, 4, 27, 4, 27, 4, 27]),
+            vec![1, 1, 4, 2, 3, 3, 14],
+        );
+    }
+
+    #[test]
+    fn multiple_bases_works_3() {
+        assert_eq!(
+            super::increment_with_bases(vec![1, 1, 26, 3, 26, 3, 26], vec![1, 4, 27, 4, 27, 4, 27]),
+            vec![1, 2, 1, 1, 1, 1, 1],
+        );
+    }
+
+    #[test]
+    fn to_digits_and_bases_works() {
+        assert_eq!(
+            super::to_digits_and_bases(
+                // B, C, Z
+                60292,
+                vec![1, 4, 27, 4, 27, 4, 27]
+            ),
+            // C,A,A
+            vec![1, 1, 4, 2, 3, 3, 14],
         );
     }
 }

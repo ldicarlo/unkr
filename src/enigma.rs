@@ -28,14 +28,14 @@ pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     println!("{:?}", string_args);
     let maybe_next = if let None = enigma_args.l0_rotor {
         if let Some(result) =
-            fuzzer::fuzz_next_string_bases(string_args, vec![1, 3, 27, 3, 27, 3, 27])
+            fuzzer::fuzz_next_string_bases(string_args, vec![1, 4, 27, 4, 27, 4, 27])
         {
             Some(result)
         } else {
             Some(String::from("AAAAAAAAA"))
         }
     } else {
-        fuzzer::fuzz_next_string_bases(string_args, vec![1, 3, 27, 3, 27, 3, 27, 3, 27])
+        fuzzer::fuzz_next_string_bases(string_args, vec![1, 4, 27, 4, 27, 4, 27, 4, 27])
     };
 
     maybe_next.map(|next| {
@@ -528,14 +528,14 @@ mod tests {
     fn next_works() {
         let input = EnigmaArgs {
             reflector: Reflector::B, // A
-            l0_rotor: Some((Rotor::III, 7)),
+            l0_rotor: None,
             l_rotor: (Rotor::I, 3),    // A, D
             m_rotor: (Rotor::II, 2),   // B, C
             r_rotor: (Rotor::III, 12), // C, M
         };
         let expected = EnigmaArgs {
             reflector: Reflector::B, // A
-            l0_rotor: Some((Rotor::III, 7)),
+            l0_rotor: None,
             l_rotor: (Rotor::I, 3),    // A, D
             m_rotor: (Rotor::II, 2),   // B, C
             r_rotor: (Rotor::III, 13), // C, M
