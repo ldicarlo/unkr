@@ -38,10 +38,7 @@ pub fn brute_force_unique_combination(
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
     let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
-    // let done_cache = cache::get_done_cache(cache_args.clone());
     eprintln!("{:?}", decr);
-    // let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, cache_args);
-    // eprintln!("Result: {:?}", result);
 
     let combination: Vec<u8> = decr
         .clone()
@@ -535,7 +532,7 @@ fn process_new_str(
             cache_args,
             models::HitLine {
                 args: current_acc.clone(),
-                result: new_str.clone().join(" "),
+                result: new_str.clone().join(""),
             },
         )
     }
