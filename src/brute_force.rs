@@ -38,27 +38,29 @@ pub fn brute_force_unique_combination(
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
     let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
-    let done_cache = cache::get_done_cache(cache_args.clone());
+    // let done_cache = cache::get_done_cache(cache_args.clone());
     eprintln!("{:?}", decr);
     // let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, cache_args);
     // eprintln!("Result: {:?}", result);
 
-    let combination = decr
+    let combination: Vec<u8> = decr
         .clone()
         .iter()
         .enumerate()
         .map(|(i, _)| i as u8)
+        .rev()
         .collect();
 
     loop_decrypt(
         Arc::new(Mutex::new(BTreeSet::new())),
         None,
-        combination,
+        combination.clone(),
         vec![str],
         clues,
-        decr,
-        cache_args,
-    )
+        decr.clone(),
+        cache_args.clone(),
+    );
+    cache::push_done(cache::to_done(decr, combination), cache_args.clone());
 }
 
 pub fn brute_force_decrypt(
