@@ -11,6 +11,7 @@ pub fn init() -> models::PermuteArgs {
 }
 
 pub fn next(
+    strs: Vec<String>,
     models::PermuteArgs { permutations }: models::PermuteArgs,
     models::BruteForcePermuteArgs { max_permutations }: models::BruteForcePermuteArgs,
 ) -> Option<models::PermuteArgs> {
@@ -23,7 +24,16 @@ pub fn next(
         &vec![
             Box::new(fuzzer::pair_length),
             Box::new(fuzzer::unique_letters),
-            Box::new(fuzzer::sorted_letters_by_pair),
+            Box::new(|x| {
+                fuzzer::sorted_letters_by_pair(
+                    x,
+                    strs.join("")
+                        .chars()
+                        .map(|c| char_utils::char_position_base(c).unwrap() as u8)
+                        .collect::<Vec<u8>>()
+                        .clone(),
+                )
+            }),
         ],
     );
     next.map(|str| models::PermuteArgs {
@@ -70,6 +80,7 @@ mod tests {
     fn next_works() {
         assert_eq!(
             super::next(
+                vec![String::from("JIK")],
                 PermuteArgs {
                     permutations: vec![('J', 'I')]
                 },

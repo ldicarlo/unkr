@@ -11,9 +11,9 @@ pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
     if rules.contains(&String::from("EvenCount")) {
         effective_rules.push(Box::new(pair_length));
     }
-    if rules.contains(&String::from("SortedLettersByPair")) {
-        effective_rules.push(Box::new(sorted_letters_by_pair));
-    }
+    // if rules.contains(&String::from("SortedLettersByPair")) {
+    //     effective_rules.push(Box::new(sorted_letters_by_pair));
+    // }
 
     let mut last = str;
     while let Some(next) = fuzz_next_string_ruled(last.clone(), len_max, base, &effective_rules) {
@@ -113,8 +113,15 @@ pub fn pair_length(str: Vec<u8>) -> bool {
     str.len() % 2 == 0
 }
 
-pub fn sorted_letters_by_pair(str: Vec<u8>) -> bool {
+pub fn sorted_letters_by_pair(str: Vec<u8>, containing: Vec<u8>) -> bool {
     let base: Vec<(u8, u8)> = char_utils::vec_to_pairs(str);
+
+    if !base
+        .iter()
+        .all(|(a, b)| containing.contains(a) || containing.contains(b))
+    {
+        return false;
+    }
 
     let mut ordered = base
         .clone()
@@ -123,7 +130,7 @@ pub fn sorted_letters_by_pair(str: Vec<u8>) -> bool {
         .collect::<Vec<(u8, u8)>>();
     ordered.sort_by(|(a, _), (b, _)| a.cmp(b));
 
-    base == ordered
+    base == ordered //&& str.iter()
 }
 
 #[cfg(test)]
@@ -147,10 +154,26 @@ mod tests {
 
     #[test]
     fn ordered_works() {
-        assert_eq!(super::sorted_letters_by_pair(vec![1, 2, 4, 5]), true);
-        assert_eq!(super::sorted_letters_by_pair(vec![1, 2, 5, 4]), false);
-        assert_eq!(super::sorted_letters_by_pair(vec![2, 1, 5, 4]), false);
-        assert_eq!(super::sorted_letters_by_pair(vec![2, 1, 4, 5, 6, 3]), false);
+        assert_eq!(
+            super::sorted_letters_by_pair(vec![1, 2, 4, 5], vec![1, 4]),
+            true
+        );
+        assert_eq!(
+            super::sorted_letters_by_pair(vec![1, 2, 5, 4], vec![1, 5]),
+            false
+        );
+        assert_eq!(
+            super::sorted_letters_by_pair(vec![2, 1, 5, 4], vec![2, 5]),
+            false
+        );
+        assert_eq!(
+            super::sorted_letters_by_pair(vec![2, 1, 4, 5, 6, 3], vec![2, 4, 6]),
+            false
+        );
+        assert_eq!(
+            super::sorted_letters_by_pair(vec![1, 2, 3, 4], vec![5, 6]),
+            false
+        );
     }
 
     #[test]
