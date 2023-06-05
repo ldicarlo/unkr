@@ -87,7 +87,6 @@ pub fn fuzz_next_string_bases(str: String, bases: Vec<usize>) -> Option<String> 
 
 pub fn fuzz_next_bases(str: Vec<u8>, bases: Vec<usize>) -> Option<Vec<u8>> {
     let vector: Vec<u8> = str.clone().into_iter().map(|c| c as u8).collect();
-    let bases_len = bases.len();
     if vector
         .clone()
         .into_iter()

@@ -666,4 +666,21 @@ mod tests {
 
         assert_eq!(super::string_to_args(result), input);
     }
+
+    #[test]
+    fn full_test_1() {
+        assert_eq!(
+            super::encrypt_string(
+                String::from("HELLOTEST"),
+                EnigmaArgs {
+                    reflector: Reflector::B, // A
+                    l0_rotor: None,
+                    l_rotor: (Rotor::III, 4), // A, D
+                    m_rotor: (Rotor::VI, 19), // B, C
+                    r_rotor: (Rotor::IV, 15), // C, M
+                }
+            ),
+            String::from("OVOICLLIC")
+        );
+    }
 }
