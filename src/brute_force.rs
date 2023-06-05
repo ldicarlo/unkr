@@ -42,6 +42,23 @@ pub fn brute_force_unique_combination(
     eprintln!("{:?}", decr);
     // let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, cache_args);
     // eprintln!("Result: {:?}", result);
+
+    let combination = decr
+        .clone()
+        .iter()
+        .enumerate()
+        .map(|(i, _)| i as u8)
+        .collect();
+
+    loop_decrypt(
+        Arc::new(Mutex::new(BTreeSet::new())),
+        None,
+        combination,
+        vec![str],
+        clues,
+        decr,
+        cache_args,
+    )
 }
 
 pub fn brute_force_decrypt(
@@ -409,7 +426,9 @@ fn loop_decrypt(
             }
             BruteForceCryptor::Permute(args) => {
                 let mut current_permutations = permute::init();
-                while let Some(next) = permute::next(current_permutations.clone(), args.clone()) {
+                while let Some(next) =
+                    permute::next(strs.clone(), current_permutations.clone(), args.clone())
+                {
                     let new_str = permute::decrypt(strs.clone(), next.clone());
 
                     if strs == new_str {
