@@ -26,6 +26,24 @@ use std::sync::Mutex;
 use std::thread;
 use std::vec;
 
+pub fn brute_force_unique_combination(
+    str: String,
+    clues: Vec<String>,
+    decryptors: Vec<String>,
+    threads: u8,
+    cache_name: String,
+) {
+    let decr: Vec<models::BruteForceCryptor> = decryptors
+        .iter()
+        .map(|str| parser::read_bruteforce_parameters(str.to_string()))
+        .collect();
+    let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
+    let done_cache = cache::get_done_cache(cache_args.clone());
+    eprintln!("{:?}", decr);
+    // let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, cache_args);
+    // eprintln!("Result: {:?}", result);
+}
+
 pub fn brute_force_decrypt(
     str: String,
     clues: Vec<String>,

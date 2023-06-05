@@ -25,6 +25,7 @@ mod vigenere;
 use std::io;
 mod console;
 
+use brute_force::brute_force_unique_combination;
 use clap::{Parser, Subcommand};
 mod permute;
 fn main() {
@@ -83,6 +84,18 @@ fn main() {
             picks,
         } => combinator::print_combine_elements(elements_count, picks),
         Commands::Fuzz { length, rules } => fuzzer::fuzz_from("".to_string(), length, 27, rules),
+        Commands::BruteForceCombination {
+            string,
+            clues,
+            threads,
+            decryptors,
+        } => brute_force_unique_combination(
+            string,
+            clues,
+            decryptors,
+            threads,
+            String::from("cache"),
+        ),
     };
 }
 
@@ -129,6 +142,21 @@ enum Commands {
         /// threads to run
         #[arg(long)]
         threads: u8,
+    },
+    BruteForceCombination {
+        /// String to try to decrypt
+        #[arg(short, long)]
+        string: String,
+
+        /// words to search for (cannot be empty)
+        #[arg(long)]
+        clues: Vec<String>,
+        /// threads to run
+        #[arg(long)]
+        threads: u8,
+        /// Combination of BrufteForce params to use
+        #[arg(last = true)]
+        decryptors: Vec<String>,
     },
     GetDecryptors {
         /// filter decryptors to use (empty means all)
