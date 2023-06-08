@@ -46,7 +46,7 @@
   - [x] `cargo run -- encrypt --string HELLOHELLO -- cut:5 vigenere:KEY:ALPHABET transpose:12 swap:0:5:6:4:2:3:1`
 - [ ] `unkr decryptor <decryptor>` shows doc for decryptor
 - [ ] `unkr bruteforce --clues-file ./words`
-- [ ] `unkr bruteforce-combination --clue clue --string string -- permute:4 vigenere:2:3`
+- [x] `unkr bruteforce-combination --clue clue --string string -- permute:4 vigenere:2:3`
 
 https://kryptosfan.wordpress.com/k3/k3-solution-3/
 http://kryptools.com/hints.htm

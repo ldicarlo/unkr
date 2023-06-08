@@ -426,6 +426,7 @@ fn loop_decrypt(
             BruteForceCryptor::Permute(args) => {
                 let mut current_permutations = permute::init();
                 while let Some(next) = permute::next(current_permutations.clone(), args.clone()) {
+                    eprintln!("{:?}", next);
                     let new_str = permute::decrypt(strs.clone(), next.clone());
 
                     if strs == new_str {

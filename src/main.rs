@@ -20,6 +20,7 @@ mod models;
 mod parser;
 mod reverse;
 mod swap;
+mod thread_system;
 mod transpose;
 mod vigenere;
 use std::io;
