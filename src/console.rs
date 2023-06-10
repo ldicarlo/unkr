@@ -14,8 +14,6 @@ pub enum PrintableMessage {
     Default(String),
 }
 
-pub struct HitPayload {}
-
 pub struct ThreadStatusPayload {
     pub thread_number: usize,
     pub step: usize,
