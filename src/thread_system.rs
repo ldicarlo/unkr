@@ -24,3 +24,17 @@ pub fn internal_brute_force_decrypt(
 fn next() -> Option<CryptorTypeWithArgs> {
     None
 }
+
+// Thread 1 (Send thread status -> thread_system | Receive work to do)
+// Thread 2 (Send thread status -> thread_system | Receive work to do)
+// thread_system sends work to do
+// push_done
+
+pub fn brute_force_combination(
+    head: BruteForceCryptor,
+    tail: Vec<BruteForceCryptor>,
+    thread_assignments: Vec<std::sync::mpsc::Sender<String>>,
+    thread_status: Vec<std::sync::mpsc::Receiver<bool>>,
+) {
+    while let Some(next) = next() {}
+}
