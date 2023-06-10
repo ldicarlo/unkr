@@ -97,7 +97,7 @@ fn main() {
             threads,
             String::from("cache"),
         ),
-        Commands::Crossterm {} => console::consume_message(),
+        //Commands::Crossterm {} => console::consume_message(),
     };
 }
 
@@ -182,5 +182,5 @@ enum Commands {
         #[arg(long)]
         rules: Vec<String>,
     },
-    Crossterm {},
+    //Crossterm {},
 }

@@ -1,7 +1,9 @@
-use std::sync::mpsc::channel;
 use std::sync::mpsc::Receiver;
+use std::sync::mpsc::Sender;
 
 use crate::cache;
+use crate::console;
+use crate::console::PrintableMessage;
 use crate::models::CacheArgs;
 use crate::models::HitLine;
 use std::collections::BTreeSet;
@@ -12,9 +14,10 @@ pub fn candidate_receiver(
     r: Receiver<(Vec<String>, Vec<String>, String)>,
     cache_args: CacheArgs,
     result_accumulator: Arc<Mutex<BTreeSet<String>>>,
+    console_sender: Sender<PrintableMessage>,
 ) {
     r.iter().for_each(|(a, b, c)| {
-        let result = find_and_print_candidates(a, b, c.clone());
+        let result = find_and_print_candidates(a, b, c.clone(), console_sender.clone());
         if result.len() > 0 {
             result_accumulator.lock().unwrap().insert(c.clone());
             cache::push_hit(
@@ -32,10 +35,17 @@ pub fn find_and_print_candidates(
     strs: Vec<String>,
     clues: Vec<String>,
     cryptor_str: String,
+    console_sender: Sender<PrintableMessage>,
 ) -> Vec<String> {
     let candidates = find_candidates(strs.clone(), clues.clone());
     if candidates.len() > 0 {
-        println!("{:?} {}", candidates, cryptor_str);
+        console_sender
+            .send(console::PrintableMessage::Default(format!(
+                "{:?} {}",
+                candidates, cryptor_str
+            )))
+            .unwrap();
+        //  println!("{:?} {}", candidates, cryptor_str);
     }
     candidates
 }

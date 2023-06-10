@@ -1,44 +1,81 @@
 use crossterm::{
-    cursor::{self, MoveToRow},
-    execute,
-    style::{self, Print, Stylize},
-    terminal, ExecutableCommand, QueueableCommand, Result,
+    cursor::MoveTo,
+    style::Print,
+    terminal::{self, Clear},
+    ExecutableCommand,
 };
+use std::{thread, time};
 // https://docs.rs/crossterm/latest/crossterm/
 use std::io::{stdout, Write};
 use std::sync::mpsc::Receiver;
-pub fn consume_message() {
+
+pub enum PrintableMessage {
+    ThreadStatus(ThreadStatusPayload),
+    Default(String),
+}
+
+pub struct HitPayload {}
+
+pub struct ThreadStatusPayload {
+    pub thread_number: usize,
+    pub step: usize,
+    pub total: usize,
+    pub current_combination: String,
+}
+
+pub fn thread_consume_messages(r: Receiver<PrintableMessage>, thread_count: usize) {
     let mut stdout = stdout();
 
     stdout
         .execute(terminal::Clear(terminal::ClearType::All))
         .unwrap();
 
-    print_message(1, 4, 10);
-    print_message(2, 4, 10);
-    print_message(1, 5, 10);
-    print_message(2, 6, 10);
-    print_message(2, 7, 10);
+    r.iter().for_each(|x| print(x, thread_count));
 
     stdout.flush().unwrap();
 }
 
-fn print_message(thread_number: u8, step: u8, total: u8) {
+fn print(pm: PrintableMessage, thread_count: usize) {
+    match pm {
+        PrintableMessage::ThreadStatus(p) => print_thread_status(p),
+        PrintableMessage::Default(str) => print_default(str, thread_count),
+    }
+}
+
+fn print_default(str: String, thread_count: usize) {
     stdout()
-        .execute(MoveToRow(thread_number as u16))
+        .execute(MoveTo(0, thread_count as u16 + 1))
         .unwrap()
-        .execute(Print(step))
+        .execute(Clear(terminal::ClearType::CurrentLine))
+        .unwrap()
+        .execute(Print(str))
         .unwrap()
         .flush()
         .unwrap();
+    let ten_millis = time::Duration::from_millis(1000);
+    thread::sleep(ten_millis);
 }
 
-fn state(r: Receiver<(u8, u8, u8)>, init: u8) {
-    let mut current_state: Vec<(u8, u8)> = Vec::new();
-    for i in 0..init {
-        current_state.push((0, 0));
-    }
-    r.iter().map(|(thread_number, step, total)| {
-        // implem
-    });
+fn print_thread_status(
+    ThreadStatusPayload {
+        thread_number,
+        step,
+        total,
+        current_combination,
+    }: ThreadStatusPayload,
+) {
+    stdout()
+        .execute(MoveTo(0, thread_number as u16))
+        .unwrap()
+        .execute(Clear(terminal::ClearType::CurrentLine))
+        .unwrap()
+        .execute(Print(format!(
+            "thread_{:02}: {:03}/{:03} ({})",
+            thread_number, step, total, current_combination
+        )))
+        .unwrap()
+        .flush()
+        .unwrap();
+    let ten_millis = time::Duration::from_millis(1000);
+    thread::sleep(ten_millis);
 }
