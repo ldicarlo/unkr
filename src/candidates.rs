@@ -1,3 +1,34 @@
+use std::sync::mpsc::channel;
+use std::sync::mpsc::Receiver;
+
+use crate::cache;
+use crate::models::CacheArgs;
+use crate::models::HitLine;
+use std::collections::BTreeSet;
+use std::sync::Arc;
+use std::sync::Mutex;
+
+pub fn candidate_receiver(
+    r: Receiver<(Vec<String>, Vec<String>, String)>,
+    cache_args: CacheArgs,
+    result_accumulator: Arc<Mutex<BTreeSet<String>>>,
+) {
+    r.iter().for_each(|(a, b, c)| {
+        let result = find_and_print_candidates(a, b, c.clone());
+        if result.len() > 0 {
+            //let local_arc = c.clone();
+            result_accumulator.lock().unwrap().insert(c.clone());
+            cache::push_hit(
+                cache_args.clone(),
+                HitLine {
+                    args: c.clone(),
+                    result: result.clone().join(""),
+                },
+            )
+        }
+    });
+}
+
 pub fn find_and_print_candidates(
     strs: Vec<String>,
     clues: Vec<String>,

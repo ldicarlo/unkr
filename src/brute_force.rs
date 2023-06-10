@@ -30,9 +30,10 @@ pub fn brute_force_unique_combination(
     str: String,
     clues: Vec<String>,
     decryptors: Vec<String>,
-    threads: u8,
+    _threads: u8,
     cache_name: String,
 ) {
+    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
@@ -47,15 +48,24 @@ pub fn brute_force_unique_combination(
         .map(|(i, _)| i as u8)
         .rev()
         .collect();
+    let (candidates_sender, candidates_receiver) = channel();
+    let local_cache_args = cache_args.clone();
+    thread::spawn(move || {
+        candidates::candidate_receiver(
+            candidates_receiver,
+            local_cache_args,
+            results_accumulator.clone(),
+        )
+    });
 
     loop_decrypt(
-        Arc::new(Mutex::new(BTreeSet::new())),
         None,
         combination.clone(),
         vec![str],
         clues,
         decr.clone(),
         cache_args.clone(),
+        candidates_sender.clone(),
     );
     cache::push_done(cache::to_done(decr, combination), cache_args.clone());
 }
@@ -125,15 +135,26 @@ pub fn internal_brute_force_decrypt(
     vec_combinations.shuffle(&mut rand::thread_rng());
 
     let (sender, receiver) = channel();
+    let (candidates_sender, candidates_receiver) = channel();
+    let local_cache_args = cache_args.clone();
+    let local_results_accumulator = results_accumulator.clone();
+    thread::spawn(move || {
+        candidates::candidate_receiver(
+            candidates_receiver,
+            local_cache_args,
+            local_results_accumulator.clone(),
+        )
+    });
+
     for (i, t) in threads_work.into_iter().enumerate() {
         let local_combinations = vec_combinations.split_off(vec_combinations.len() - t);
 
         let local_sender = sender.clone();
-        let local_results_accumulator = results_accumulator.clone();
         let local_str = str.clone();
         let local_clues = clues.clone();
         let local_decryptors = decryptors.clone();
         let local_cache_args = cache_args.clone();
+        let local_candidate_sender = candidates_sender.clone();
         eprintln!(
             "THREAD {}\tstart {} combinations",
             i,
@@ -144,11 +165,11 @@ pub fn internal_brute_force_decrypt(
                 .send(threaded_function(
                     i,
                     local_combinations,
-                    local_results_accumulator,
                     local_str,
                     local_clues,
                     local_decryptors,
                     local_cache_args,
+                    local_candidate_sender,
                 ))
                 .unwrap();
         });
@@ -164,11 +185,11 @@ pub fn internal_brute_force_decrypt(
 fn threaded_function(
     thread_number: usize,
     combinations: Vec<Vec<u8>>,
-    results_accumulator: Arc<Mutex<BTreeSet<String>>>,
     str: String,
     clues: Vec<String>,
     decryptors_filtered: Vec<BruteForceCryptor>,
     cache_args: models::CacheArgs,
+    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
 ) -> bool {
     for (i, vec) in combinations.iter().enumerate() {
         let done_line = cache::to_done(decryptors_filtered.clone(), vec.clone());
@@ -180,13 +201,13 @@ fn threaded_function(
         );
 
         loop_decrypt(
-            results_accumulator.clone(),
             None,
             vec.clone(),
             vec![str.clone()],
             clues.clone(),
             decryptors_filtered.clone(),
             cache_args.clone(),
+            candidates_sender.clone(),
         );
 
         cache::push_done(done_line.clone(), cache_args.clone());
@@ -215,13 +236,13 @@ fn brute_force_strings(
 }
 
 fn loop_decrypt(
-    res_acc: Arc<Mutex<BTreeSet<String>>>,
     acc: Option<String>,
     mut to_use: Vec<u8>,
     strs: Vec<String>,
     clues: Vec<String>,
     decryptors_filtered: Vec<BruteForceCryptor>,
     cache_args: models::CacheArgs,
+    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
 ) {
     if let Some(current) = to_use.pop() {
         let cryptor = decryptors_filtered
@@ -238,22 +259,21 @@ fn loop_decrypt(
                 }
                 let cryptor_name = String::from("AtBash");
                 let current_acc = process_new_str(
-                    res_acc.clone(),
                     acc,
                     clues.clone(),
                     cryptor_name.clone(),
                     new_str.clone(),
-                    cache_args.clone(),
+                    candidates_sender.clone(),
                 );
 
                 loop_decrypt(
-                    res_acc.clone(),
                     current_acc,
                     to_use.clone(),
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
                     cache_args.clone(),
+                    candidates_sender.clone(),
                 );
             }
             BruteForceCryptor::Caesar => {
@@ -266,22 +286,21 @@ fn loop_decrypt(
                     }
 
                     let current_acc = process_new_str(
-                        res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{}", s),
                         new_str.clone(),
-                        cache_args.clone(),
+                        candidates_sender.clone(),
                     );
 
                     loop_decrypt(
-                        res_acc.clone(),
                         current_acc,
                         to_use.clone(),
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
                         cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                 }
             }
@@ -292,22 +311,21 @@ fn loop_decrypt(
                 }
                 let cryptor_name = String::from("Reverse");
                 let current_acc = process_new_str(
-                    res_acc.clone(),
                     acc,
                     clues.clone(),
                     cryptor_name.clone(),
                     new_str.clone(),
-                    cache_args.clone(),
+                    candidates_sender.clone(),
                 );
 
                 loop_decrypt(
-                    res_acc.clone(),
                     current_acc,
                     to_use.clone(),
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
                     cache_args.clone(),
+                    candidates_sender.clone(),
                 );
             }
             BruteForceCryptor::Transpose => {
@@ -320,22 +338,21 @@ fn loop_decrypt(
                     let cryptor_name = String::from("Transpose");
 
                     let current_acc = process_new_str(
-                        res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{}", s),
                         new_str.clone(),
-                        cache_args.clone(),
+                        candidates_sender.clone(),
                     );
 
                     loop_decrypt(
-                        res_acc.clone(),
                         current_acc,
                         to_use.clone(),
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
                         cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                 }
             }
@@ -350,22 +367,21 @@ fn loop_decrypt(
                         continue;
                     }
                     let current_acc = process_new_str(
-                        res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{}:{}", next.key, next.alphabet),
                         new_str.clone(),
-                        cache_args.clone(),
+                        candidates_sender.clone(),
                     );
 
                     loop_decrypt(
-                        res_acc.clone(),
                         current_acc,
                         to_use.clone(),
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
                         cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                     current_args = next;
                 }
@@ -378,22 +394,21 @@ fn loop_decrypt(
                     }
                     let cryptor_name = String::from("Cut");
                     let current_acc = process_new_str(
-                        res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{}", s),
                         new_str.clone(),
-                        cache_args.clone(),
+                        candidates_sender.clone(),
                     );
 
                     loop_decrypt(
-                        res_acc.clone(),
                         current_acc,
                         to_use.clone(),
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
                         cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                 }
             }
@@ -405,22 +420,21 @@ fn loop_decrypt(
                 let new_str = join::decrypt(strs.clone());
                 let cryptor_name = String::from("Join");
                 let current_acc = process_new_str(
-                    res_acc.clone(),
                     acc.clone(),
                     clues.clone(),
                     cryptor_name.clone(),
                     new_str.clone(),
-                    cache_args.clone(),
+                    candidates_sender.clone(),
                 );
 
                 loop_decrypt(
-                    res_acc.clone(),
                     current_acc,
                     to_use.clone(),
                     new_str.clone(),
                     clues.clone(),
                     decryptors_filtered.clone(),
                     cache_args.clone(),
+                    candidates_sender.clone(),
                 );
             }
             BruteForceCryptor::Permute(args) => {
@@ -435,22 +449,21 @@ fn loop_decrypt(
 
                     let cryptor_name = String::from("Permute");
                     let current_acc = process_new_str(
-                        res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{:?}", current_permutations),
                         new_str.clone(),
-                        cache_args.clone(),
+                        candidates_sender.clone(),
                     );
 
                     loop_decrypt(
-                        res_acc.clone(),
                         current_acc,
                         to_use.clone(),
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
                         cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                     current_permutations = next;
                 }
@@ -461,21 +474,20 @@ fn loop_decrypt(
                     let new_str = swap::decrypt(strs.clone(), next.clone());
                     let cryptor_name = String::from("Swap");
                     let current_acc = process_new_str(
-                        res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{:?}", current_order),
                         new_str.clone(),
-                        cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                     loop_decrypt(
-                        res_acc.clone(),
                         current_acc,
                         to_use.clone(),
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
                         cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                     current_order = next;
                 }
@@ -487,21 +499,20 @@ fn loop_decrypt(
                     let new_str = enigma::decrypt(strs.clone(), next.clone());
                     let cryptor_name = String::from("Enigma");
                     let current_acc = process_new_str(
-                        res_acc.clone(),
                         acc.clone(),
                         clues.clone(),
                         cryptor_name.clone() + &format!(":{:?}", current_args),
                         new_str.clone(),
-                        cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                     loop_decrypt(
-                        res_acc.clone(),
                         current_acc,
                         to_use.clone(),
                         new_str.clone(),
                         clues.clone(),
                         decryptors_filtered.clone(),
                         cache_args.clone(),
+                        candidates_sender.clone(),
                     );
                     current_args = next;
                 }
@@ -511,32 +522,21 @@ fn loop_decrypt(
 }
 
 fn process_new_str(
-    res_acc: Arc<Mutex<BTreeSet<String>>>,
     acc: Option<String>,
     clues: Vec<String>,
-    // mut cache: BTreeSet<(Vec<String>, Vec<u8>, u64)>,
     cryptor_str: String,
     new_str: Vec<String>,
-    cache_args: models::CacheArgs,
+
+    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
 ) -> Option<String> {
     let current_acc = acc
         .clone()
         .map(|existing| existing + " " + &cryptor_str.clone())
         .unwrap_or(cryptor_str.clone());
-    let candidates =
-        candidates::find_and_print_candidates(new_str.clone(), clues.clone(), current_acc.clone());
+    candidates_sender
+        .send((new_str.clone(), clues.clone(), current_acc.clone()))
+        .unwrap();
 
-    if candidates.len() > 0 {
-        let local_arc = res_acc.clone();
-        local_arc.lock().unwrap().insert(current_acc.clone());
-        cache::push_hit(
-            cache_args,
-            models::HitLine {
-                args: current_acc.clone(),
-                result: new_str.clone().join(""),
-            },
-        )
-    }
     Some(current_acc)
 }
 
