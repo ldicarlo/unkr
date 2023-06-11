@@ -77,7 +77,25 @@ fn thread_combination_over(partial_done_line: DoneLine, tw: Arc<Mutex<ThreadWork
 
 fn increase_thread_work(thread_work: ThreadWork) -> Option<ThreadWork> {
     if let Some(head) = thread_work.head.clone() {
-        match head.last_head {};
+        let next_head = match head.last_head {
+            BruteForceState::Vigenere(state) => vigenere::next(state.clone()).map(|args| {
+                models::BruteForceState::Vigenere(models::VigenereBruteForceState {
+                    args,
+                    brute_force_args: state.brute_force_args,
+                })
+            }),
+            BruteForceState::Cut(args) => todo!(),
+            BruteForceState::Caesar(_) => todo!(),
+            BruteForceState::Transpose(_) => todo!(),
+            BruteForceState::AtBash => todo!(),
+            BruteForceState::Reverse => todo!(),
+            BruteForceState::Swap(_) => todo!(),
+            BruteForceState::Join => todo!(),
+            BruteForceState::Colors(_) => todo!(),
+            BruteForceState::IndexCrypt(_) => todo!(),
+            BruteForceState::Permute(_) => todo!(),
+            BruteForceState::Enigma(_) => None,
+        };
         None
     } else {
         let mut remaining_combinations = thread_work.remaining_combinations.clone();
@@ -123,24 +141,27 @@ fn thread_work(tw: Arc<Mutex<ThreadWork>>) {
     // }
 }
 
-fn make_next(state: BruteForceState) -> Option<BruteForceState> {
-    match state {
-        BruteForceState::Vigenere(state) => vigenere::next(state).map(|args| {
-            models::BruteForceState::Vigenere(models::VigenereBruteForceState {
-                args,
-                brute_force_args: state.brute_force_args,
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    #[test]
+    fn it_works() {
+        assert_eq!(
+            Some(ThreadWork {
+                clues: vec![],
+                head: None,
+                remaining_combinations: vec![],
+                working_combinations: super::BTreeMap::new(),
+                strings: vec![]
+            }),
+            super::increase_thread_work(ThreadWork {
+                clues: vec![],
+                head: None,
+                remaining_combinations: vec![],
+                working_combinations: super::BTreeMap::new(),
+                strings: vec![]
             })
-        }),
-        BruteForceState::Cut(args) => todo!(),
-        BruteForceState::Caesar(_) => todo!(),
-        BruteForceState::Transpose(_) => todo!(),
-        BruteForceState::AtBash => todo!(),
-        BruteForceState::Reverse => todo!(),
-        BruteForceState::Swap(_) => todo!(),
-        BruteForceState::Join => todo!(),
-        BruteForceState::Colors(_) => todo!(),
-        BruteForceState::IndexCrypt(_) => todo!(),
-        BruteForceState::Permute(_) => todo!(),
-        BruteForceState::Enigma(_) => todo!(),
+        );
     }
 }
