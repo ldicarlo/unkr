@@ -1,6 +1,36 @@
-use crate::models::{
-    BruteForceCryptor, CacheArgs, CryptorTypeWithArgs, DoneLine, PartialCombination,
-};
+use clap::Args;
+
+use super::combinator;
+use crate::atbash;
+use crate::cache;
+use crate::caesar;
+use crate::candidates;
+use crate::console;
+use crate::console::ThreadStatusPayload;
+use crate::cryptors;
+use crate::cut;
+use crate::dispatcher;
+use crate::enigma;
+use crate::enigma::EnigmaArgs;
+use crate::join;
+use crate::models;
+use crate::models::BruteForceCryptor;
+use crate::models::BruteForcePermuteArgs;
+use crate::models::BruteForceVigenereArgs;
+use crate::models::CacheArgs;
+use crate::models::Cryptor;
+use crate::models::NumberArgs;
+use crate::models::PermuteArgs;
+use crate::models::StringArgs;
+use crate::models::SwapArgs;
+use crate::models::VigenereArgs;
+use crate::models::{CryptorTypeWithArgs, DoneLine, PartialCombination};
+use crate::parser;
+use crate::permute;
+use crate::reverse;
+use crate::swap;
+use crate::transpose;
+use crate::vigenere;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender;
@@ -44,20 +74,52 @@ pub fn brute_force_combination(
 ) {
     while let Some(next) = next() {}
 }
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct ThreadWork {
     pub head: Option<ThreadWorkHead>,
-    pub remaining_combinations: u8,
+    pub remaining_combinations: Vec<Vec<BruteForceCryptor>>,
     pub working_combinations: BTreeMap<PartialCombination, Vec<()>>,
+    pub clues: Vec<String>,
 }
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum BruteForceState {
+    Vigenere(VigenereBruteForceState),
+    Cut(NumberArgs),
+    Caesar(NumberArgs),
+    Transpose(NumberArgs),
+    AtBash,
+    Reverse,
+    Swap(SwapArgs),
+    Join,
+    Colors(StringArgs),
+    IndexCrypt(StringArgs),
+    Permute(PermuteBruteForceState),
+    Enigma(EnigmaArgs),
+}
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub struct VigenereBruteForceState {
+    pub brute_force_args: BruteForceVigenereArgs,
+    pub args: VigenereArgs,
+}
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub struct PermuteBruteForceState {
+    pub brute_force_args: BruteForcePermuteArgs,
+    pub args: PermuteArgs,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct ThreadWorkHead {
-    pub last_head: u8,
-    pub last_tail: u8,
+    pub last_head: BruteForceState,
+    pub last_tail: Vec<BruteForceCryptor>,
     pub partial_combination: PartialCombination,
 }
 
-pub fn start(thread_count: usize, tw: Arc<Mutex<ThreadWork>>) {
+pub fn start(
+    thread_count: usize,
+    tw: Arc<Mutex<ThreadWork>>,
+    //     done_cache: BTreeSet<DoneLine>,
+    // cache_args: CacheArgs,
+) {
     // let state = Arc::new(Mutex::new(ThreadWork {
     //     head: None, //?
     //     remaining_combinations: 1,
@@ -71,6 +133,16 @@ pub fn start(thread_count: usize, tw: Arc<Mutex<ThreadWork>>) {
         //thread::spawn(move || thread_combination_over(local_tw.clone(), done_line_sender));
     }
 }
+
+// fn loop_decrypt(
+//   acc: Option<String>,
+//   mut to_use: Vec<u8>,
+//   strs: Vec<String>,
+//   clues: Vec<String>,
+//   decryptors_filtered: Vec<BruteForceCryptor>,
+//   cache_args: models::CacheArgs,
+//   candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
+// )
 
 fn thread_combination_over(partial_done_line: DoneLine, tw: Arc<Mutex<ThreadWork>>) {
     // tw.working_combination.done_line.pop()
@@ -100,11 +172,29 @@ fn thread_work(tw: Arc<Mutex<ThreadWork>>) {
         } else {
             None
         };
-        //   loop_encrypt
+        // loop_decrypt(None);
+        println!("Stuff done");
         if let Some(work_to_do) = current {
             //  thread_combination_over(partial_done_line, tw);
         } else {
             break;
         }
+    }
+}
+
+fn make_next(state: BruteForceState) -> Option<BruteForceState> {
+    match state {
+        BruteForceState::Vigenere(_) => todo!(),
+        BruteForceState::Cut(_) => todo!(),
+        BruteForceState::Caesar(_) => todo!(),
+        BruteForceState::Transpose(_) => todo!(),
+        BruteForceState::AtBash => todo!(),
+        BruteForceState::Reverse => todo!(),
+        BruteForceState::Swap(_) => todo!(),
+        BruteForceState::Join => todo!(),
+        BruteForceState::Colors(_) => todo!(),
+        BruteForceState::IndexCrypt(_) => todo!(),
+        BruteForceState::Permute(_) => todo!(),
+        BruteForceState::Enigma(_) => todo!(),
     }
 }
