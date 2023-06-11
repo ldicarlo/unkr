@@ -11,8 +11,10 @@ pub fn init() -> models::PermuteArgs {
 }
 
 pub fn next(
-    models::PermuteArgs { permutations }: models::PermuteArgs,
-    models::BruteForcePermuteArgs { max_permutations }: models::BruteForcePermuteArgs,
+    models::PermuteBruteForceState {
+        args: models::PermuteArgs { permutations },
+        brute_force_args: models::BruteForcePermuteArgs { max_permutations },
+    }: models::PermuteBruteForceState,
 ) -> Option<models::PermuteArgs> {
     let next = fuzzer::fuzz_next_string_ruled(
         char_utils::pairs_to_vec(permutations)
@@ -56,7 +58,7 @@ pub fn decrypt_string(str: String, permutations: Vec<(char, char)>) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::{BruteForcePermuteArgs, PermuteArgs};
+    use crate::models::{BruteForcePermuteArgs, PermuteArgs, PermuteBruteForceState};
 
     #[test]
     fn it_works() {
@@ -69,14 +71,14 @@ mod tests {
     #[test]
     fn next_works() {
         assert_eq!(
-            super::next(
-                PermuteArgs {
+            super::next(PermuteBruteForceState {
+                args: PermuteArgs {
                     permutations: vec![('J', 'I')]
                 },
-                BruteForcePermuteArgs {
+                brute_force_args: BruteForcePermuteArgs {
                     max_permutations: 2
                 }
-            ),
+            }),
             Some(PermuteArgs {
                 permutations: vec![('J', 'K')]
             },)

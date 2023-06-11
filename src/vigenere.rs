@@ -11,11 +11,14 @@ pub fn init() -> models::VigenereArgs {
 }
 
 pub fn next(
-    models::VigenereArgs { key, alphabet }: models::VigenereArgs,
-    models::BruteForceVigenereArgs {
-        key_depth,
-        alphabet_depth,
-    }: models::BruteForceVigenereArgs,
+    models::VigenereBruteForceState {
+        args: models::VigenereArgs { key, alphabet },
+        brute_force_args:
+            models::BruteForceVigenereArgs {
+                key_depth,
+                alphabet_depth,
+            },
+    }: models::VigenereBruteForceState,
 ) -> Option<models::VigenereArgs> {
     fuzzer::fuzz_next_string_ruled(key, key_depth, 27, &vec![])
         .map(|k| models::VigenereArgs {

@@ -51,6 +51,32 @@ pub enum CryptorTypeWithBruteForceArgs {
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum BruteForceState {
+    Vigenere(VigenereBruteForceState),
+    Cut(NumberArgs),
+    Caesar(NumberArgs),
+    Transpose(NumberArgs),
+    AtBash,
+    Reverse,
+    Swap(SwapArgs),
+    Join,
+    Colors(StringArgs),
+    IndexCrypt(StringArgs),
+    Permute(PermuteBruteForceState),
+    Enigma(EnigmaArgs),
+}
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub struct VigenereBruteForceState {
+    pub brute_force_args: BruteForceVigenereArgs,
+    pub args: VigenereArgs,
+}
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub struct PermuteBruteForceState {
+    pub brute_force_args: BruteForcePermuteArgs,
+    pub args: PermuteArgs,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct VigenereArgs {
     pub key: String,
     pub alphabet: String,

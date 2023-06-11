@@ -380,12 +380,13 @@ fn loop_decrypt(
                     );
                 }
             }
-            BruteForceCryptor::Vigenere(brute_force_vigenere_args) => {
+            BruteForceCryptor::Vigenere(brute_force_args) => {
                 let mut current_args = vigenere::init();
                 let cryptor_name = String::from("Vigenere");
-                while let Some(next) =
-                    vigenere::next(current_args.clone(), brute_force_vigenere_args)
-                {
+                while let Some(next) = vigenere::next(models::VigenereBruteForceState {
+                    args: current_args.clone(),
+                    brute_force_args,
+                }) {
                     let new_str = vigenere::decrypt(strs.clone(), next.clone());
                     if strs == new_str {
                         continue;
@@ -463,7 +464,10 @@ fn loop_decrypt(
             }
             BruteForceCryptor::Permute(args) => {
                 let mut current_permutations = permute::init();
-                while let Some(next) = permute::next(current_permutations.clone(), args.clone()) {
+                while let Some(next) = permute::next(models::PermuteBruteForceState {
+                    args: current_permutations.clone(),
+                    brute_force_args: args.clone(),
+                }) {
                     //  eprintln!("{:?}", next);
                     let new_str = permute::decrypt(strs.clone(), next.clone());
 
