@@ -42,7 +42,7 @@ pub enum BruteForceCryptor {
     Join,
     IndexCrypt,
     Permute(BruteForcePermuteArgs),
-    Enigma
+    Enigma,
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub enum CryptorTypeWithBruteForceArgs {
@@ -102,6 +102,12 @@ pub struct HitLine {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
 pub struct DoneLine {
+    pub combinations: String,
+    pub args: Option<String>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
+pub struct PartialCombination {
     pub combinations: String,
     pub args: Option<String>,
 }
