@@ -60,8 +60,7 @@ pub enum BruteForceState {
     Reverse,
     Swap(SwapArgs),
     Join,
-    Colors(StringArgs),
-    IndexCrypt(StringArgs),
+    //    IndexCrypt(StringArgs),
     Permute(PermuteBruteForceState),
     Enigma(EnigmaArgs),
 }
