@@ -97,6 +97,28 @@ fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
     }
 }
 
+fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
+    match bfs {
+        BruteForceState::Vigenere(state) => vigenere::next(state.clone()).map(|args| {
+            {
+                models::BruteForceState::Vigenere(models::VigenereBruteForceState {
+                    args,
+                    brute_force_args: state.brute_force_args,
+                })
+            }
+        }),
+        BruteForceState::Cut(args) => todo!(),
+        BruteForceState::Caesar(_) => todo!(),
+        BruteForceState::Transpose(_) => todo!(),
+        BruteForceState::AtBash => None,
+        BruteForceState::Reverse => None,
+        BruteForceState::Swap(_) => todo!(),
+        BruteForceState::Join => None,
+        BruteForceState::Permute(_) => todo!(),
+        BruteForceState::Enigma(_) => None,
+    }
+}
+
 fn start_thread_work(
     combinations: Vec<Vec<BruteForceCryptor>>,
     clues: Vec<String>,
@@ -238,6 +260,41 @@ mod tests {
                 working_combinations: super::BTreeMap::new(),
                 strings: vec![String::from("ENCRYPTED")]
             })
+        );
+    }
+
+    #[test]
+    fn start_thread_works() {
+        assert_eq!(
+            Some(ThreadWork {
+                clues: vec![String::from("hello")],
+                current_combination: DoneLine {
+                    args: Some(String::from("Vigenere:1:2")),
+                    combinations: String::from("Join Vigenere")
+                },
+                current_head: BruteForceState::Vigenere(VigenereBruteForceState {
+                    args: vigenere::init(),
+                    brute_force_args: BruteForceVigenereArgs {
+                        alphabet_depth: 1,
+                        key_depth: 2
+                    }
+                }),
+                current_tail: vec![BruteForceCryptor::Join],
+                remaining_combinations: vec![],
+                working_combinations: vec![].into_iter().collect(),
+                strings: vec![String::from("ENCRYPTED")]
+            }),
+            super::start_thread_work(
+                vec![vec![
+                    BruteForceCryptor::Join,
+                    BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
+                        alphabet_depth: 1,
+                        key_depth: 2
+                    }),
+                ]],
+                vec![String::from("hello")],
+                vec![String::from("ENCRYPTED")],
+            )
         );
     }
 }
