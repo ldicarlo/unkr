@@ -147,7 +147,7 @@ pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
         "atbash" => BruteForceCryptor::AtBash,
         "swap" => BruteForceCryptor::Swap,
         "join" => BruteForceCryptor::Join,
-        "indexcrypt" => BruteForceCryptor::IndexCrypt,
+        //   "indexcrypt" => BruteForceCryptor::IndexCrypt,
         "permute" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Permute),
         "enigma" => BruteForceCryptor::Enigma,
         _ => panic!("Cannot parse: {}", str),

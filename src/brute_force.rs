@@ -71,7 +71,10 @@ pub fn brute_force_unique_combination(
         cache_args.clone(),
         candidates_sender.clone(),
     );
-    cache::push_done(cache::to_done(decr, combination), cache_args.clone());
+    cache::push_done(
+        cache::to_done_from_combination(decr, combination),
+        cache_args.clone(),
+    );
 }
 
 pub fn brute_force_decrypt(
@@ -113,7 +116,7 @@ pub fn internal_brute_force_decrypt(
     // discard combinations
     let mut filtered_combinations = Vec::new();
     for vec in combinations.into_iter() {
-        let done_line = cache::to_done(decryptors.clone(), vec.clone());
+        let done_line = cache::to_done_from_combination(decryptors.clone(), vec.clone());
         if skip_combination(vec.clone(), decryptors.clone()) {
             // eprintln!(
             //     "SKIPPED combination: {:?}",
@@ -206,7 +209,7 @@ fn threaded_function(
 ) -> bool {
     let total = combinations.len();
     for (i, vec) in combinations.iter().enumerate() {
-        let done_line = cache::to_done(decryptors_filtered.clone(), vec.clone());
+        let done_line = cache::to_done_from_combination(decryptors_filtered.clone(), vec.clone());
         console_sender
             .send(console::PrintableMessage::ThreadStatus(
                 ThreadStatusPayload {
@@ -520,7 +523,7 @@ fn loop_decrypt(
                     current_order = next;
                 }
             }
-            BruteForceCryptor::IndexCrypt => todo!(),
+            //      BruteForceCryptor::IndexCrypt => todo!(),
             BruteForceCryptor::Enigma => {
                 let mut current_args = enigma::init();
                 while let Some(next) = enigma::next(current_args.clone()) {
@@ -596,7 +599,7 @@ fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> b
                 BruteForceCryptor::Reverse => reverse::skip_if_previous_in().contains(&prev),
                 BruteForceCryptor::Swap => swap::skip_if_previous_in().contains(&prev),
                 BruteForceCryptor::Join => join::skip_if_previous_in().contains(&prev),
-                BruteForceCryptor::IndexCrypt => false,
+                //   BruteForceCryptor::IndexCrypt => false,
                 BruteForceCryptor::Permute(args) => {
                     permute::skip_if_previous_in(args).contains(&prev)
                 }

@@ -126,11 +126,15 @@ fn hit_to_string(hit_line: models::HitLine) -> String {
     format!("{};{}", hit_line.result, hit_line.args)
 }
 
-pub fn to_done(
+pub fn to_done_from_combination(
     brute_force_cryptors: Vec<models::BruteForceCryptor>,
     combinations: Vec<u8>,
 ) -> models::DoneLine {
-    let (left, right) = combinations_string(combination(brute_force_cryptors, combinations));
+    to_done(combination(brute_force_cryptors, combinations))
+}
+
+pub fn to_done(combination: Vec<models::BruteForceCryptor>) -> DoneLine {
+    let (left, right) = combinations_string(combination);
     models::DoneLine {
         combinations: left,
         args: right,
@@ -157,7 +161,7 @@ pub fn combinations_string(
             models::BruteForceCryptor::Reverse => (String::from("Reverse"), None),
             models::BruteForceCryptor::Swap => (String::from("Swap"), None),
             models::BruteForceCryptor::Join => (String::from("Join"), None),
-            models::BruteForceCryptor::IndexCrypt => (String::from("IndexCrypt"), None),
+            //    models::BruteForceCryptor::IndexCrypt => (String::from("IndexCrypt"), None),
             models::BruteForceCryptor::Permute(models::BruteForcePermuteArgs {
                 max_permutations,
             }) => (
@@ -217,7 +221,7 @@ pub mod tests {
         models,
     };
 
-    use super::{already_done, get_done_cache, push_line, to_done};
+    use super::{already_done, get_done_cache, push_line, to_done_from_combination};
 
     pub fn test_cache_name() -> String {
         String::from("cache-tests")
@@ -305,7 +309,7 @@ pub mod tests {
     #[test]
     fn to_done_works() {
         assert_eq!(
-            to_done(
+            to_done_from_combination(
                 vec![
                     models::BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
                         alphabet_depth: 4,
@@ -326,7 +330,7 @@ pub mod tests {
     #[test]
     fn to_done_no_args_works() {
         assert_eq!(
-            to_done(
+            to_done_from_combination(
                 vec![
                     models::BruteForceCryptor::Transpose,
                     models::BruteForceCryptor::Caesar,

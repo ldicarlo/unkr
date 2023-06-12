@@ -2,6 +2,10 @@ use crate::models::NumberArgs;
 
 use super::char_utils::char_mod;
 
+pub fn init() -> NumberArgs {
+    NumberArgs { number: 0 }
+}
+
 pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
     strs.iter()
         .map(|str| {

@@ -40,7 +40,7 @@ pub enum BruteForceCryptor {
     Reverse,
     Swap,
     Join,
-    IndexCrypt,
+    //  IndexCrypt,
     Permute(BruteForcePermuteArgs),
     Enigma,
 }
@@ -127,12 +127,6 @@ pub struct HitLine {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
 pub struct DoneLine {
-    pub combinations: String,
-    pub args: Option<String>,
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
-pub struct PartialCombination {
     pub combinations: String,
     pub args: Option<String>,
 }
