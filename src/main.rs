@@ -1,6 +1,7 @@
 mod atbash;
 mod base;
 mod brute_force;
+mod brute_force_state;
 mod cache;
 mod caesar;
 mod candidates;

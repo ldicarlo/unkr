@@ -3,6 +3,7 @@ use clap::Args;
 use super::combinator;
 use crate::atbash;
 use crate::brute_force;
+use crate::brute_force_state;
 use crate::cache;
 use crate::caesar;
 use crate::candidates;
@@ -76,49 +77,6 @@ pub struct ThreadWork {
     pub strings: Vec<String>,
 }
 
-fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
-    match brute_force_cryptor {
-        BruteForceCryptor::Vigenere(brute_force_args) => {
-            BruteForceState::Vigenere(VigenereBruteForceState {
-                brute_force_args,
-                args: vigenere::init(),
-            })
-        }
-        BruteForceCryptor::Cut => todo!(),
-        BruteForceCryptor::Caesar => BruteForceState::Caesar(caesar::init()),
-        BruteForceCryptor::Transpose => todo!(),
-        BruteForceCryptor::AtBash => todo!(),
-        BruteForceCryptor::Reverse => todo!(),
-        BruteForceCryptor::Swap => todo!(),
-        BruteForceCryptor::Join => BruteForceState::Join,
-        //   BruteForceCryptor::IndexCrypt => todo!(),
-        BruteForceCryptor::Permute(_) => todo!(),
-        BruteForceCryptor::Enigma => todo!(),
-    }
-}
-
-fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
-    match bfs {
-        BruteForceState::Vigenere(state) => vigenere::next(state.clone()).map(|args| {
-            {
-                models::BruteForceState::Vigenere(models::VigenereBruteForceState {
-                    args,
-                    brute_force_args: state.brute_force_args,
-                })
-            }
-        }),
-        BruteForceState::Cut(args) => todo!(),
-        BruteForceState::Caesar(_) => todo!(),
-        BruteForceState::Transpose(_) => todo!(),
-        BruteForceState::AtBash => None,
-        BruteForceState::Reverse => None,
-        BruteForceState::Swap(_) => todo!(),
-        BruteForceState::Join => None,
-        BruteForceState::Permute(_) => todo!(),
-        BruteForceState::Enigma(_) => None,
-    }
-}
-
 fn start_thread_work(
     combinations: Vec<Vec<BruteForceCryptor>>,
     clues: Vec<String>,
@@ -128,7 +86,7 @@ fn start_thread_work(
     remaining_combinations.pop().and_then(|x| {
         let mut popable = x.clone();
         popable.pop().map(|bfc| {
-            let current_head = start_state(bfc);
+            let current_head = brute_force_state::start_state(bfc);
 
             ThreadWork {
                 current_head,
