@@ -45,3 +45,32 @@ pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
         BruteForceState::Enigma(_) => None,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(super::increase_state(super::BruteForceState::Join), None);
+    }
+    #[test]
+    fn vigenere_works() {
+        assert_eq!(
+            super::increase_state(
+                super::increase_state(super::BruteForceState::Vigenere(
+                    super::VigenereBruteForceState {
+                        brute_force_args: crate::models::BruteForceVigenereArgs {
+                            alphabet_depth: 1,
+                            key_depth: 1
+                        },
+                        args: crate::models::VigenereArgs {
+                            alphabet: String::from("Z"),
+                            key: String::from("Y")
+                        }
+                    }
+                ))
+                .unwrap()
+            ),
+            None
+        );
+    }
+}

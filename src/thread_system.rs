@@ -48,10 +48,17 @@ use std::thread;
 // thread_system sends work to do
 // push_done
 
-pub fn start(thread_count: usize, tw: Arc<Mutex<ThreadWork>>) {
+pub fn start(
+    thread_count: usize,
+    combinations: Vec<Vec<BruteForceCryptor>>,
+    clues: Vec<String>,
+    strings: Vec<String>,
+) {
+    let thread_work = start_thread_work(combinations, clues, strings).expect("Nothing to do.");
+    let am_tw = Arc::new(Mutex::new(thread_work));
     for i in 0..thread_count {
-        let local_tw = tw.clone();
-        thread::spawn(move || thread_work(local_tw.clone()));
+        let local_tw = am_tw.clone();
+        thread::spawn(move || run_thread_work(local_tw.clone()));
     }
 
     for i in 0..thread_count {
@@ -142,7 +149,7 @@ fn increase_thread_work(thread_work: ThreadWork) -> Option<ThreadWork> {
     None
 }
 
-fn thread_work(tw: Arc<Mutex<ThreadWork>>) {
+fn run_thread_work(tw: Arc<Mutex<ThreadWork>>) {
     // loop {
     //     if let Ok(thread_work) = tw.lock() {
     //         if let Some(next_thread_work) = increase_thread_work(thread_work) {
