@@ -108,45 +108,73 @@ fn start_thread_work(
     })
 }
 
-fn increase_thread_work(thread_work: ThreadWork) -> Option<ThreadWork> {
-    // thread_work
-    //     .clone()
-    //     .and_then(|head| {
-    //         match head.clone().last_head {
-    //             BruteForceState::Vigenere(state) => vigenere::next(state.clone()).map(|args| {
-    //                 {
-    //                     models::BruteForceState::Vigenere(models::VigenereBruteForceState {
-    //                         args,
-    //                         brute_force_args: state.brute_force_args,
-    //                     })
-    //                 }
-    //             }),
-    //             BruteForceState::Cut(args) => todo!(),
-    //             BruteForceState::Caesar(_) => todo!(),
-    //             BruteForceState::Transpose(_) => todo!(),
-    //             BruteForceState::AtBash => None,
-    //             BruteForceState::Reverse => None,
-    //             BruteForceState::Swap(_) => todo!(),
-    //             BruteForceState::Join => None,
-    //             BruteForceState::Permute(_) => todo!(),
-    //             BruteForceState::Enigma(_) => None,
-    //         }
-    //         .map(|x| (head, x, thread_work.remaining_combinations.clone()))
-    //     })
-    //     .map(|(head, state, remainings)| (state, head.last_tail, head.partial_combination))
-    //     .or({
-    //         let mut remaining_combinations = thread_work.clone().remaining_combinations.clone();
-    //         let maybe_combination: Option<Vec<BruteForceCryptor>> = remaining_combinations.pop();
-    //         maybe_combination.map(|combination| ())
-    //     })
-    //     .map(|(a, b, c)| ThreadWork {
-    //         clues: thread_work.clues,
-    //         head: Some(twh),
-    //         remaining_combinations: thread_work.remaining_combinations,
-    //         strings: thread_work.strings,
-    //         working_combinations: thread_work.working_combinations,
-    //     })
-    None
+fn increase_thread_work(
+    ThreadWork {
+        current_head,
+        current_tail,
+        current_combination,
+        remaining_combinations,
+        working_combinations,
+        clues,
+        strings,
+    }: ThreadWork,
+) -> Option<ThreadWork> {
+    brute_force_state::increase_state(current_head)
+        .map(|new_head| ThreadWork {
+            current_head: new_head,
+            current_tail: current_tail.clone(),
+            current_combination: current_combination.clone(),
+            remaining_combinations: remaining_combinations.clone(),
+            working_combinations: working_combinations.clone(),
+            clues: clues.clone(),
+            strings: strings.clone(),
+        })
+        .or({
+            let mut mut_remaining_combinations = remaining_combinations.clone();
+            let maybe_new_current_combination = mut_remaining_combinations.pop();
+            maybe_new_current_combination.map(|new_current_combination| {
+                let mut mut_new_current_combination = new_current_combination.clone();
+                let new_head = mut_new_current_combination.pop().unwrap();
+                ThreadWork {
+                    current_head: brute_force_state::start_state(new_head),
+                    current_tail,
+                    current_combination: cache::to_done(new_current_combination),
+                    remaining_combinations: mut_remaining_combinations,
+                    working_combinations,
+                    clues,
+                    strings,
+                }
+            })
+        })
+}
+
+fn add_working_combination(
+    ThreadWork {
+        current_head,
+        current_tail,
+        current_combination,
+        remaining_combinations,
+        working_combinations,
+        clues,
+        strings,
+    }: ThreadWork,
+) -> ThreadWork {
+    let mut vec = working_combinations
+        .get(&current_combination)
+        .map(|x| x.clone())
+        .unwrap_or(vec![]);
+    vec.push(());
+    let mut new_working_combinations = working_combinations.clone();
+    new_working_combinations.insert(current_combination.clone(), vec);
+    ThreadWork {
+        current_head,
+        current_tail,
+        current_combination,
+        remaining_combinations,
+        working_combinations: new_working_combinations,
+        clues,
+        strings,
+    }
 }
 
 fn run_thread_work(tw: Arc<Mutex<ThreadWork>>) {
@@ -185,26 +213,18 @@ mod tests {
 
     use super::*;
     #[test]
-    fn it_works() {
+    fn increase_thread_works() {
         assert_eq!(
             Some(ThreadWork {
                 clues: vec![String::from("hello")],
                 current_combination: DoneLine {
-                    args: None,
-                    combinations: String::from("")
+                    args: Some(String::from("Vigenere:1:1")),
+                    combinations: String::from("Vigenere Join")
                 },
                 current_head: BruteForceState::Join,
                 current_tail: vec![],
                 remaining_combinations: vec![],
-                working_combinations: vec![(
-                    DoneLine {
-                        combinations: String::from(""),
-                        args: None
-                    },
-                    vec![()]
-                )]
-                .into_iter()
-                .collect(),
+                working_combinations: BTreeMap::new(),
                 strings: vec![String::from("ENCRYPTED")]
             }),
             super::increase_thread_work(ThreadWork {
@@ -261,5 +281,55 @@ mod tests {
                 vec![String::from("ENCRYPTED")],
             )
         );
+    }
+
+    #[test]
+    fn add_working_combination() {
+        assert_eq!(
+            ThreadWork {
+                clues: vec![String::from("hello")],
+                current_combination: DoneLine {
+                    args: Some(String::from("Vigenere:1:2")),
+                    combinations: String::from("Join Vigenere")
+                },
+                current_head: BruteForceState::Vigenere(VigenereBruteForceState {
+                    args: vigenere::init(),
+                    brute_force_args: BruteForceVigenereArgs {
+                        alphabet_depth: 1,
+                        key_depth: 2
+                    }
+                }),
+                current_tail: vec![BruteForceCryptor::Join],
+                remaining_combinations: vec![],
+                working_combinations: vec![(
+                    DoneLine {
+                        args: Some(String::from("Vigenere:1:2")),
+                        combinations: String::from("Join Vigenere")
+                    },
+                    vec![(), ()]
+                )]
+                .into_iter()
+                .collect(),
+                strings: vec![String::from("ENCRYPTED")]
+            },
+            super::add_working_combination(super::add_working_combination(ThreadWork {
+                clues: vec![String::from("hello")],
+                current_combination: DoneLine {
+                    args: Some(String::from("Vigenere:1:2")),
+                    combinations: String::from("Join Vigenere")
+                },
+                current_head: BruteForceState::Vigenere(VigenereBruteForceState {
+                    args: vigenere::init(),
+                    brute_force_args: BruteForceVigenereArgs {
+                        alphabet_depth: 1,
+                        key_depth: 2
+                    }
+                }),
+                current_tail: vec![BruteForceCryptor::Join],
+                remaining_combinations: vec![],
+                working_combinations: vec![].into_iter().collect(),
+                strings: vec![String::from("ENCRYPTED")]
+            }))
+        )
     }
 }
