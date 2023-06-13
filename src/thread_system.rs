@@ -58,7 +58,7 @@ pub fn start(
     let am_tw = Arc::new(Mutex::new(thread_work));
     for i in 0..thread_count {
         let local_tw = am_tw.clone();
-        thread::spawn(move || run_thread_work(local_tw.clone()));
+        thread::spawn(move || run_thread_work(i, local_tw.clone()));
     }
 
     for i in 0..thread_count {
@@ -66,7 +66,7 @@ pub fn start(
     }
 }
 
-fn thread_combination_over(partial_done_line: DoneLine, tw: Arc<Mutex<ThreadWork>>) {
+fn thread_combination_over(done_line: DoneLine, tw: Arc<Mutex<ThreadWork>>) {
     // tw.working_combination.done_line.pop()
     // if head != done_line && tw.working_combination.done_line empty
     // push_done
@@ -94,7 +94,6 @@ fn start_thread_work(
         let mut popable = x.clone();
         popable.pop().map(|bfc| {
             let current_head = brute_force_state::start_state(bfc);
-
             ThreadWork {
                 current_head,
                 current_tail: popable,
@@ -177,35 +176,24 @@ fn add_working_combination(
     }
 }
 
-fn run_thread_work(tw: Arc<Mutex<ThreadWork>>) {
-    // loop {
-    //     if let Ok(thread_work) = tw.lock() {
-    //         if let Some(next_thread_work) = increase_thread_work(thread_work) {
-    //             //   push to working_combinations
-    //             let partial_combination = vec![];
-    //             let mut vec = thread_work
-    //                 .working_combinations
-    //                 .get(&partial_combination)
-    //                 .map(|x| x.clone())
-    //                 .unwrap_or(vec![]);
-    //             vec.push(());
-    //             thread_work
-    //                 .working_combinations
-    //                 .insert(partial_combination, vec);
-    //         } else {
-    //         }
-    //         None
-    //     } else {
-    //         None
-    //     };
-    //     // loop_decrypt(None);
-    //     println!("Stuff done");
-    //     if let Some(work_to_do) = current {
-    //         //  thread_combination_over(partial_done_line, tw);
-    //     } else {
-    //         break;
-    //     }
-    // }
+fn run_thread_work(thread_number: usize, tw: Arc<Mutex<ThreadWork>>) {
+    println!("Spawned Thread {}", thread_number);
+    loop {
+        if let Ok(mut thread_work) = tw.try_lock() {
+            if let Some(next_thread_work) = increase_thread_work(thread_work.clone()) {
+                *thread_work = add_working_combination(next_thread_work);
+            } else {
+                break;
+            }
+        } else {
+            println!("Waiting one sec to acquire lock");
+            thread::sleep(std::time::Duration::from_millis(1000));
+            continue;
+        };
+
+        println!("Stuff done");
+    }
+    println!("Finished Thread {}", thread_number);
 }
 
 #[cfg(test)]

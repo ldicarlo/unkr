@@ -17,6 +17,7 @@ use crate::parser;
 use crate::permute;
 use crate::reverse;
 use crate::swap;
+use crate::thread_system;
 use crate::transpose;
 use crate::vigenere;
 use rand::prelude::SliceRandom;
@@ -32,49 +33,20 @@ pub fn brute_force_unique_combination(
     str: String,
     clues: Vec<String>,
     decryptors: Vec<String>,
-    _threads: u8,
+    threads_count: u8,
     cache_name: String,
 ) {
-    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
+    // let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
     let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
     // eprintln!("{:?}", decr);
-
-    let combination: Vec<u8> = decr
-        .clone()
-        .iter()
-        .enumerate()
-        .map(|(i, _)| i as u8)
-        .rev()
-        .collect();
-    let (candidates_sender, candidates_receiver) = channel();
-    let (console_sender, console_receiver) = channel();
+    //  let (candidates_sender, candidates_receiver) = channel();
+    //  let (console_sender, console_receiver) = channel();
     let local_cache_args = cache_args.clone();
-    thread::spawn(move || {
-        candidates::candidate_receiver(
-            candidates_receiver,
-            local_cache_args,
-            results_accumulator.clone(),
-            console_sender,
-        )
-    });
-
-    loop_decrypt(
-        None,
-        combination.clone(),
-        vec![str],
-        clues,
-        decr.clone(),
-        cache_args.clone(),
-        candidates_sender.clone(),
-    );
-    cache::push_done(
-        cache::to_done_from_combination(decr, combination),
-        cache_args.clone(),
-    );
+    thread_system::start(threads_count as usize, vec![decr], clues, vec![str])
 }
 
 pub fn brute_force_decrypt(

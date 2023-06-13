@@ -1,7 +1,7 @@
 use crate::{
     caesar,
-    models::{BruteForceCryptor, BruteForceState, VigenereBruteForceState},
-    vigenere,
+    models::{BruteForceCryptor, BruteForceState, PermuteBruteForceState, VigenereBruteForceState},
+    permute, vigenere,
 };
 
 pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
@@ -19,20 +19,24 @@ pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
         BruteForceCryptor::Reverse => todo!(),
         BruteForceCryptor::Swap => todo!(),
         BruteForceCryptor::Join => BruteForceState::Join,
-        BruteForceCryptor::Permute(_) => todo!(),
+        BruteForceCryptor::Permute(brute_force_args) => {
+            BruteForceState::Permute(PermuteBruteForceState {
+                brute_force_args,
+                args: permute::init(),
+            })
+        }
         BruteForceCryptor::Enigma => todo!(),
     }
 }
 
 pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
+    println!("{:?}", bfs);
     match bfs {
         BruteForceState::Vigenere(state) => vigenere::next(state.clone()).map(|args| {
-            {
-                BruteForceState::Vigenere(VigenereBruteForceState {
-                    args,
-                    brute_force_args: state.brute_force_args,
-                })
-            }
+            BruteForceState::Vigenere(VigenereBruteForceState {
+                args,
+                brute_force_args: state.brute_force_args,
+            })
         }),
         BruteForceState::Cut(args) => todo!(),
         BruteForceState::Caesar(_) => todo!(),
@@ -41,7 +45,12 @@ pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
         BruteForceState::Reverse => None,
         BruteForceState::Swap(_) => todo!(),
         BruteForceState::Join => None,
-        BruteForceState::Permute(_) => todo!(),
+        BruteForceState::Permute(state) => permute::next(state.clone()).map(|args| {
+            BruteForceState::Permute(PermuteBruteForceState {
+                brute_force_args: state.brute_force_args,
+                args,
+            })
+        }),
         BruteForceState::Enigma(_) => None,
     }
 }
