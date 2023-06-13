@@ -57,18 +57,20 @@ pub fn start(
     let thread_work = start_thread_work(combinations, clues, strings).expect("Nothing to do.");
     println!("{:?}", thread_work);
     let am_tw = Arc::new(Mutex::new(thread_work));
+    let (thread_status_sender, thread_status_receiver) = channel();
     for i in 0..thread_count {
         let local_tw = am_tw.clone();
-
-        thread::spawn(move || run_thread_work(i, local_tw.clone()));
+        let local_sender = thread_status_sender.clone();
+        thread::spawn(move || run_thread_work(local_sender, i, local_tw.clone()));
     }
 
     for i in 0..thread_count {
-        // receive end signal
+        thread_status_receiver.recv().unwrap();
     }
 }
 
 fn thread_combination_over(done_line: DoneLine, tw: Arc<Mutex<ThreadWork>>) {
+  next-to-do
     // tw.working_combination.done_line.pop()
     // if head != done_line && tw.working_combination.done_line empty
     // push_done
@@ -178,24 +180,23 @@ fn add_working_combination(
     }
 }
 
-fn run_thread_work(thread_number: usize, tw: Arc<Mutex<ThreadWork>>) {
+fn run_thread_work(sender: Sender<()>, thread_number: usize, tw: Arc<Mutex<ThreadWork>>) {
     println!("Spawned Thread {}", thread_number);
     loop {
-        if let Ok(mut thread_work) = tw.try_lock() {
-            if let Some(next_thread_work) = increase_thread_work(thread_work.clone()) {
-                *thread_work = add_working_combination(next_thread_work);
-            } else {
-                break;
-            }
+        let mut thread_work = tw.lock().unwrap();
+        println!("acquired by {}", thread_number);
+        if let Some(next_thread_work) = increase_thread_work(thread_work.clone()) {
+            *thread_work = add_working_combination(next_thread_work);
+            println!("{:?}", thread_work);
         } else {
-            println!("Waiting one sec to acquire lock");
-            thread::sleep(std::time::Duration::from_millis(1000));
-            continue;
-        };
+            println!("got none in {} with {:?}", 0, thread_work.clone());
+            break;
+        }
 
-        println!("Stuff done");
+        println!("Stuff done {}", thread_number);
     }
     println!("Finished Thread {}", thread_number);
+    sender.send(()).unwrap();
 }
 
 #[cfg(test)]
