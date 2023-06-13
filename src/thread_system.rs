@@ -55,9 +55,11 @@ pub fn start(
     strings: Vec<String>,
 ) {
     let thread_work = start_thread_work(combinations, clues, strings).expect("Nothing to do.");
+    println!("{:?}", thread_work);
     let am_tw = Arc::new(Mutex::new(thread_work));
     for i in 0..thread_count {
         let local_tw = am_tw.clone();
+
         thread::spawn(move || run_thread_work(i, local_tw.clone()));
     }
 
