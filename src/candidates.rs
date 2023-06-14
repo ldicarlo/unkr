@@ -18,6 +18,7 @@ pub fn candidate_receiver(
 ) {
     r.iter().for_each(|(a, b, c)| {
         let result = find_and_print_candidates(a, b, c.clone(), console_sender.clone());
+
         if result.len() > 0 {
             result_accumulator.lock().unwrap().insert(c.clone());
             cache::push_hit(

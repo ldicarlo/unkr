@@ -4,7 +4,6 @@ use crate::cache;
 use crate::caesar;
 use crate::candidates;
 use crate::console;
-use crate::console::ThreadStatusPayload;
 use crate::cryptors;
 use crate::cut;
 use crate::dispatcher;
@@ -42,7 +41,6 @@ pub fn brute_force_unique_combination(
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
     let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
-    // eprintln!("{:?}", decr);
     let (candidates_sender, candidates_receiver) = channel();
     let (console_sender, console_receiver) = channel();
     let local_cache_args = cache_args.clone();
@@ -51,11 +49,12 @@ pub fn brute_force_unique_combination(
     });
 
     let local_console_sender = console_sender.clone();
+    let local_results_accumulator = results_accumulator.clone();
     thread::spawn(move || {
         candidates::candidate_receiver(
             candidates_receiver,
             local_cache_args,
-            results_accumulator.clone(),
+            local_results_accumulator.clone(),
             local_console_sender,
         )
     });
@@ -66,8 +65,10 @@ pub fn brute_force_unique_combination(
         vec![str],
         cache_args,
         candidates_sender,
-        console_sender.clone(),
-    )
+        console_sender,
+    );
+
+    eprintln!("Result: {:?}", results_accumulator.lock().unwrap());
 }
 
 pub fn brute_force_decrypt(

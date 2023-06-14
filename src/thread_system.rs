@@ -29,7 +29,6 @@ pub fn start(
 ) {
     let thread_work =
         start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
-    println!("{:?}", thread_work);
     let am_tw = Arc::new(Mutex::new(thread_work));
     let (thread_status_sender, thread_status_receiver) = channel();
     for i in 0..thread_count {
@@ -143,7 +142,7 @@ fn increase_thread_work(
                 let new_head = mut_new_current_combination.pop().unwrap();
                 ThreadWork {
                     current_head: brute_force_state::start_state(new_head),
-                    current_tail,
+                    current_tail, this-is-not-recursivable-as-is
                     current_combination: cache::to_done(new_current_combination),
                     remaining_combinations: mut_remaining_combinations,
                     working_combinations,
@@ -189,7 +188,6 @@ fn lock_and_increase(tw: Arc<Mutex<ThreadWork>>) -> Option<ThreadWork> {
         *thread_work = add_working_combination(next_thread_work);
         Some(thread_work.clone())
     } else {
-        println!("got none in {} with {:?}", 0, thread_work.clone());
         None
     }
 }
@@ -239,10 +237,13 @@ fn run_thread_work(
                 .unwrap();
             let first = apply_decrypt(new_tw.current_head.clone(), strings.clone());
             if first.len() > 0 {
+                let acc =
+                    brute_force_state::get_name(&get_cryptor_from_state(&new_tw.current_head));
+                candidates_sender
+                    .send((first.clone(), clues.clone(), acc.clone()))
+                    .unwrap();
                 brute_force_state::loop_decrypt(
-                    Some(brute_force_state::get_name(&get_cryptor_from_state(
-                        &new_tw.current_head,
-                    ))),
+                    Some(acc),
                     new_tw.current_tail.clone(),
                     first,
                     clues.clone(),
@@ -254,7 +255,6 @@ fn run_thread_work(
             break;
         }
     }
-    println!("Finished Thread {}", thread_number);
     sender.send(()).unwrap();
 }
 
@@ -284,7 +284,10 @@ mod tests {
                     combinations: String::from("")
                 },
                 current_head: BruteForceState::Join,
-                current_tail: vec![],
+                current_tail: vec![BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
+                    alphabet_depth: 1,
+                    key_depth: 2
+                }),],
                 clues: vec![String::from("hello")],
                 remaining_combinations: vec![vec![
                     BruteForceCryptor::Vigenere(BruteForceVigenereArgs {

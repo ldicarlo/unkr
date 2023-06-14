@@ -74,7 +74,6 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
         BruteForceState::Enigma(args) => enigma::decrypt(strings.clone(), args),
     };
     if result == strings {
-        println!("were equals {:?}", strings);
         vec![]
     } else {
         result
