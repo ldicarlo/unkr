@@ -49,12 +49,14 @@ pub fn brute_force_unique_combination(
     thread::spawn(move || {
         console::thread_consume_messages(console_receiver, threads_count as usize)
     });
+
+    let local_console_sender = console_sender.clone();
     thread::spawn(move || {
         candidates::candidate_receiver(
             candidates_receiver,
             local_cache_args,
             results_accumulator.clone(),
-            console_sender.clone(),
+            local_console_sender,
         )
     });
     thread_system::start(
@@ -64,6 +66,7 @@ pub fn brute_force_unique_combination(
         vec![str],
         cache_args,
         candidates_sender,
+        console_sender.clone(),
     )
 }
 

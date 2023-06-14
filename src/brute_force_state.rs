@@ -1,5 +1,5 @@
 use crate::{
-    caesar,
+    caesar, enigma,
     models::{BruteForceCryptor, BruteForceState, PermuteBruteForceState, VigenereBruteForceState},
     permute, vigenere,
 };
@@ -25,12 +25,12 @@ pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
                 args: permute::init(),
             })
         }
-        BruteForceCryptor::Enigma => todo!(),
+
+        BruteForceCryptor::Enigma => BruteForceState::Enigma(enigma::init()),
     }
 }
 
 pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
-    println!("{:?}", bfs);
     match bfs {
         BruteForceState::Vigenere(state) => vigenere::next(state.clone()).map(|args| {
             BruteForceState::Vigenere(VigenereBruteForceState {
@@ -51,7 +51,9 @@ pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
                 args,
             })
         }),
-        BruteForceState::Enigma(_) => None,
+        BruteForceState::Enigma(state) => {
+            enigma::next(state).map(|args| BruteForceState::Enigma(args))
+        }
     }
 }
 
@@ -69,7 +71,7 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
             brute_force_args: _,
             args,
         }) => permute::decrypt(strings, args),
-        BruteForceState::Enigma(_) => todo!(),
+        BruteForceState::Enigma(args) => enigma::decrypt(strings, args),
     }
 }
 

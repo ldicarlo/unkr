@@ -1,5 +1,8 @@
 use crate::brute_force_state;
+use crate::brute_force_state::apply_decrypt;
 use crate::cache;
+use crate::console::PrintableMessage;
+use crate::console::ThreadStatusPayload;
 use crate::models;
 use crate::models::BruteForceCryptor;
 use crate::models::BruteForceState;
@@ -14,10 +17,6 @@ use std::sync::Mutex;
 use std::thread;
 
 // https://doc.rust-lang.org/std/collections/struct.VecDeque.html#method.pop_front
-// Thread 1 (Send thread status -> thread_system | Receive work to do)
-// Thread 2 (Send thread status -> thread_system | Receive work to do)
-// thread_system sends work to do
-// push_done
 
 pub fn start(
     thread_count: usize,
@@ -25,7 +24,8 @@ pub fn start(
     clues: Vec<String>,
     strings: Vec<String>,
     cache_args: models::CacheArgs,
-    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
+    candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
+    console_sender: Sender<PrintableMessage>,
 ) {
     let thread_work =
         start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
@@ -39,6 +39,7 @@ pub fn start(
         let local_clues = clues.clone();
         let local_strings = strings.clone();
         let local_candidates_sender = candidates_sender.clone();
+        let local_console_sender = console_sender.clone();
         thread::spawn(move || {
             run_thread_work(
                 local_sender,
@@ -48,6 +49,7 @@ pub fn start(
                 local_clues,
                 local_strings,
                 local_candidates_sender,
+                local_console_sender,
             )
         });
     }
@@ -221,23 +223,30 @@ fn run_thread_work(
     clues: Vec<String>,
     strings: Vec<String>,
     candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
+    console_sender: Sender<PrintableMessage>,
 ) {
     println!("Spawned Thread {}", thread_number);
+    let mut step = 0;
     loop {
         if let Some(new_tw) = lock_and_increase(tw.clone()) {
+            step = step + 1;
+            console_sender.send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
+                thread_number,
+                step,
+                total: 100,
+                current_combination: String::from(format!("{:?}", new_tw.current_head)),
+            }));
             brute_force_state::loop_decrypt(
                 Some(brute_force_state::get_name(&get_cryptor_from_state(
                     &new_tw.current_head,
                 ))),
                 new_tw.current_tail.clone(),
-                strings.clone(),
+                apply_decrypt(new_tw.current_head.clone(), strings.clone()),
                 clues.clone(),
                 candidates_sender.clone(),
             );
 
             thread_combination_over(new_tw.current_combination, tw.clone(), cache_args.clone());
-
-            println!("Stuff done {}", thread_number);
         } else {
             break;
         }
