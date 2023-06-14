@@ -46,7 +46,13 @@ pub fn brute_force_unique_combination(
     //  let (candidates_sender, candidates_receiver) = channel();
     //  let (console_sender, console_receiver) = channel();
     let local_cache_args = cache_args.clone();
-    thread_system::start(threads_count as usize, vec![decr], clues, vec![str])
+    thread_system::start(
+        threads_count as usize,
+        vec![decr],
+        clues,
+        vec![str],
+        cache_args,
+    )
 }
 
 pub fn brute_force_decrypt(

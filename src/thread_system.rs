@@ -53,6 +53,7 @@ pub fn start(
     combinations: Vec<Vec<BruteForceCryptor>>,
     clues: Vec<String>,
     strings: Vec<String>,
+    cache_args: models::CacheArgs,
 ) {
     let thread_work = start_thread_work(combinations, clues, strings).expect("Nothing to do.");
     println!("{:?}", thread_work);
@@ -61,7 +62,8 @@ pub fn start(
     for i in 0..thread_count {
         let local_tw = am_tw.clone();
         let local_sender = thread_status_sender.clone();
-        thread::spawn(move || run_thread_work(local_sender, i, local_tw.clone()));
+        let local_cache_args = cache_args.clone();
+        thread::spawn(move || run_thread_work(local_sender, i, local_tw, local_cache_args));
     }
 
     for i in 0..thread_count {
@@ -69,8 +71,27 @@ pub fn start(
     }
 }
 
-fn thread_combination_over(done_line: DoneLine, tw: Arc<Mutex<ThreadWork>>) {
-  next-to-do
+fn thread_combination_over(
+    done_line: DoneLine,
+    tw: Arc<Mutex<ThreadWork>>,
+    cache_args: models::CacheArgs,
+) {
+    let mut thread_work = tw.lock().unwrap();
+    let mut vec = thread_work
+        .working_combinations
+        .get(&done_line)
+        .unwrap()
+        .clone();
+    vec.pop();
+
+    if vec.len() <= 0 && done_line != thread_work.current_combination {
+        cache::push_done(done_line.clone(), cache_args);
+        thread_work.working_combinations.remove(&done_line);
+    } else {
+        thread_work.working_combinations.insert(done_line, vec);
+    }
+    //vec.pop();
+
     // tw.working_combination.done_line.pop()
     // if head != done_line && tw.working_combination.done_line empty
     // push_done
@@ -180,20 +201,31 @@ fn add_working_combination(
     }
 }
 
-fn run_thread_work(sender: Sender<()>, thread_number: usize, tw: Arc<Mutex<ThreadWork>>) {
+fn lock_and_increase(tw: Arc<Mutex<ThreadWork>>) -> Option<ThreadWork> {
+    let mut thread_work = tw.lock().unwrap();
+    if let Some(next_thread_work) = increase_thread_work(thread_work.clone()) {
+        *thread_work = add_working_combination(next_thread_work);
+        Some(thread_work.clone())
+    } else {
+        println!("got none in {} with {:?}", 0, thread_work.clone());
+        None
+    }
+}
+
+fn run_thread_work(
+    sender: Sender<()>,
+    thread_number: usize,
+    tw: Arc<Mutex<ThreadWork>>,
+    cache_args: models::CacheArgs,
+) {
     println!("Spawned Thread {}", thread_number);
     loop {
-        let mut thread_work = tw.lock().unwrap();
-        println!("acquired by {}", thread_number);
-        if let Some(next_thread_work) = increase_thread_work(thread_work.clone()) {
-            *thread_work = add_working_combination(next_thread_work);
-            println!("{:?}", thread_work);
+        if let Some(new_tw) = lock_and_increase(tw.clone()) {
+            thread_combination_over(new_tw.current_combination, tw.clone(), cache_args.clone());
+            println!("Stuff done {}", thread_number);
         } else {
-            println!("got none in {} with {:?}", 0, thread_work.clone());
             break;
         }
-
-        println!("Stuff done {}", thread_number);
     }
     println!("Finished Thread {}", thread_number);
     sender.send(()).unwrap();
