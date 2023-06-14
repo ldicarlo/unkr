@@ -1,39 +1,12 @@
-use super::combinator;
-use crate::atbash;
-use crate::brute_force;
 use crate::brute_force_state;
 use crate::cache;
-use crate::caesar;
-use crate::candidates;
-use crate::console;
-use crate::console::ThreadStatusPayload;
-use crate::cryptors;
-use crate::cut;
-use crate::dispatcher;
-use crate::enigma;
-use crate::enigma::EnigmaArgs;
-use crate::join;
 use crate::models;
 use crate::models::BruteForceCryptor;
-use crate::models::BruteForcePermuteArgs;
 use crate::models::BruteForceState;
-use crate::models::BruteForceVigenereArgs;
-use crate::models::CacheArgs;
-use crate::models::Cryptor;
-use crate::models::NumberArgs;
-use crate::models::PermuteArgs;
-use crate::models::StringArgs;
-use crate::models::SwapArgs;
-use crate::models::VigenereArgs;
+use crate::models::DoneLine;
+use crate::models::PermuteBruteForceState;
 use crate::models::VigenereBruteForceState;
-use crate::models::{CryptorTypeWithArgs, DoneLine};
-use crate::parser;
-use crate::permute;
-use crate::reverse;
-use crate::swap;
-use crate::transpose;
-use crate::vigenere;
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::collections::BTreeMap;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
@@ -52,8 +25,10 @@ pub fn start(
     clues: Vec<String>,
     strings: Vec<String>,
     cache_args: models::CacheArgs,
+    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
 ) {
-    let thread_work = start_thread_work(combinations, clues, strings).expect("Nothing to do.");
+    let thread_work =
+        start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
     println!("{:?}", thread_work);
     let am_tw = Arc::new(Mutex::new(thread_work));
     let (thread_status_sender, thread_status_receiver) = channel();
@@ -61,7 +36,20 @@ pub fn start(
         let local_tw = am_tw.clone();
         let local_sender = thread_status_sender.clone();
         let local_cache_args = cache_args.clone();
-        thread::spawn(move || run_thread_work(local_sender, i, local_tw, local_cache_args));
+        let local_clues = clues.clone();
+        let local_strings = strings.clone();
+        let local_candidates_sender = candidates_sender.clone();
+        thread::spawn(move || {
+            run_thread_work(
+                local_sender,
+                i,
+                local_tw,
+                local_cache_args,
+                local_clues,
+                local_strings,
+                local_candidates_sender,
+            )
+        });
     }
 
     for _ in 0..thread_count {
@@ -204,18 +192,50 @@ fn lock_and_increase(tw: Arc<Mutex<ThreadWork>>) -> Option<ThreadWork> {
     }
 }
 
+fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> BruteForceCryptor {
+    match brute_force_state {
+        BruteForceState::Vigenere(VigenereBruteForceState {
+            brute_force_args,
+            args: _,
+        }) => BruteForceCryptor::Vigenere(*brute_force_args),
+        BruteForceState::Cut(_) => BruteForceCryptor::Cut,
+        BruteForceState::Caesar(_) => BruteForceCryptor::Caesar,
+        BruteForceState::Transpose(_) => BruteForceCryptor::Transpose,
+        BruteForceState::AtBash => BruteForceCryptor::AtBash,
+        BruteForceState::Reverse => BruteForceCryptor::Reverse,
+        BruteForceState::Swap(_) => BruteForceCryptor::Swap,
+        BruteForceState::Join => BruteForceCryptor::Join,
+        BruteForceState::Permute(PermuteBruteForceState {
+            brute_force_args,
+            args: _,
+        }) => BruteForceCryptor::Permute(brute_force_args.clone()),
+        BruteForceState::Enigma(_) => BruteForceCryptor::Enigma,
+    }
+}
+
 fn run_thread_work(
     sender: Sender<()>,
     thread_number: usize,
     tw: Arc<Mutex<ThreadWork>>,
     cache_args: models::CacheArgs,
+    clues: Vec<String>,
+    strings: Vec<String>,
+    candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
 ) {
     println!("Spawned Thread {}", thread_number);
     loop {
         if let Some(new_tw) = lock_and_increase(tw.clone()) {
-            thread_combination_over(new_tw.current_combination, tw.clone(), cache_args.clone());
+            brute_force_state::loop_decrypt(
+                Some(brute_force_state::get_name(&get_cryptor_from_state(
+                    &new_tw.current_head,
+                ))),
+                new_tw.current_tail.clone(),
+                strings.clone(),
+                clues.clone(),
+                candidates_sender.clone(),
+            );
 
-            // decrypt
+            thread_combination_over(new_tw.current_combination, tw.clone(), cache_args.clone());
 
             println!("Stuff done {}", thread_number);
         } else {
@@ -228,8 +248,9 @@ fn run_thread_work(
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
+    use crate::models::BruteForceVigenereArgs;
+    use crate::vigenere;
     #[test]
     fn increase_thread_works() {
         assert_eq!(

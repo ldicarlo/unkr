@@ -36,22 +36,34 @@ pub fn brute_force_unique_combination(
     threads_count: u8,
     cache_name: String,
 ) {
-    // let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
+    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
     let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
     // eprintln!("{:?}", decr);
-    //  let (candidates_sender, candidates_receiver) = channel();
-    //  let (console_sender, console_receiver) = channel();
+    let (candidates_sender, candidates_receiver) = channel();
+    let (console_sender, console_receiver) = channel();
     let local_cache_args = cache_args.clone();
+    thread::spawn(move || {
+        console::thread_consume_messages(console_receiver, threads_count as usize)
+    });
+    thread::spawn(move || {
+        candidates::candidate_receiver(
+            candidates_receiver,
+            local_cache_args,
+            results_accumulator.clone(),
+            console_sender.clone(),
+        )
+    });
     thread_system::start(
         threads_count as usize,
         vec![decr],
         clues,
         vec![str],
         cache_args,
+        candidates_sender,
     )
 }
 

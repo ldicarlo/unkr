@@ -38,7 +38,7 @@ pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
                 brute_force_args: state.brute_force_args,
             })
         }),
-        BruteForceState::Cut(args) => todo!(),
+        BruteForceState::Cut(_) => todo!(),
         BruteForceState::Caesar(_) => todo!(),
         BruteForceState::Transpose(_) => todo!(),
         BruteForceState::AtBash => None,
@@ -73,28 +73,51 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
     }
 }
 
-fn loop_decrypt(
+pub fn get_name(bfs: &BruteForceCryptor) -> String {
+    match bfs {
+        // send args with it.
+        BruteForceCryptor::Vigenere(_) => String::from("Vigenere"),
+        BruteForceCryptor::Cut => String::from("Cut"),
+        BruteForceCryptor::Caesar => String::from("Caesar"),
+        BruteForceCryptor::Transpose => String::from("Transpose"),
+        BruteForceCryptor::AtBash => String::from("AtBash"),
+        BruteForceCryptor::Reverse => String::from("Reverse"),
+        BruteForceCryptor::Swap => String::from("Swap"),
+        BruteForceCryptor::Join => String::from("Join"),
+        BruteForceCryptor::Permute(_) => String::from("Permute"),
+        BruteForceCryptor::Enigma => String::from("Enigma"),
+    }
+}
+
+pub fn loop_decrypt(
     acc: Option<String>,
-    mut to_use: Vec<BruteForceState>,
+    mut to_use: Vec<BruteForceCryptor>,
     strings: Vec<String>,
     clues: Vec<String>,
     candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
 ) {
     if let Some(current) = to_use.pop() {
-        let mut next = current;
-        loop {
-            let new_str = apply_decrypt(next.clone(), strings.clone());
-            let current_acc = acc
+        let mut bfs = start_state(current.clone());
+        let current_acc = acc
             .clone()
-            .map(|existing| existing + " " + &cryptor_str.clone())
-            .unwrap_or(cryptor_str.clone());
-        candidates_sender
-            .send((new_str.clone(), clues.clone(), current_acc.clone()))
-            .unwrap();
+            .map(|existing| existing + " " + &get_name(&current))
+            .unwrap_or(get_name(&current));
+        loop {
+            let new_str = apply_decrypt(bfs.clone(), strings.clone());
 
-        Some(current_acc)
-            if let Some(next_is) = increase_state(next.clone()) {
-                next = next_is;
+            candidates_sender
+                .send((new_str.clone(), clues.clone(), current_acc.clone()))
+                .unwrap();
+            loop_decrypt(
+                acc.clone(),
+                to_use.clone(),
+                strings.clone(),
+                clues.clone(),
+                candidates_sender.clone(),
+            );
+
+            if let Some(next_is) = increase_state(bfs.clone()) {
+                bfs = next_is;
                 continue;
             } else {
                 break;
