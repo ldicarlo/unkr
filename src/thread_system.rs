@@ -1,5 +1,3 @@
-use clap::Args;
-
 use super::combinator;
 use crate::atbash;
 use crate::brute_force;
