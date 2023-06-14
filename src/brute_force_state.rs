@@ -55,6 +55,54 @@ pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
     }
 }
 
+pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> {
+    match bfs {
+        BruteForceState::Vigenere(_) => todo!(),
+        BruteForceState::Cut(_) => todo!(),
+        BruteForceState::Caesar(_) => todo!(),
+        BruteForceState::Transpose(_) => todo!(),
+        BruteForceState::AtBash => todo!(),
+        BruteForceState::Reverse => todo!(),
+        BruteForceState::Swap(_) => todo!(),
+        BruteForceState::Join => todo!(),
+        BruteForceState::Permute(PermuteBruteForceState {
+            brute_force_args: _,
+            args,
+        }) => permute::decrypt(strings, args),
+        BruteForceState::Enigma(_) => todo!(),
+    }
+}
+
+fn loop_decrypt(
+    acc: Option<String>,
+    mut to_use: Vec<BruteForceState>,
+    strings: Vec<String>,
+    clues: Vec<String>,
+    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
+) {
+    if let Some(current) = to_use.pop() {
+        let mut next = current;
+        loop {
+            let new_str = apply_decrypt(next.clone(), strings.clone());
+            let current_acc = acc
+            .clone()
+            .map(|existing| existing + " " + &cryptor_str.clone())
+            .unwrap_or(cryptor_str.clone());
+        candidates_sender
+            .send((new_str.clone(), clues.clone(), current_acc.clone()))
+            .unwrap();
+
+        Some(current_acc)
+            if let Some(next_is) = increase_state(next.clone()) {
+                next = next_is;
+                continue;
+            } else {
+                break;
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

@@ -88,12 +88,6 @@ fn thread_combination_over(
     } else {
         thread_work.working_combinations.insert(done_line, vec);
     }
-    //vec.pop();
-
-    // tw.working_combination.done_line.pop()
-    // if head != done_line && tw.working_combination.done_line empty
-    // push_done
-    // remove tw.working_combination.done_line
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -220,6 +214,9 @@ fn run_thread_work(
     loop {
         if let Some(new_tw) = lock_and_increase(tw.clone()) {
             thread_combination_over(new_tw.current_combination, tw.clone(), cache_args.clone());
+
+            // decrypt
+
             println!("Stuff done {}", thread_number);
         } else {
             break;
