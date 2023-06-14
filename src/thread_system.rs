@@ -66,7 +66,7 @@ pub fn start(
         thread::spawn(move || run_thread_work(local_sender, i, local_tw, local_cache_args));
     }
 
-    for i in 0..thread_count {
+    for _ in 0..thread_count {
         thread_status_receiver.recv().unwrap();
     }
 }
