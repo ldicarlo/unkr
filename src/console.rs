@@ -9,6 +9,8 @@ use std::{thread, time};
 use std::io::{stdout, Write};
 use std::sync::mpsc::Receiver;
 
+use crate::{brute_force_state, models::BruteForceState};
+
 pub enum PrintableMessage {
     ThreadStatus(ThreadStatusPayload),
     Default(String),
@@ -18,7 +20,7 @@ pub struct ThreadStatusPayload {
     pub thread_number: usize,
     pub step: usize,
     pub total: usize,
-    pub current_combination: String,
+    pub current_combination: BruteForceState,
 }
 
 pub fn thread_consume_messages(r: Receiver<PrintableMessage>, thread_count: usize) {
@@ -69,11 +71,29 @@ fn print_thread_status(
         .unwrap()
         .execute(Print(format!(
             "thread_{:02}: {:03}/{:03} ({})",
-            thread_number, step, total, current_combination
+            thread_number,
+            step,
+            total,
+            print_brute_force_state(current_combination)
         )))
         .unwrap()
         .flush()
         .unwrap();
     let ten_millis = time::Duration::from_millis(1000);
     thread::sleep(ten_millis);
+}
+
+fn print_brute_force_state(brute_force_state: BruteForceState) -> String {
+    match brute_force_state {
+        BruteForceState::Vigenere(state) => format!("{:?}", state.args),
+        BruteForceState::Cut(state) => format!("{:?}", state.number),
+        BruteForceState::Caesar(state) => format!("{:?}", state.number),
+        BruteForceState::Transpose(state) => format!("{:?}", state.number),
+        BruteForceState::AtBash => todo!(),
+        BruteForceState::Reverse => todo!(),
+        BruteForceState::Swap(state) => format!("{:?}", state.order),
+        BruteForceState::Join => todo!(),
+        BruteForceState::Permute(state) => format!("{:?}", state.args),
+        BruteForceState::Enigma(state) => format!("{:?}", state),
+    }
 }

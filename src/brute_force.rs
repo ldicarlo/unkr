@@ -203,16 +203,16 @@ fn threaded_function(
     let total = combinations.len();
     for (i, vec) in combinations.iter().enumerate() {
         let done_line = cache::to_done_from_combination(decryptors_filtered.clone(), vec.clone());
-        console_sender
-            .send(console::PrintableMessage::ThreadStatus(
-                ThreadStatusPayload {
-                    thread_number,
-                    step: i,
-                    total,
-                    current_combination: done_line.combinations.clone(),
-                },
-            ))
-            .unwrap();
+        // console_sender
+        //     .send(console::PrintableMessage::ThreadStatus(
+        //         ThreadStatusPayload {
+        //             thread_number,
+        //             step: i,
+        //             total,
+        //             current_combination: done_line.combinations.clone(),
+        //         },
+        //     ))
+        //     .unwrap();
         // eprintln!(
         //     "THREAD {}\tcombination: {} {:?}",
         //     thread_number,

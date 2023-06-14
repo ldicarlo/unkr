@@ -225,27 +225,30 @@ fn run_thread_work(
     candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
     console_sender: Sender<PrintableMessage>,
 ) {
-    println!("Spawned Thread {}", thread_number);
     let mut step = 0;
     loop {
         if let Some(new_tw) = lock_and_increase(tw.clone()) {
             step = step + 1;
-            console_sender.send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
-                thread_number,
-                step,
-                total: 100,
-                current_combination: String::from(format!("{:?}", new_tw.current_head)),
-            }));
-            brute_force_state::loop_decrypt(
-                Some(brute_force_state::get_name(&get_cryptor_from_state(
-                    &new_tw.current_head,
-                ))),
-                new_tw.current_tail.clone(),
-                apply_decrypt(new_tw.current_head.clone(), strings.clone()),
-                clues.clone(),
-                candidates_sender.clone(),
-            );
-
+            console_sender
+                .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
+                    thread_number,
+                    step,
+                    total: 100,
+                    current_combination: new_tw.current_head.clone(),
+                }))
+                .unwrap();
+            let first = apply_decrypt(new_tw.current_head.clone(), strings.clone());
+            if first.len() > 0 {
+                brute_force_state::loop_decrypt(
+                    Some(brute_force_state::get_name(&get_cryptor_from_state(
+                        &new_tw.current_head,
+                    ))),
+                    new_tw.current_tail.clone(),
+                    first,
+                    clues.clone(),
+                    candidates_sender.clone(),
+                );
+            }
             thread_combination_over(new_tw.current_combination, tw.clone(), cache_args.clone());
         } else {
             break;

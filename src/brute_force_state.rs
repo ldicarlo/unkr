@@ -58,7 +58,7 @@ pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
 }
 
 pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> {
-    match bfs {
+    let result = match bfs {
         BruteForceState::Vigenere(_) => todo!(),
         BruteForceState::Cut(_) => todo!(),
         BruteForceState::Caesar(_) => todo!(),
@@ -70,8 +70,14 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
         BruteForceState::Permute(PermuteBruteForceState {
             brute_force_args: _,
             args,
-        }) => permute::decrypt(strings, args),
-        BruteForceState::Enigma(args) => enigma::decrypt(strings, args),
+        }) => permute::decrypt(strings.clone(), args),
+        BruteForceState::Enigma(args) => enigma::decrypt(strings.clone(), args),
+    };
+    if result == strings {
+        println!("were equals {:?}", strings);
+        vec![]
+    } else {
+        result
     }
 }
 
@@ -106,18 +112,18 @@ pub fn loop_decrypt(
             .unwrap_or(get_name(&current));
         loop {
             let new_str = apply_decrypt(bfs.clone(), strings.clone());
-
-            candidates_sender
-                .send((new_str.clone(), clues.clone(), current_acc.clone()))
-                .unwrap();
-            loop_decrypt(
-                acc.clone(),
-                to_use.clone(),
-                strings.clone(),
-                clues.clone(),
-                candidates_sender.clone(),
-            );
-
+            if new_str.len() > 0 {
+                candidates_sender
+                    .send((new_str.clone(), clues.clone(), current_acc.clone()))
+                    .unwrap();
+                loop_decrypt(
+                    acc.clone(),
+                    to_use.clone(),
+                    strings.clone(),
+                    clues.clone(),
+                    candidates_sender.clone(),
+                );
+            }
             if let Some(next_is) = increase_state(bfs.clone()) {
                 bfs = next_is;
                 continue;
