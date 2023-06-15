@@ -69,8 +69,8 @@ fn thread_combination_over(
         .get(&done_line)
         .unwrap()
         .clone();
+    println!("was {:?} for {:?}", vec, done_line);
     vec.pop();
-
     if vec.len() <= 0 && done_line != thread_work.current_combination {
         cache::push_done(done_line.clone(), cache_args);
         thread_work.working_combinations.remove(&done_line);
@@ -142,7 +142,7 @@ fn increase_thread_work(
                 let new_head = mut_new_current_combination.pop().unwrap();
                 ThreadWork {
                     current_head: brute_force_state::start_state(new_head),
-                    current_tail, this-is-not-recursivable-as-is
+                    current_tail,
                     current_combination: cache::to_done(new_current_combination),
                     remaining_combinations: mut_remaining_combinations,
                     working_combinations,
