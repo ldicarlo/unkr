@@ -11,7 +11,6 @@ mod combinator;
 mod cryptors;
 mod cut;
 mod decrypt;
-mod dispatcher;
 mod encrypt;
 mod enigma;
 mod fuzzer;

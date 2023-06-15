@@ -6,6 +6,14 @@ pub fn init() -> NumberArgs {
     NumberArgs { number: 0 }
 }
 
+pub fn next(NumberArgs { number }: NumberArgs) -> Option<NumberArgs> {
+    if number >= 25 {
+        None
+    } else {
+        Some(NumberArgs { number: number + 1 })
+    }
+}
+
 pub fn decrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
     strs.iter()
         .map(|str| {

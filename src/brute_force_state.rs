@@ -1,7 +1,7 @@
 use crate::{
     atbash, caesar, enigma,
     models::{BruteForceCryptor, BruteForceState, PermuteBruteForceState, VigenereBruteForceState},
-    permute, vigenere,
+    permute, swap, vigenere,
 };
 
 pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
@@ -16,8 +16,8 @@ pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
         BruteForceCryptor::Caesar => BruteForceState::Caesar(caesar::init()),
         BruteForceCryptor::Transpose => todo!(),
         BruteForceCryptor::AtBash => BruteForceState::AtBash,
-        BruteForceCryptor::Reverse => todo!(),
-        BruteForceCryptor::Swap => todo!(),
+        BruteForceCryptor::Reverse => BruteForceState::Reverse,
+        BruteForceCryptor::Swap => BruteForceState::Swap(swap::init()),
         BruteForceCryptor::Join => BruteForceState::Join,
         BruteForceCryptor::Permute(brute_force_args) => {
             BruteForceState::Permute(PermuteBruteForceState {
@@ -25,12 +25,11 @@ pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
                 args: permute::init(),
             })
         }
-
         BruteForceCryptor::Enigma => BruteForceState::Enigma(enigma::init()),
     }
 }
 
-pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
+pub fn increase_state(bfs: BruteForceState, str_count: usize) -> Option<BruteForceState> {
     match bfs {
         BruteForceState::Vigenere(state) => vigenere::next(state.clone()).map(|args| {
             BruteForceState::Vigenere(VigenereBruteForceState {
@@ -39,11 +38,13 @@ pub fn increase_state(bfs: BruteForceState) -> Option<BruteForceState> {
             })
         }),
         BruteForceState::Cut(_) => todo!(),
-        BruteForceState::Caesar(_) => todo!(),
+        BruteForceState::Caesar(args) => caesar::next(args).map(|a| BruteForceState::Caesar(a)),
         BruteForceState::Transpose(_) => todo!(),
         BruteForceState::AtBash => None,
         BruteForceState::Reverse => None,
-        BruteForceState::Swap(_) => todo!(),
+        BruteForceState::Swap(swap_args) => {
+            swap::next(swap_args, str_count).map(|s| BruteForceState::Swap(s))
+        }
         BruteForceState::Join => None,
         BruteForceState::Permute(state) => permute::next(state.clone()).map(|args| {
             BruteForceState::Permute(PermuteBruteForceState {
@@ -123,7 +124,7 @@ pub fn loop_decrypt(
                     candidates_sender.clone(),
                 );
             }
-            if let Some(next_is) = increase_state(bfs.clone()) {
+            if let Some(next_is) = increase_state(bfs.clone(), strings[0].len()) {
                 bfs = next_is;
                 continue;
             } else {
@@ -137,14 +138,14 @@ pub fn loop_decrypt(
 mod tests {
     #[test]
     fn it_works() {
-        assert_eq!(super::increase_state(super::BruteForceState::Join), None);
+        assert_eq!(super::increase_state(super::BruteForceState::Join, 1), None);
     }
     #[test]
     fn vigenere_works() {
         assert_eq!(
             super::increase_state(
-                super::increase_state(super::BruteForceState::Vigenere(
-                    super::VigenereBruteForceState {
+                super::increase_state(
+                    super::BruteForceState::Vigenere(super::VigenereBruteForceState {
                         brute_force_args: crate::models::BruteForceVigenereArgs {
                             alphabet_depth: 1,
                             key_depth: 1
@@ -153,9 +154,11 @@ mod tests {
                             alphabet: String::from("Z"),
                             key: String::from("Y")
                         }
-                    }
-                ))
-                .unwrap()
+                    }),
+                    1
+                )
+                .unwrap(),
+                1
             ),
             None
         );
