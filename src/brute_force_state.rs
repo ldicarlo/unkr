@@ -1,5 +1,5 @@
 use crate::{
-    caesar, enigma,
+    atbash, caesar, enigma,
     models::{BruteForceCryptor, BruteForceState, PermuteBruteForceState, VigenereBruteForceState},
     permute, vigenere,
 };
@@ -15,7 +15,7 @@ pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
         BruteForceCryptor::Cut => todo!(),
         BruteForceCryptor::Caesar => BruteForceState::Caesar(caesar::init()),
         BruteForceCryptor::Transpose => todo!(),
-        BruteForceCryptor::AtBash => todo!(),
+        BruteForceCryptor::AtBash => BruteForceState::AtBash,
         BruteForceCryptor::Reverse => todo!(),
         BruteForceCryptor::Swap => todo!(),
         BruteForceCryptor::Join => BruteForceState::Join,
@@ -63,7 +63,7 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
         BruteForceState::Cut(_) => todo!(),
         BruteForceState::Caesar(_) => todo!(),
         BruteForceState::Transpose(_) => todo!(),
-        BruteForceState::AtBash => todo!(),
+        BruteForceState::AtBash => atbash::decrypt(strings.clone()),
         BruteForceState::Reverse => todo!(),
         BruteForceState::Swap(_) => todo!(),
         BruteForceState::Join => todo!(),

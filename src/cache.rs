@@ -126,13 +126,6 @@ fn hit_to_string(hit_line: models::HitLine) -> String {
     format!("{};{}", hit_line.result, hit_line.args)
 }
 
-pub fn to_done_from_combination(
-    brute_force_cryptors: Vec<models::BruteForceCryptor>,
-    combinations: Vec<u8>,
-) -> models::DoneLine {
-    to_done(combination(brute_force_cryptors, combinations))
-}
-
 pub fn to_done(combination: Vec<models::BruteForceCryptor>) -> DoneLine {
     let (left, right) = combinations_string(combination);
     models::DoneLine {
@@ -194,24 +187,6 @@ pub fn combinations_string(
     (left, right)
 }
 
-pub fn combination(
-    brute_force_cryptors: Vec<models::BruteForceCryptor>,
-    combinations: Vec<u8>,
-) -> Vec<models::BruteForceCryptor> {
-    let mut result = Vec::new();
-    for n in combinations.into_iter() {
-        result.push(
-            brute_force_cryptors
-                .clone()
-                .into_iter()
-                .nth(n.into())
-                .expect("Did not find cryptor index"),
-        );
-    }
-
-    result
-}
-
 #[cfg(test)]
 pub mod tests {
     use std::fs;
@@ -221,7 +196,7 @@ pub mod tests {
         models,
     };
 
-    use super::{already_done, get_done_cache, push_line, to_done_from_combination};
+    use super::{already_done, get_done_cache, push_line};
 
     pub fn test_cache_name() -> String {
         String::from("cache-tests")
@@ -309,17 +284,14 @@ pub mod tests {
     #[test]
     fn to_done_works() {
         assert_eq!(
-            to_done_from_combination(
-                vec![
-                    models::BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
-                        alphabet_depth: 4,
-                        key_depth: 7
-                    },),
-                    models::BruteForceCryptor::Transpose,
-                    models::BruteForceCryptor::Caesar,
-                ],
-                vec![0, 1, 2]
-            ),
+            super::to_done(vec![
+                models::BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
+                    alphabet_depth: 4,
+                    key_depth: 7
+                },),
+                models::BruteForceCryptor::Transpose,
+                models::BruteForceCryptor::Caesar,
+            ],),
             models::DoneLine {
                 combinations: String::from("Vigenere Transpose Caesar"),
                 args: Some(String::from("Vigenere:4:7"))
@@ -330,13 +302,10 @@ pub mod tests {
     #[test]
     fn to_done_no_args_works() {
         assert_eq!(
-            to_done_from_combination(
-                vec![
-                    models::BruteForceCryptor::Transpose,
-                    models::BruteForceCryptor::Caesar,
-                ],
-                vec![0, 1]
-            ),
+            super::to_done(vec![
+                models::BruteForceCryptor::Transpose,
+                models::BruteForceCryptor::Caesar,
+            ],),
             models::DoneLine {
                 combinations: String::from("Transpose Caesar"),
                 args: None
