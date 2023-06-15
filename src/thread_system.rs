@@ -10,6 +10,7 @@ use crate::models::DoneLine;
 use crate::models::PermuteBruteForceState;
 use crate::models::VigenereBruteForceState;
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
@@ -27,10 +28,12 @@ pub fn start(
     candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
     console_sender: Sender<PrintableMessage>,
 ) {
+    let total = combinations.len();
     let thread_work =
         start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
     let am_tw = Arc::new(Mutex::new(thread_work));
     let (thread_status_sender, thread_status_receiver) = channel();
+    let done_cache = cache::get_done_cache(cache_args.clone());
     for i in 0..thread_count {
         let local_tw = am_tw.clone();
         let local_sender = thread_status_sender.clone();
@@ -39,6 +42,7 @@ pub fn start(
         let local_strings = strings.clone();
         let local_candidates_sender = candidates_sender.clone();
         let local_console_sender = console_sender.clone();
+        let local_done_cache = done_cache.clone();
         thread::spawn(move || {
             run_thread_work(
                 local_sender,
@@ -49,6 +53,8 @@ pub fn start(
                 local_strings,
                 local_candidates_sender,
                 local_console_sender,
+                total,
+                local_done_cache,
             )
         });
     }
@@ -64,18 +70,20 @@ fn thread_combination_over(
     cache_args: models::CacheArgs,
 ) {
     let mut thread_work = tw.lock().unwrap();
-    let mut vec = thread_work
+    let (done, mut vec) = thread_work
         .working_combinations
         .get(&done_line)
         .unwrap()
         .clone();
-    println!("was {:?} for {:?}", vec, done_line);
     vec.pop();
-    if vec.len() <= 0 && done_line != thread_work.current_combination {
+    if vec.len() == 0 && done {
+        println!("in");
         cache::push_done(done_line.clone(), cache_args);
         thread_work.working_combinations.remove(&done_line);
     } else {
-        thread_work.working_combinations.insert(done_line, vec);
+        thread_work
+            .working_combinations
+            .insert(done_line, (done, vec));
     }
 }
 
@@ -85,7 +93,7 @@ pub struct ThreadWork {
     pub current_tail: Vec<BruteForceCryptor>,
     pub current_combination: DoneLine,
     pub remaining_combinations: Vec<Vec<BruteForceCryptor>>,
-    pub working_combinations: BTreeMap<DoneLine, Vec<()>>,
+    pub working_combinations: BTreeMap<DoneLine, (bool, Vec<()>)>,
     pub clues: Vec<String>,
     pub strings: Vec<String>,
 }
@@ -164,13 +172,41 @@ fn add_working_combination(
         strings,
     }: ThreadWork,
 ) -> ThreadWork {
-    let mut vec = working_combinations
+    let (done, mut vec) = working_combinations
         .get(&current_combination)
         .map(|x| x.clone())
-        .unwrap_or(vec![]);
+        .unwrap_or((false, vec![]));
     vec.push(());
     let mut new_working_combinations = working_combinations.clone();
-    new_working_combinations.insert(current_combination.clone(), vec);
+    new_working_combinations.insert(current_combination.clone(), (done, vec));
+    ThreadWork {
+        current_head,
+        current_tail,
+        current_combination,
+        remaining_combinations,
+        working_combinations: new_working_combinations,
+        clues,
+        strings,
+    }
+}
+
+fn done_combination(
+    ThreadWork {
+        current_head,
+        current_tail,
+        current_combination,
+        remaining_combinations,
+        working_combinations,
+        clues,
+        strings,
+    }: ThreadWork,
+) -> ThreadWork {
+    let (_, vec) = working_combinations
+        .get(&current_combination)
+        .map(|x| x.clone())
+        .unwrap_or((false, vec![]));
+    let mut new_working_combinations = working_combinations.clone();
+    new_working_combinations.insert(current_combination.clone(), (true, vec));
     ThreadWork {
         current_head,
         current_tail,
@@ -188,6 +224,7 @@ fn lock_and_increase(tw: Arc<Mutex<ThreadWork>>) -> Option<ThreadWork> {
         *thread_work = add_working_combination(next_thread_work);
         Some(thread_work.clone())
     } else {
+        *thread_work = done_combination(thread_work.clone());
         None
     }
 }
@@ -222,16 +259,22 @@ fn run_thread_work(
     strings: Vec<String>,
     candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
     console_sender: Sender<PrintableMessage>,
+    total: usize,
+    done_cache: BTreeSet<models::DoneLine>,
 ) {
     let mut step = 0;
+
     loop {
         if let Some(new_tw) = lock_and_increase(tw.clone()) {
+            if cache::already_done(done_cache.clone(), new_tw.current_combination.clone()) {
+                continue;
+            }
             step = step + 1;
             console_sender
                 .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
                     thread_number,
                     step,
-                    total: 100,
+                    total,
                     current_combination: new_tw.current_head.clone(),
                 }))
                 .unwrap();
@@ -273,7 +316,10 @@ mod tests {
                     combinations: String::from("Vigenere Join")
                 },
                 current_head: BruteForceState::Join,
-                current_tail: vec![],
+                current_tail: vec![BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
+                    alphabet_depth: 1,
+                    key_depth: 2
+                }),],
                 remaining_combinations: vec![],
                 working_combinations: BTreeMap::new(),
                 strings: vec![String::from("ENCRYPTED")]
@@ -360,7 +406,7 @@ mod tests {
                         args: Some(String::from("Vigenere:1:2")),
                         combinations: String::from("Join Vigenere")
                     },
-                    vec![(), ()]
+                    (false, vec![(), ()])
                 )]
                 .into_iter()
                 .collect(),
