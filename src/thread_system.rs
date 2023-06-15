@@ -1,3 +1,4 @@
+use crate::brute_force;
 use crate::brute_force_state;
 use crate::brute_force_state::apply_decrypt;
 use crate::cache;

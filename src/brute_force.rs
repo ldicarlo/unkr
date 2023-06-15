@@ -4,14 +4,11 @@ use crate::cache;
 use crate::caesar;
 use crate::candidates;
 use crate::console;
-use crate::cryptors;
 use crate::cut;
-use crate::dispatcher;
 use crate::enigma;
 use crate::join;
 use crate::models;
 use crate::models::BruteForceCryptor;
-use crate::models::CacheArgs;
 use crate::parser;
 use crate::permute;
 use crate::reverse;
@@ -19,10 +16,8 @@ use crate::swap;
 use crate::thread_system;
 use crate::transpose;
 use crate::vigenere;
-use rand::prelude::SliceRandom;
 use std::collections::BTreeSet;
 use std::sync::mpsc::channel;
-use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
@@ -76,184 +71,60 @@ pub fn brute_force_decrypt(
     clues: Vec<String>,
     steps: u8,
     decryptors: Vec<String>,
-    threads: u8,
+    threads_count: u8,
     cache_name: String,
 ) {
+    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
     let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
-    let done_cache = cache::get_done_cache(cache_args.clone());
-    // eprintln!("{:?}", decr);
-    let result = brute_force_strings(str, clues, steps, decr, threads, done_cache, cache_args);
-    //eprintln!("Result: {:?}", result);
-}
-
-pub fn internal_brute_force_decrypt(
-    str: String,
-    clues: Vec<String>,
-    steps: u8,
-    decryptors_filtered: Vec<BruteForceCryptor>,
-    threads: u8,
-    done_cache: BTreeSet<models::DoneLine>,
-    cache_args: CacheArgs,
-) -> BTreeSet<String> {
-    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
-    let decryptors = if decryptors_filtered.len() == 0 {
-        cryptors::get_decryptors()
-    } else {
-        decryptors_filtered
-    };
-    let combinations = combinator::combine_elements(decryptors.len().try_into().unwrap(), steps);
-
-    // discard combinations
-    let mut filtered_combinations = Vec::new();
-    for vec in combinations.into_iter() {
-        let done_line = cache::to_done_from_combination(decryptors.clone(), vec.clone());
-        if skip_combination(vec.clone(), decryptors.clone()) {
-            // eprintln!(
-            //     "SKIPPED combination: {:?}",
-            //     parse_combination(vec.clone(), decryptors.clone())
-            // );
-        } else if cache::already_done(done_cache.clone(), done_line.clone()) {
-            // eprintln!("CACHE present: {:?}", done_line.clone())
-        } else {
-            filtered_combinations.push(vec);
-        }
-    }
-
-    let threads_work = dispatcher::dispatch(threads as usize, filtered_combinations.len());
-    //  eprintln!("TOTAL combinations {}", filtered_combinations.clone().len(),);
-    //  eprintln!("THREADS dispatching {:?}", threads_work.clone(),);
-    //  eprintln!("DECRYPTORS {}", decryptors.clone().len(),);
-
-    let mut vec_combinations = filtered_combinations
-        .clone()
-        .into_iter()
-        .collect::<Vec<Vec<u8>>>();
-
-    vec_combinations.shuffle(&mut rand::thread_rng());
-
-    let (sender, receiver) = channel();
     let (candidates_sender, candidates_receiver) = channel();
     let (console_sender, console_receiver) = channel();
     let local_cache_args = cache_args.clone();
-    let local_results_accumulator = results_accumulator.clone();
+    thread::spawn(move || {
+        console::thread_consume_messages(console_receiver, threads_count as usize)
+    });
+
     let local_console_sender = console_sender.clone();
+    let local_results_accumulator = results_accumulator.clone();
     thread::spawn(move || {
         candidates::candidate_receiver(
             candidates_receiver,
             local_cache_args,
             local_results_accumulator.clone(),
-            local_console_sender.clone(),
+            local_console_sender,
         )
     });
-    thread::spawn(move || console::thread_consume_messages(console_receiver, threads as usize));
 
-    for (i, t) in threads_work.into_iter().enumerate() {
-        let local_combinations = vec_combinations.split_off(vec_combinations.len() - t);
-
-        let local_sender = sender.clone();
-        let local_str = str.clone();
-        let local_clues = clues.clone();
-        let local_decryptors = decryptors.clone();
-        let local_cache_args = cache_args.clone();
-        let local_candidate_sender = candidates_sender.clone();
-        let local_console_sender = console_sender.clone();
-
-        // eprintln!(
-        //     "THREAD {}\tstart {} combinations",
-        //     i,
-        //     local_combinations.len()
-        // );
-        thread::spawn(move || {
-            local_sender
-                .send(threaded_function(
-                    i,
-                    local_combinations,
-                    local_str,
-                    local_clues,
-                    local_decryptors,
-                    local_cache_args,
-                    local_candidate_sender,
-                    local_console_sender,
-                ))
-                .unwrap();
-        });
-    }
-    for _ in 0..threads {
-        //eprintln!("THREAD {}\tfinished({})", t, receiver.recv().unwrap());
-        receiver.recv().unwrap();
+    let combinations: Vec<Vec<BruteForceCryptor>> =
+        combinator::combine_elements(decr.len().try_into().unwrap(), steps)
+            .into_iter()
+            .map(|x| {
+                x.into_iter()
+                    .map(|c| decr.clone().into_iter().nth(c.into()).unwrap())
+                    .collect()
+            })
+            .collect();
+    let mut filtered_combinations = Vec::new();
+    for c in combinations.into_iter() {
+        if !skip_combination(c.clone()) {
+            filtered_combinations.push(c.clone());
+        }
     }
 
-    let result: BTreeSet<String> = results_accumulator.lock().unwrap().to_owned();
-    result
-}
-
-fn threaded_function(
-    thread_number: usize,
-    combinations: Vec<Vec<u8>>,
-    str: String,
-    clues: Vec<String>,
-    decryptors_filtered: Vec<BruteForceCryptor>,
-    cache_args: models::CacheArgs,
-    candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
-    console_sender: Sender<console::PrintableMessage>,
-) -> bool {
-    let total = combinations.len();
-    for (i, vec) in combinations.iter().enumerate() {
-        let done_line = cache::to_done_from_combination(decryptors_filtered.clone(), vec.clone());
-        // console_sender
-        //     .send(console::PrintableMessage::ThreadStatus(
-        //         ThreadStatusPayload {
-        //             thread_number,
-        //             step: i,
-        //             total,
-        //             current_combination: done_line.combinations.clone(),
-        //         },
-        //     ))
-        //     .unwrap();
-        // eprintln!(
-        //     "THREAD {}\tcombination: {} {:?}",
-        //     thread_number,
-        //     i,
-        //     done_line.clone()
-        // );
-
-        loop_decrypt(
-            None,
-            vec.clone(),
-            vec![str.clone()],
-            clues.clone(),
-            decryptors_filtered.clone(),
-            cache_args.clone(),
-            candidates_sender.clone(),
-        );
-
-        cache::push_done(done_line.clone(), cache_args.clone());
-    }
-    true
-}
-
-fn brute_force_strings(
-    str: String,
-    clues: Vec<String>,
-    steps: u8,
-    decryptors_filtered: Vec<BruteForceCryptor>,
-    threads: u8,
-    done_cache: BTreeSet<models::DoneLine>,
-    cache_args: CacheArgs,
-) -> BTreeSet<String> {
-    internal_brute_force_decrypt(
-        str,
+    thread_system::start(
+        threads_count as usize,
+        filtered_combinations,
         clues,
-        steps,
-        decryptors_filtered.clone(),
-        threads,
-        done_cache,
+        vec![str],
         cache_args,
-    )
+        candidates_sender,
+        console_sender,
+    );
+
+    eprintln!("Result: {:?}", results_accumulator.lock().unwrap());
 }
 
 fn loop_decrypt(
@@ -565,10 +436,9 @@ fn process_new_str(
     Some(current_acc)
 }
 
-fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> bool {
-    let cryp_combination = parse_combination(combination, cryptors);
+pub fn skip_combination(combination: Vec<BruteForceCryptor>) -> bool {
     let not_first = vec![Some(&BruteForceCryptor::Join)];
-    if not_first.contains(&cryp_combination.first()) {
+    if not_first.contains(&combination.first()) {
         return true;
     }
 
@@ -576,12 +446,12 @@ fn skip_combination(combination: Vec<u8>, cryptors: Vec<BruteForceCryptor>) -> b
         Some(&BruteForceCryptor::Join),
         Some(&BruteForceCryptor::Cut),
     ];
-    if not_last.contains(&cryp_combination.last()) {
+    if not_last.contains(&combination.last()) {
         return true;
     }
     let mut last = None;
 
-    for next in cryp_combination.into_iter() {
+    for next in combination.into_iter() {
         if last
             .clone()
             .map(|prev: BruteForceCryptor| match next.clone() {
@@ -622,87 +492,17 @@ fn parse_combination(
 #[cfg(test)]
 mod tests {
 
-    use crate::cache::{prepare_cache_args, tests::test_cache_name};
-
     use super::*;
-    #[test]
-    fn it_works() {
-        assert_eq!(
-            BTreeSet::new(),
-            internal_brute_force_decrypt(
-                "str".to_string(),
-                vec![
-                    "CLOCK".to_string(),
-                    "BERLIN".to_string(),
-                    "NORTH".to_string(),
-                    "EAST".to_string(),
-                ],
-                2,
-                vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
-                1,
-                BTreeSet::new(),
-                prepare_cache_args(
-                    test_cache_name(),
-                    "str".to_string(),
-                    vec![
-                        "CLOCK".to_string(),
-                        "BERLIN".to_string(),
-                        "NORTH".to_string(),
-                        "EAST".to_string(),
-                    ],
-                )
-            )
-        );
-    }
-
-    #[test]
-    fn brute_force_1() {
-        assert_eq!(
-            // encrypt --string BERLIN -- caesar:10 atbash caesar:5
-            brute_force_strings(
-                "TQDJMH".to_string(),
-                vec![
-                    "CLOCK".to_string(),
-                    "BERLIN".to_string(),
-                    "NORTH".to_string(),
-                    "EAST".to_string(),
-                ],
-                2,
-                vec![BruteForceCryptor::Caesar, BruteForceCryptor::AtBash],
-                1,
-                BTreeSet::new(),
-                prepare_cache_args(
-                    test_cache_name(),
-                    "TQDJMH".to_string(),
-                    vec![
-                        "CLOCK".to_string(),
-                        "BERLIN".to_string(),
-                        "NORTH".to_string(),
-                        "EAST".to_string(),
-                    ],
-                )
-            ),
-            vec![
-                "Caesar:5 AtBash".to_string(),
-                "AtBash Caesar:21".to_string(),
-            ]
-            .into_iter()
-            .collect::<BTreeSet<String>>(),
-        );
-    }
 
     #[test]
     fn skip_combination_works() {
         assert_eq!(
-            skip_combination(
-                vec![1, 0, 0],
-                vec![
-                    models::BruteForceCryptor::Permute(models::BruteForcePermuteArgs {
-                        max_permutations: 4
-                    },),
-                    models::BruteForceCryptor::AtBash
-                ]
-            ),
+            skip_combination(vec![
+                models::BruteForceCryptor::Permute(models::BruteForcePermuteArgs {
+                    max_permutations: 4
+                },),
+                models::BruteForceCryptor::AtBash
+            ]),
             true
         )
     }
