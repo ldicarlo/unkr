@@ -9,7 +9,7 @@ use std::{thread, time};
 use std::io::{stdout, Write};
 use std::sync::mpsc::Receiver;
 
-use crate::{brute_force_state, models::BruteForceState};
+use crate::models::BruteForceState;
 
 pub enum PrintableMessage {
     ThreadStatus(ThreadStatusPayload),
