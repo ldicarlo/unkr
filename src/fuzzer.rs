@@ -128,7 +128,7 @@ pub fn sorted_letters_by_pair(str: Vec<u8>) -> bool {
 
 #[cfg(test)]
 mod tests {
-
+    use test::Bencher;
     #[test]
     fn it_works() {
         assert_eq!(
@@ -160,4 +160,7 @@ mod tests {
             None
         );
     }
+
+    #[bench]
+    fn find_all() {}
 }
