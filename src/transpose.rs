@@ -1,5 +1,17 @@
 use crate::models::NumberArgs;
 
+pub fn init() -> NumberArgs {
+    NumberArgs { number: 1 }
+}
+
+pub fn next(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Option<NumberArgs> {
+    if number < strs[0].len() - 1 {
+        Some(NumberArgs { number: number + 1 })
+    } else {
+        None
+    }
+}
+
 pub fn encrypt(strs: Vec<String>, NumberArgs { number }: NumberArgs) -> Vec<String> {
     let str = strs.join("");
     let mut padded_str = str.clone();

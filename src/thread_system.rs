@@ -132,7 +132,7 @@ fn increase_thread_work(
         strings,
     }: ThreadWork,
 ) -> Option<ThreadWork> {
-    brute_force_state::increase_state(current_head, strings[0].len())
+    brute_force_state::increase_state(current_head, strings.clone())
         .map(|new_head| ThreadWork {
             current_head: new_head,
             current_tail: current_tail.clone(),
