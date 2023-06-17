@@ -1,3 +1,4 @@
+extern crate test;
 use crate::{
     char_utils::{self, char_position_base},
     fuzzer, models,
@@ -446,10 +447,11 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
 
 #[cfg(test)]
 mod tests {
+    use super::args_to_string;
+    use super::*;
     use crate::enigma::{EnigmaArgs, Reflector, Rotor};
     use strum::IntoEnumIterator;
-
-    use super::args_to_string;
+    use test::Bencher;
 
     #[test]
     fn increment_1() {
@@ -682,5 +684,20 @@ mod tests {
             ),
             String::from("OVOICLLIC")
         );
+    }
+
+    #[bench]
+    fn bench(b: &mut Bencher) {
+        let mut args = super::init();
+        let strs = vec![String::from("HELLO")];
+
+        b.iter(|| loop {
+            if let Some(args2) = super::next(args.clone()) {
+                args = args2;
+                super::decrypt(strs.clone(), args.clone());
+            } else {
+                break;
+            }
+        });
     }
 }
