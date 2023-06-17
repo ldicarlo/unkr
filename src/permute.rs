@@ -17,19 +17,17 @@ pub fn next(
     }: models::PermuteBruteForceState,
 ) -> Option<models::PermuteArgs> {
     let next = fuzzer::fuzz_next_string_ruled(
-        char_utils::pairs_to_vec(permutations)
+        &char_utils::pairs_to_vec(permutations)
             .into_iter()
             .collect::<String>(),
         max_permutations,
         27,
-        &vec![
-            Box::new(fuzzer::pair_length),
-            Box::new(fuzzer::unique_letters),
-            Box::new(fuzzer::sorted_letters_by_pair),
-        ],
+        true,
+        true,
+        true,
     );
     next.map(|str| models::PermuteArgs {
-        permutations: char_utils::vec_to_pairs(str.chars().collect())
+        permutations: char_utils::vec_to_pairs(&str.chars().collect())
             .into_iter()
             .map(|(a, b)| (a as char, b as char))
             .collect(),

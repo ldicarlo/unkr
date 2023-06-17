@@ -5,29 +5,31 @@ use crate::{
 };
 
 pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
-    let mut effective_rules: Vec<Box<dyn Fn(Vec<u8>) -> bool>> = vec![];
-    if rules.contains(&String::from("UniqueLetters")) {
-        effective_rules.push(Box::new(unique_letters));
-    }
-    if rules.contains(&String::from("EvenCount")) {
-        effective_rules.push(Box::new(pair_length));
-    }
-    if rules.contains(&String::from("SortedLettersByPair")) {
-        effective_rules.push(Box::new(sorted_letters_by_pair));
-    }
+    let unique_letters_contraint = rules.contains(&String::from("UniqueLetters"));
+    let even_count_constraint = rules.contains(&String::from("EvenCount"));
+    let sorted_by_pair_constraint = rules.contains(&String::from("SortedLettersByPair"));
 
     let mut last = str;
-    while let Some(next) = fuzz_next_string_ruled(last.clone(), len_max, base, &effective_rules) {
+    while let Some(next) = fuzz_next_string_ruled(
+        &last,
+        len_max,
+        base,
+        unique_letters_contraint,
+        even_count_constraint,
+        sorted_by_pair_constraint,
+    ) {
         println!("{}", next);
         last = next;
     }
 }
 
 pub fn fuzz_next_string_ruled(
-    str: String,
+    str: &String,
     len_max: usize,
     base: usize,
-    rules: &Vec<Box<dyn Fn(Vec<u8>) -> bool>>,
+    unique_letters_constraint: bool,
+    pair_length_constraint: bool,
+    sorted_by_pair_constraint: bool,
 ) -> Option<String> {
     fuzz_next_r(
         str.chars()
@@ -37,7 +39,9 @@ pub fn fuzz_next_string_ruled(
             .collect(),
         len_max,
         base,
-        rules,
+        unique_letters_constraint,
+        pair_length_constraint,
+        sorted_by_pair_constraint,
     )
     .map(|vec| {
         vec.into_iter()
@@ -50,13 +54,21 @@ pub fn fuzz_next_r(
     str: Vec<u8>,
     len_max: usize,
     base: usize,
-    rules: &Vec<Box<dyn Fn(Vec<u8>) -> bool>>,
+    unique_letters_constraint: bool,
+    pair_length_constraint: bool,
+    sorted_by_pair_constraint: bool,
 ) -> Option<Vec<u8>> {
     let mut last = str;
     while let Some(result) = fuzz_next(last, len_max, base) {
         last = result.clone();
-        if rules.iter().all(|f| f(last.clone())) {
-            return Some(last);
+        if unique_letters_constraint && !unique_letters(&last) {
+            return None;
+        }
+        if pair_length_constraint && !pair_length(&last) {
+            return None;
+        }
+        if sorted_by_pair_constraint && !sorted_letters_by_pair(&last) {
+            return None;
         }
     }
     None
@@ -99,7 +111,7 @@ pub fn fuzz_next_bases(str: Vec<u8>, bases: Vec<usize>) -> Option<Vec<u8>> {
     Some(base::increment_with_bases(vector, bases))
 }
 
-pub fn unique_letters(str: Vec<u8>) -> bool {
+pub fn unique_letters(str: &Vec<u8>) -> bool {
     let mut vec = vec![];
     for num in str.into_iter() {
         if vec.contains(&num) {
@@ -110,11 +122,11 @@ pub fn unique_letters(str: Vec<u8>) -> bool {
     return true;
 }
 
-pub fn pair_length(str: Vec<u8>) -> bool {
+pub fn pair_length(str: &Vec<u8>) -> bool {
     str.len() % 2 == 0
 }
 
-pub fn sorted_letters_by_pair(str: Vec<u8>) -> bool {
+pub fn sorted_letters_by_pair(str: &Vec<u8>) -> bool {
     let base: Vec<(u8, u8)> = char_utils::vec_to_pairs(str);
 
     let mut ordered = base
@@ -136,25 +148,28 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            super::fuzz_next_string_ruled("KRYPTOR".to_string(), 7, 27, &vec![]),
+            super::fuzz_next_string_ruled(&"KRYPTOR".to_string(), 7, 27, false, false, false),
             Some("KRYPTOS".to_string())
         );
         assert_eq!(
-            super::fuzz_next_string_ruled("ZZZ".to_string(), 3, 27, &vec![]),
+            super::fuzz_next_string_ruled(&"ZZZ".to_string(), 3, 27, false, false, false),
             None
         );
         assert_eq!(
-            super::fuzz_next_string_ruled("ZZ".to_string(), 3, 27, &vec![]),
+            super::fuzz_next_string_ruled(&"ZZ".to_string(), 3, 27, false, false, false),
             Some("AAA".to_string())
         );
     }
 
     #[test]
     fn ordered_works() {
-        assert_eq!(super::sorted_letters_by_pair(vec![1, 2, 4, 5]), true);
-        assert_eq!(super::sorted_letters_by_pair(vec![1, 2, 5, 4]), false);
-        assert_eq!(super::sorted_letters_by_pair(vec![2, 1, 5, 4]), false);
-        assert_eq!(super::sorted_letters_by_pair(vec![2, 1, 4, 5, 6, 3]), false);
+        assert_eq!(super::sorted_letters_by_pair(&vec![1, 2, 4, 5]), true,);
+        assert_eq!(super::sorted_letters_by_pair(&vec![1, 2, 5, 4]), false,);
+        assert_eq!(super::sorted_letters_by_pair(&vec![2, 1, 5, 4]), false,);
+        assert_eq!(
+            super::sorted_letters_by_pair(&vec![2, 1, 4, 5, 6, 3]),
+            false,
+        );
     }
 
     #[test]
@@ -167,6 +182,6 @@ mod tests {
 
     #[bench]
     fn bench(b: &mut Bencher) {
-        b.iter(|| super::sorted_letters_by_pair(vec![1, 2, 4, 5]));
+        b.iter(|| fuzz_next_string_ruled(&"KRYPTOR".to_string(), 7, 27, true, true, true));
     }
 }

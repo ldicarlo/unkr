@@ -16,9 +16,15 @@ pub fn pairs_to_vec<A>(input: Vec<(A, A)>) -> Vec<A> {
     input.into_iter().flat_map(|(a, b)| vec![a, b]).collect()
 }
 
-pub fn vec_to_pairs<A: Clone>(input: Vec<A>) -> Vec<(A, A)> {
+pub fn vec_to_pairs<A: Clone>(input: &Vec<A>) -> Vec<(A, A)> {
     let even: Vec<A> = input.clone().into_iter().step_by(2).collect();
-    let uneven: Vec<A> = input.into_iter().skip(1).into_iter().step_by(2).collect();
+    let uneven: Vec<A> = input
+        .iter()
+        .skip(1)
+        .into_iter()
+        .step_by(2)
+        .map(|x| x.clone())
+        .collect();
 
     even.into_iter().zip(uneven).collect()
 }

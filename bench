@@ -68,8 +68,8 @@ test transpose::tests::it_works_2 ... ignored
 test vigenere::tests::it_works ... ignored
 test vigenere::tests::it_works_2 ... ignored
 test vigenere::tests::it_works_3 ... ignored
-test enigma::tests::bench ... bench:         170 ns/iter (+/- 3)
-test fuzzer::tests::bench ... bench:          70 ns/iter (+/- 1)
+test enigma::tests::bench ... bench:         169 ns/iter (+/- 4)
+test fuzzer::tests::bench ... bench:         201 ns/iter (+/- 4)
 
-test result: ok. 0 passed; 0 failed; 68 ignored; 2 measured; 0 filtered out; finished in 25.98s
+test result: ok. 0 passed; 0 failed; 68 ignored; 2 measured; 0 filtered out; finished in 28.63s
 
