@@ -686,6 +686,7 @@ mod tests {
         );
     }
 
+    #[ignore]
     #[bench]
     fn bench(b: &mut Bencher) {
         let mut args = super::init();

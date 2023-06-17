@@ -62,14 +62,15 @@ pub fn fuzz_next_r(
     while let Some(result) = fuzz_next(last, len_max, base) {
         last = result.clone();
         if unique_letters_constraint && !unique_letters(&last) {
-            return None;
+            continue;
         }
         if pair_length_constraint && !pair_length(&last) {
-            return None;
+            continue;
         }
         if sorted_by_pair_constraint && !sorted_letters_by_pair(&last) {
-            return None;
+            continue;
         }
+        return Some(result);
     }
     None
 }
@@ -180,6 +181,7 @@ mod tests {
         );
     }
 
+    #[ignore]
     #[bench]
     fn bench(b: &mut Bencher) {
         b.iter(|| fuzz_next_string_ruled(&"KRYPTOR".to_string(), 7, 27, true, true, true));
