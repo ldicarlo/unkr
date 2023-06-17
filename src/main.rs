@@ -1,3 +1,6 @@
+// https://doc.rust-lang.org/unstable-book/library-features/test.html
+#![feature(test)]
+
 mod atbash;
 mod base;
 mod brute_force;

@@ -1,3 +1,4 @@
+extern crate test;
 use crate::{
     base,
     char_utils::{self, get_alphabet_prefixed},
@@ -127,8 +128,11 @@ pub fn sorted_letters_by_pair(str: Vec<u8>) -> bool {
 }
 
 #[cfg(test)]
+
 mod tests {
+    use super::*;
     use test::Bencher;
+
     #[test]
     fn it_works() {
         assert_eq!(
@@ -162,5 +166,7 @@ mod tests {
     }
 
     #[bench]
-    fn find_all() {}
+    fn bench(b: &mut Bencher) {
+        b.iter(|| super::sorted_letters_by_pair(vec![1, 2, 4, 5]));
+    }
 }
