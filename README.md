@@ -65,8 +65,7 @@ http://kryptools.com/hints.htm
       `vigenere join cut;vigenere:3:3;partial vigenere:ABC:ALPHABET join cut:3`
   - [ ] `vigenere join cut;vigenere:3:3`
 
-
-
 # Perf
 
-- [ ] use a multiproducer channel to get hits ?
+- [x] use a multiproducer channel to get hits ?
+- [ ] https://patrickfreed.github.io/rust/2021/10/15/making-slow-rust-code-fast.html

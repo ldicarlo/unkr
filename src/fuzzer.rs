@@ -1,4 +1,3 @@
-extern crate test;
 use crate::{
     base,
     char_utils::{self, get_alphabet_prefixed},
@@ -143,8 +142,6 @@ pub fn sorted_letters_by_pair(str: &Vec<u8>) -> bool {
 #[cfg(test)]
 
 mod tests {
-    use super::*;
-    use test::Bencher;
 
     #[test]
     fn it_works() {
@@ -179,11 +176,5 @@ mod tests {
             super::fuzz_next_bases(vec![1, 3, 26, 3, 26, 3, 26], vec![2, 4, 27, 4, 27, 4, 27]),
             None
         );
-    }
-
-    #[ignore]
-    #[bench]
-    fn bench(b: &mut Bencher) {
-        b.iter(|| fuzz_next_string_ruled(&"KRYPTOR".to_string(), 7, 27, true, true, true));
     }
 }

@@ -1,5 +1,5 @@
 // https://doc.rust-lang.org/unstable-book/library-features/test.html
-#![feature(test)]
+//#![feature(test)]
 
 mod atbash;
 mod base;
@@ -11,6 +11,7 @@ mod candidates;
 mod char_utils;
 mod colorize;
 mod combinator;
+mod console;
 mod cryptors;
 mod cut;
 mod decrypt;
@@ -21,17 +22,15 @@ mod indexcrypt;
 mod join;
 mod models;
 mod parser;
+mod permute;
 mod reverse;
 mod swap;
 mod thread_system;
 mod transpose;
 mod vigenere;
-use std::io;
-mod console;
 
-use brute_force::brute_force_unique_combination;
 use clap::{Parser, Subcommand};
-mod permute;
+use std::io;
 fn main() {
     let args = Cli::parse();
 
@@ -93,7 +92,7 @@ fn main() {
             clues,
             threads,
             decryptors,
-        } => brute_force_unique_combination(
+        } => brute_force::brute_force_unique_combination(
             string,
             clues,
             decryptors,
