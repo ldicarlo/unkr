@@ -3,13 +3,10 @@ use pprof::criterion::{Output, PProfProfiler};
 use unkr::fuzz_next_string_ruled;
 
 fn enigma_bench(c: &mut Criterion) {
-    let args = unkr::enigma_init();
-    let strs = vec![String::from("HELLO")];
-
     c.bench_function("enigma", |b| {
         b.iter(|| {
-            let args_next = unkr::enigma_next(args.clone()).unwrap();
-            unkr::enigma_encrypt(strs.clone(), args_next);
+            let args_next = unkr::enigma_next(unkr::enigma_init()).unwrap();
+            unkr::enigma_encrypt(vec![String::from("HELLO")], args_next);
         })
     });
 }
