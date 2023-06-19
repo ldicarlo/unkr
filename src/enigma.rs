@@ -447,7 +447,6 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
 #[cfg(test)]
 mod tests {
     use super::args_to_string;
-    use super::*;
     use crate::enigma::{EnigmaArgs, Reflector, Rotor};
     use strum::IntoEnumIterator;
 

@@ -1,4 +1,5 @@
 use enigma::EnigmaArgs;
+use models::BruteForceCryptor;
 
 mod atbash;
 mod base;
@@ -14,6 +15,7 @@ mod console;
 mod cryptors;
 mod cut;
 mod decrypt;
+mod encrypt;
 mod enigma;
 mod fuzzer;
 mod indexcrypt;
@@ -55,4 +57,49 @@ pub fn enigma_init() -> EnigmaArgs {
 
 pub fn enigma_encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
     enigma::encrypt(strs, enigma_args)
+}
+
+pub fn print_encrypt(strs: Vec<String>, decryptors: Vec<String>) {
+    encrypt::print_encrypt(strs, decryptors)
+}
+
+pub fn print_decrypt(str: Vec<String>, decryptors: Vec<String>) {
+    decrypt::print_decrypt(str, decryptors)
+}
+
+pub fn brute_force_decrypt(
+    str: String,
+    clues: Vec<String>,
+    steps: u8,
+    decryptors: Vec<String>,
+    threads_count: u8,
+    cache_name: String,
+) {
+    brute_force::brute_force_decrypt(str, clues, steps, decryptors, threads_count, cache_name)
+}
+
+pub fn get_decryptors() -> Vec<BruteForceCryptor> {
+    cryptors::get_decryptors()
+}
+
+pub fn brute_force_unique_combination(
+    str: String,
+    clues: Vec<String>,
+    decryptors: Vec<String>,
+    threads_count: u8,
+    cache_name: String,
+) {
+    brute_force::brute_force_unique_combination(str, clues, decryptors, threads_count, cache_name)
+}
+
+pub fn print_combine_elements(elements_count: u8, picks: u8) {
+    combinator::print_combine_elements(elements_count, picks)
+}
+
+pub fn read_bruteforce_parameters(str: String) -> BruteForceCryptor {
+    parser::read_bruteforce_parameters(str)
+}
+
+pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
+    fuzzer::fuzz_from(str, len_max, base, rules)
 }

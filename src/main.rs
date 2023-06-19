@@ -1,30 +1,4 @@
-mod atbash;
-mod base;
-mod brute_force;
-mod brute_force_state;
-mod cache;
-mod caesar;
-mod candidates;
-mod char_utils;
-mod colorize;
-mod combinator;
-mod console;
-mod cryptors;
-mod cut;
-mod decrypt;
-mod encrypt;
-mod enigma;
-mod fuzzer;
-mod indexcrypt;
-mod join;
-mod models;
-mod parser;
-mod permute;
-mod reverse;
-mod swap;
-mod thread_system;
-mod transpose;
-mod vigenere;
+use unkr;
 
 use clap::{Parser, Subcommand};
 use std::io;
@@ -33,9 +7,9 @@ fn main() {
 
     match args.command {
         Commands::Encrypt { string, steps } => string
-            .map(|str| encrypt::print_encrypt(vec![str], steps.clone()))
+            .map(|str| unkr::print_encrypt(vec![str], steps.clone()))
             .unwrap_or_else(|| {
-                encrypt::print_encrypt(
+                unkr::print_encrypt(
                     io::stdin()
                         .lines()
                         .map(|l| l.unwrap())
@@ -44,9 +18,9 @@ fn main() {
                 )
             }),
         Commands::Decrypt { string, steps } => string
-            .map(|str| decrypt::print_decrypt(vec![str], steps.clone()))
+            .map(|str| unkr::print_decrypt(vec![str], steps.clone()))
             .unwrap_or_else(|| {
-                decrypt::print_decrypt(
+                unkr::print_decrypt(
                     io::stdin()
                         .lines()
                         .map(|l| l.unwrap())
@@ -60,7 +34,7 @@ fn main() {
             decryptors,
             steps,
             threads,
-        } => brute_force::brute_force_decrypt(
+        } => unkr::brute_force_decrypt(
             string,
             clues,
             steps,
@@ -71,25 +45,25 @@ fn main() {
         Commands::GetDecryptors { decryptors } => println!(
             "{:?}",
             if decryptors.len() == 0 {
-                cryptors::get_decryptors()
+                unkr::get_decryptors()
             } else {
                 decryptors
                     .iter()
-                    .map(|str| parser::read_bruteforce_parameters(str.to_string()))
+                    .map(|str| unkr::read_bruteforce_parameters(str.to_string()))
                     .collect()
             }
         ),
         Commands::GetCombinations {
             elements_count,
             picks,
-        } => combinator::print_combine_elements(elements_count, picks),
-        Commands::Fuzz { length, rules } => fuzzer::fuzz_from("".to_string(), length, 27, rules),
+        } => unkr::print_combine_elements(elements_count, picks),
+        Commands::Fuzz { length, rules } => unkr::fuzz_from("".to_string(), length, 27, rules),
         Commands::BruteForceCombination {
             string,
             clues,
             threads,
             decryptors,
-        } => brute_force::brute_force_unique_combination(
+        } => unkr::brute_force_unique_combination(
             string,
             clues,
             decryptors,

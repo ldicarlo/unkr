@@ -1,12 +1,12 @@
 use criterion::{criterion_group, criterion_main, Criterion};
+use pprof::criterion::{Output, PProfProfiler};
 use unkr::fuzz_next_string_ruled;
-use pprof::criterion::{PProfProfiler, Output};
 
 fn enigma_bench(c: &mut Criterion) {
     let args = unkr::enigma_init();
     let strs = vec![String::from("HELLO")];
 
-    c.bench_function("any", |b| {
+    c.bench_function("enigma-bench", |b| {
         b.iter(|| {
             let args_next = unkr::enigma_next(args.clone()).unwrap();
             unkr::enigma_encrypt(strs.clone(), args_next);
