@@ -75,11 +75,10 @@ pub fn fuzz_next_r(
 }
 
 pub fn fuzz_next(str: &Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> {
-    let vector: Vec<u8> = str.clone().into_iter().map(|c| c as u8).collect();
-    if str.len() == len_max && vector.clone().into_iter().all(|c| c as usize == base - 1) {
+    if str.len() == len_max && str.into_iter().all(|c| *c as usize == base - 1) {
         return None;
     }
-    Some(base::increment(vector, base))
+    Some(base::increment(str, base))
 }
 
 pub fn fuzz_next_string_bases(str: String, bases: Vec<usize>) -> Option<String> {

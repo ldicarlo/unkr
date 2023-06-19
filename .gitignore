@@ -1,4 +1,5 @@
-**/target
+target
+!target/criterion
 cache
 perf.data*
 cache-tests
