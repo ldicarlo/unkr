@@ -36,9 +36,9 @@ criterion_group! {
   name = benches;
   config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
   targets =
-  //  fuzz_bench,
-    // enigma_bench,
-     fuzz_next_bench
+    //fuzz_bench,
+     enigma_bench,
+    // fuzz_next_bench
 }
 
 criterion_main!(benches);
