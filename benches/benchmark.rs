@@ -1,5 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use unkr::fuzz_next_string_ruled;
+use pprof::criterion::{PProfProfiler, Output};
 
 fn enigma_bench(c: &mut Criterion) {
     let args = unkr::enigma_init();
@@ -23,5 +24,10 @@ pub fn fuzz_bench(c: &mut Criterion) {
     group.finish()
 }
 
-criterion_group!(benches, fuzz_bench, enigma_bench);
+criterion_group! {
+  name = benches;
+  config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
+  targets = fuzz_bench, enigma_bench
+}
+
 criterion_main!(benches);

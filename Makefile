@@ -41,3 +41,7 @@ benchmark-3: ## Benchmark t3
 
 install: ## Install
 	@cargo install --path .
+
+benchmark: ## Run cargo bench
+	@cargo bench
+
