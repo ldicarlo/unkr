@@ -32,12 +32,12 @@ pub fn start(
     let total = combinations.len();
     let thread_work =
         start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
-    let am_tw = Arc::new(Mutex::new(thread_work));
+    let am_tw = Arc::new(Mutex::new(None));
     let (thread_status_sender, thread_status_receiver) = channel();
     let (thread_combination_status_sender, thread_combination_status_receiver) = channel();
     let done_cache = cache::get_done_cache(cache_args.clone());
     for i in 0..thread_count {
-        let local_tw = am_tw.clone();
+        let local_tw = thread_work.clone();
         let local_sender = thread_status_sender.clone();
         let local_clues = clues.clone();
         let local_strings = strings.clone();
@@ -73,7 +73,7 @@ pub fn start(
 
 fn thread_combination_status_function(
     r: Receiver<ThreadStatus>,
-    tw: Arc<Mutex<ThreadWork>>,
+    tw: Arc<Mutex<Option<ThreadsStatuses>>>,
     cache_args: models::CacheArgs,
 ) {
     r.iter().for_each(|status| {
@@ -86,24 +86,33 @@ enum ThreadStatus {
     Done(DoneLine),
 }
 
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub enum WorkStatus {
+    Doing,
+    Done,
+}
+
 fn thread_combination_status(
     done_line: ThreadStatus,
-    tw: Arc<Mutex<ThreadWork>>,
+    tw: Arc<Mutex<Option<ThreadsStatuses>>>,
     cache_args: models::CacheArgs,
 ) {
-    match done_line {
-        ThreadStatus::Start(line) => {}
-        ThreadStatus::Done(line) => {
-            let mut thread_work = tw.lock().unwrap();
-            let (done, mut vec) = thread_work.working_combinations.get(&line).unwrap().clone();
-            vec.pop();
-            if vec.len() == 0 && done {
-                cache::push_done(line.clone(), cache_args);
-                thread_work.working_combinations.remove(&line);
-            } else {
-                thread_work.working_combinations.insert(line, (done, vec));
-            }
+    let mut state = tw.lock().unwrap();
+
+    match (&mut *state, done_line) {
+        (None, ThreadStatus::Start(line)) => {
+            *state = Some(ThreadsStatuses {
+                current_combination: line.clone(),
+                working_combinations: vec![(line, (WorkStatus::Doing, vec![()]))]
+                    .into_iter()
+                    .collect(),
+            })
         }
+        (Some(value), ThreadStatus::Start(line)) => {
+            *state = Some(add_working_combination(value.clone()));
+        }
+        (Some(value), ThreadStatus::Done(line)) => *state = Some(done_combination(value.clone())),
+        _ => panic!("This should not happen."),
     };
 }
 
@@ -113,9 +122,14 @@ pub struct ThreadWork {
     pub current_tail: Vec<BruteForceCryptor>,
     pub current_combination: DoneLine,
     pub remaining_combinations: Vec<Vec<BruteForceCryptor>>,
-    pub working_combinations: BTreeMap<DoneLine, (bool, Vec<()>)>,
     pub clues: Vec<String>,
     pub strings: Vec<String>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub struct ThreadsStatuses {
+    pub current_combination: DoneLine,
+    pub working_combinations: BTreeMap<DoneLine, (WorkStatus, Vec<()>)>,
 }
 
 fn start_thread_work(
@@ -133,7 +147,6 @@ fn start_thread_work(
                 current_tail: popable,
                 current_combination: cache::to_done(x),
                 remaining_combinations,
-                working_combinations: BTreeMap::new(),
                 clues,
                 strings,
             }
@@ -147,7 +160,6 @@ fn increase_thread_work(
         current_tail,
         current_combination,
         remaining_combinations,
-        working_combinations,
         clues,
         strings,
     }: ThreadWork,
@@ -158,7 +170,6 @@ fn increase_thread_work(
             current_tail: current_tail.clone(),
             current_combination: current_combination.clone(),
             remaining_combinations: remaining_combinations.clone(),
-            working_combinations: working_combinations.clone(),
             clues: clues.clone(),
             strings: strings.clone(),
         })
@@ -173,7 +184,6 @@ fn increase_thread_work(
                     current_tail,
                     current_combination: cache::to_done(new_current_combination),
                     remaining_combinations: mut_remaining_combinations,
-                    working_combinations,
                     clues,
                     strings,
                 }
@@ -182,70 +192,39 @@ fn increase_thread_work(
 }
 
 fn add_working_combination(
-    ThreadWork {
-        current_head,
-        current_tail,
+    ThreadsStatuses {
         current_combination,
-        remaining_combinations,
         working_combinations,
-        clues,
-        strings,
-    }: ThreadWork,
-) -> ThreadWork {
+    }: ThreadsStatuses,
+) -> ThreadsStatuses {
     let (done, mut vec) = working_combinations
         .get(&current_combination)
         .map(|x| x.clone())
-        .unwrap_or((false, vec![]));
+        .unwrap_or((WorkStatus::Doing, vec![]));
     vec.push(());
     let mut new_working_combinations = working_combinations.clone();
     new_working_combinations.insert(current_combination.clone(), (done, vec));
-    ThreadWork {
-        current_head,
-        current_tail,
+    ThreadsStatuses {
         current_combination,
-        remaining_combinations,
         working_combinations: new_working_combinations,
-        clues,
-        strings,
     }
 }
 
 fn done_combination(
-    ThreadWork {
-        current_head,
-        current_tail,
+    ThreadsStatuses {
         current_combination,
-        remaining_combinations,
         working_combinations,
-        clues,
-        strings,
-    }: ThreadWork,
-) -> ThreadWork {
+    }: ThreadsStatuses,
+) -> ThreadsStatuses {
     let (_, vec) = working_combinations
         .get(&current_combination)
         .map(|x| x.clone())
-        .unwrap_or((false, vec![]));
+        .unwrap_or((WorkStatus::Doing, vec![]));
     let mut new_working_combinations = working_combinations.clone();
-    new_working_combinations.insert(current_combination.clone(), (true, vec));
-    ThreadWork {
-        current_head,
-        current_tail,
+    new_working_combinations.insert(current_combination.clone(), (WorkStatus::Done, vec));
+    ThreadsStatuses {
         current_combination,
-        remaining_combinations,
         working_combinations: new_working_combinations,
-        clues,
-        strings,
-    }
-}
-
-fn lock_and_increase(tw: Arc<Mutex<ThreadWork>>) -> Option<ThreadWork> {
-    let mut thread_work = tw.lock().unwrap();
-    if let Some(next_thread_work) = increase_thread_work(thread_work.clone()) {
-        *thread_work = add_working_combination(next_thread_work);
-        Some(thread_work.clone())
-    } else {
-        *thread_work = done_combination(thread_work.clone());
-        None
     }
 }
 
@@ -274,7 +253,7 @@ fn run_thread_work(
     sender: Sender<()>,
     thread_number: usize,
     thread_count: usize,
-    tw: Arc<Mutex<ThreadWork>>,
+    tw: ThreadWork,
     clues: Vec<String>,
     strings: Vec<String>,
     candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
@@ -286,11 +265,15 @@ fn run_thread_work(
     let mut step = 0;
 
     loop {
-        if let Some(new_tw) = lock_and_increase(tw.clone()) {
+        if let Some(new_tw) = increase_thread_work(tw.clone()) {
+            step = step + 1;
+            if step % thread_count != thread_number {
+                continue;
+            }
             if cache::already_done(done_cache.clone(), new_tw.current_combination.clone()) {
                 continue;
             }
-            step = step + 1;
+
             console_sender
                 .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
                     thread_number,
@@ -299,6 +282,11 @@ fn run_thread_work(
                     current_combination: new_tw.current_head.clone(),
                 }))
                 .unwrap();
+
+            combination_status_sender
+                .send(ThreadStatus::Start(new_tw.current_combination.clone()))
+                .unwrap();
+
             let first = apply_decrypt(new_tw.current_head.clone(), strings.clone());
             if first.len() > 0 {
                 let acc =
@@ -344,7 +332,6 @@ mod tests {
                     key_depth: 2
                 }),],
                 remaining_combinations: vec![],
-                working_combinations: BTreeMap::new(),
                 strings: vec![String::from("ENCRYPTED")]
             }),
             super::increase_thread_work(ThreadWork {
@@ -365,7 +352,6 @@ mod tests {
                     }),
                     BruteForceCryptor::Join
                 ]],
-                working_combinations: super::BTreeMap::new(),
                 strings: vec![String::from("ENCRYPTED")]
             })
         );
@@ -389,7 +375,6 @@ mod tests {
                 }),
                 current_tail: vec![BruteForceCryptor::Join],
                 remaining_combinations: vec![],
-                working_combinations: vec![].into_iter().collect(),
                 strings: vec![String::from("ENCRYPTED")]
             }),
             super::start_thread_work(
@@ -409,49 +394,28 @@ mod tests {
     #[test]
     fn add_working_combination() {
         assert_eq!(
-            ThreadWork {
-                clues: vec![String::from("hello")],
+            ThreadsStatuses {
                 current_combination: DoneLine {
                     args: Some(String::from("Vigenere:1:2")),
                     combinations: String::from("Join Vigenere")
                 },
-                current_head: BruteForceState::Vigenere(VigenereBruteForceState {
-                    args: vigenere::init(),
-                    brute_force_args: BruteForceVigenereArgs {
-                        alphabet_depth: 1,
-                        key_depth: 2
-                    }
-                }),
-                current_tail: vec![BruteForceCryptor::Join],
-                remaining_combinations: vec![],
+
                 working_combinations: vec![(
                     DoneLine {
                         args: Some(String::from("Vigenere:1:2")),
                         combinations: String::from("Join Vigenere")
                     },
-                    (false, vec![(), ()])
+                    (WorkStatus::Doing, vec![(), ()])
                 )]
                 .into_iter()
                 .collect(),
-                strings: vec![String::from("ENCRYPTED")]
             },
-            super::add_working_combination(super::add_working_combination(ThreadWork {
-                clues: vec![String::from("hello")],
+            super::add_working_combination(super::add_working_combination(ThreadsStatuses {
                 current_combination: DoneLine {
                     args: Some(String::from("Vigenere:1:2")),
                     combinations: String::from("Join Vigenere")
                 },
-                current_head: BruteForceState::Vigenere(VigenereBruteForceState {
-                    args: vigenere::init(),
-                    brute_force_args: BruteForceVigenereArgs {
-                        alphabet_depth: 1,
-                        key_depth: 2
-                    }
-                }),
-                current_tail: vec![BruteForceCryptor::Join],
-                remaining_combinations: vec![],
                 working_combinations: vec![].into_iter().collect(),
-                strings: vec![String::from("ENCRYPTED")]
             }))
         )
     }
