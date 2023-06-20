@@ -26,6 +26,7 @@ pub fn brute_force_unique_combination(
     threads_count: u8,
     cache_name: String,
 ) {
+    // todo join that in next function
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()

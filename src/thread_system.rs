@@ -12,6 +12,7 @@ use crate::models::VigenereBruteForceState;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::sync::mpsc::channel;
+use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -33,58 +34,77 @@ pub fn start(
         start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
     let am_tw = Arc::new(Mutex::new(thread_work));
     let (thread_status_sender, thread_status_receiver) = channel();
+    let (thread_combination_status_sender, thread_combination_status_receiver) = channel();
     let done_cache = cache::get_done_cache(cache_args.clone());
     for i in 0..thread_count {
         let local_tw = am_tw.clone();
         let local_sender = thread_status_sender.clone();
-        let local_cache_args = cache_args.clone();
         let local_clues = clues.clone();
         let local_strings = strings.clone();
         let local_candidates_sender = candidates_sender.clone();
         let local_console_sender = console_sender.clone();
         let local_done_cache = done_cache.clone();
+        let local_combination_status_sender = thread_combination_status_sender.clone();
         thread::spawn(move || {
             run_thread_work(
                 local_sender,
                 i,
+                thread_count,
                 local_tw,
-                local_cache_args,
                 local_clues,
                 local_strings,
                 local_candidates_sender,
                 local_console_sender,
                 total,
                 local_done_cache,
+                local_combination_status_sender,
             )
         });
     }
+
+    thread::spawn(move || {
+        thread_combination_status_function(thread_combination_status_receiver, am_tw, cache_args);
+    });
 
     for _ in 0..thread_count {
         thread_status_receiver.recv().unwrap();
     }
 }
 
-fn thread_combination_over(
-    done_line: DoneLine,
+fn thread_combination_status_function(
+    r: Receiver<ThreadStatus>,
     tw: Arc<Mutex<ThreadWork>>,
     cache_args: models::CacheArgs,
 ) {
-    let mut thread_work = tw.lock().unwrap();
-    let (done, mut vec) = thread_work
-        .working_combinations
-        .get(&done_line)
-        .unwrap()
-        .clone();
-    vec.pop();
-    if vec.len() == 0 && done {
-        println!("in");
-        cache::push_done(done_line.clone(), cache_args);
-        thread_work.working_combinations.remove(&done_line);
-    } else {
-        thread_work
-            .working_combinations
-            .insert(done_line, (done, vec));
-    }
+    r.iter().for_each(|status| {
+        thread_combination_status(status, tw.clone(), cache_args.clone());
+    });
+}
+
+enum ThreadStatus {
+    Start(DoneLine),
+    Done(DoneLine),
+}
+
+fn thread_combination_status(
+    done_line: ThreadStatus,
+    tw: Arc<Mutex<ThreadWork>>,
+    cache_args: models::CacheArgs,
+) {
+    match done_line {
+        ThreadStatus::Start(line) => {}
+        ThreadStatus::Done(line) => {
+            let mut thread_work = tw.lock().unwrap();
+            let (done, mut vec) = thread_work.working_combinations.get(&line).unwrap().clone();
+            vec.pop();
+            if vec.len() == 0 && done {
+                cache::push_done(line.clone(), cache_args);
+                thread_work.working_combinations.remove(&line);
+            } else {
+                thread_work.working_combinations.insert(line, (done, vec));
+            }
+        }
+    };
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -253,14 +273,15 @@ fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> BruteForceCryp
 fn run_thread_work(
     sender: Sender<()>,
     thread_number: usize,
+    thread_count: usize,
     tw: Arc<Mutex<ThreadWork>>,
-    cache_args: models::CacheArgs,
     clues: Vec<String>,
     strings: Vec<String>,
     candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
     console_sender: Sender<PrintableMessage>,
     total: usize,
     done_cache: BTreeSet<models::DoneLine>,
+    combination_status_sender: Sender<ThreadStatus>,
 ) {
     let mut step = 0;
 
@@ -293,7 +314,9 @@ fn run_thread_work(
                     candidates_sender.clone(),
                 );
             }
-            thread_combination_over(new_tw.current_combination, tw.clone(), cache_args.clone());
+            combination_status_sender
+                .send(ThreadStatus::Done(new_tw.current_combination))
+                .unwrap();
         } else {
             break;
         }
