@@ -111,7 +111,18 @@ fn thread_combination_status(
         (Some(value), ThreadStatus::Start(line)) => {
             *state = Some(add_working_combination(value.clone()));
         }
-        (Some(value), ThreadStatus::Done(line)) => *state = Some(done_combination(value.clone())),
+        (Some(value), ThreadStatus::Done(line)) => {
+            let (done, mut vec) = value.working_combinations.get(&line).unwrap().clone();
+            vec.pop();
+            if vec.len() == 0 && done == WorkStatus::Done {
+                cache::push_done(line.clone(), cache_args);
+                value.working_combinations.remove(&line);
+            } else {
+                value.working_combinations.insert(line, (done, vec));
+            }
+
+            //  *state = Some(done_combination(value.clone()));
+        }
         _ => panic!("This should not happen."),
     };
 }
@@ -128,6 +139,7 @@ pub struct ThreadWork {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct ThreadsStatuses {
+    // pub workload: BTreeMap<usize,(usize, DoneLine)>
     pub current_combination: DoneLine,
     pub working_combinations: BTreeMap<DoneLine, (WorkStatus, Vec<()>)>,
 }
