@@ -35,7 +35,7 @@ criterion_group! {
   targets =
     //fuzz_bench,
      enigma_bench,
-    // fuzz_next_bench
+     fuzz_next_bench,
 }
 
 criterion_main!(benches);
