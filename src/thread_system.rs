@@ -32,7 +32,9 @@ pub fn start(
     let total = combinations.len();
     let thread_work =
         start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
-    let am_tw = Arc::new(Mutex::new(None));
+    let am_tw = Arc::new(Mutex::new(ThreadsStatuses {
+        workload: BTreeMap::new(),
+    }));
     let (thread_status_sender, thread_status_receiver) = channel();
     let (thread_combination_status_sender, thread_combination_status_receiver) = channel();
     let done_cache = cache::get_done_cache(cache_args.clone());
@@ -73,7 +75,7 @@ pub fn start(
 
 fn thread_combination_status_function(
     r: Receiver<ThreadStatus>,
-    tw: Arc<Mutex<Option<ThreadsStatuses>>>,
+    tw: Arc<Mutex<ThreadsStatuses>>,
     cache_args: models::CacheArgs,
 ) {
     r.iter().for_each(|status| {
@@ -82,8 +84,8 @@ fn thread_combination_status_function(
 }
 
 enum ThreadStatus {
-    StartFromTo(DoneLine, DoneLine, usize, usize),
-    Done(DoneLine, usize, usize),
+    Doing(usize, DoneLine),
+    Done(usize, DoneLine),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -92,46 +94,25 @@ pub enum WorkStatus {
     Done,
 }
 
-fn apply_done_state(
+fn apply_state(
     thread_status: ThreadStatus,
     state: ThreadsStatuses,
 ) -> (ThreadsStatuses, Option<DoneLine>) {
+    match thread_status {
+        ThreadStatus::Doing(thread_number, done_line) => todo!(),
+        ThreadStatus::Done(thread_number, done_line) => todo!(),
+    }
 }
 
 fn thread_combination_status(
-    done_line: ThreadStatus,
-    tw: Arc<Mutex<Option<ThreadsStatuses>>>,
+    thread_status: ThreadStatus,
+    tw: Arc<Mutex<ThreadsStatuses>>,
     cache_args: models::CacheArgs,
 ) {
     let mut state = tw.lock().unwrap();
 
-    match (&mut *state, done_line) {
-        (None, ThreadStatus::Start(line)) => {
-            *state = Some(ThreadsStatuses {
-                current_combination: line.clone(),
-                working_combinations: vec![(line, (WorkStatus::Doing, vec![()]))]
-                    .into_iter()
-                    .collect(),
-            })
-        }
-        (Some(value), ThreadStatus::Start(line)) => {
-            *state = Some(add_working_combination(value.clone()));
-        }
-        (Some(value), ThreadStatus::Done(line)) => {
-            let (done, mut vec) = value.working_combinations.get(&line).unwrap().clone();
-            vec.pop();
-            if vec.len() == 0 && done == WorkStatus::Done {
-                cache::push_done(line.clone(), cache_args);
-                value.working_combinations.remove(&line);
-            } else {
-                value.working_combinations.insert(line, (done, vec));
-            }
-
-            //  *state = Some(done_combination(value.clone()));
-        }
-        (Some(value), ThreadStatus::ChangeFromTo(a, b, c)) => todo!(),
-        _ => panic!("This should not happen."),
-    };
+    let (result, done_to_push) = apply_state(thread_status, state.clone());
+    *state = result;
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -146,10 +127,7 @@ pub struct ThreadWork {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct ThreadsStatuses {
-    // pub steps: BTreeMap<DoneLine,Option<usize>>
-    // pub workload: BTreeMap<usize,usize>
-    pub current_combination: DoneLine,
-    pub working_combinations: BTreeMap<DoneLine, (WorkStatus, Vec<()>)>,
+    pub workload: BTreeMap<usize, (Option<DoneLine>, Vec<DoneLine>)>,
 }
 
 fn start_thread_work(
@@ -211,42 +189,42 @@ fn increase_thread_work(
         })
 }
 
-fn add_working_combination(
-    ThreadsStatuses {
-        current_combination,
-        working_combinations,
-    }: ThreadsStatuses,
-) -> ThreadsStatuses {
-    let (done, mut vec) = working_combinations
-        .get(&current_combination)
-        .map(|x| x.clone())
-        .unwrap_or((WorkStatus::Doing, vec![]));
-    vec.push(());
-    let mut new_working_combinations = working_combinations.clone();
-    new_working_combinations.insert(current_combination.clone(), (done, vec));
-    ThreadsStatuses {
-        current_combination,
-        working_combinations: new_working_combinations,
-    }
-}
+// fn add_working_combination(
+//     ThreadsStatuses {
+//         current_combination,
+//         working_combinations,
+//     }: ThreadsStatuses,
+// ) -> ThreadsStatuses {
+//     let (done, mut vec) = working_combinations
+//         .get(&current_combination)
+//         .map(|x| x.clone())
+//         .unwrap_or((WorkStatus::Doing, vec![]));
+//     vec.push(());
+//     let mut new_working_combinations = working_combinations.clone();
+//     new_working_combinations.insert(current_combination.clone(), (done, vec));
+//     ThreadsStatuses {
+//         current_combination,
+//         working_combinations: new_working_combinations,
+//     }
+// }
 
-fn done_combination(
-    ThreadsStatuses {
-        current_combination,
-        working_combinations,
-    }: ThreadsStatuses,
-) -> ThreadsStatuses {
-    let (_, vec) = working_combinations
-        .get(&current_combination)
-        .map(|x| x.clone())
-        .unwrap_or((WorkStatus::Doing, vec![]));
-    let mut new_working_combinations = working_combinations.clone();
-    new_working_combinations.insert(current_combination.clone(), (WorkStatus::Done, vec));
-    ThreadsStatuses {
-        current_combination,
-        working_combinations: new_working_combinations,
-    }
-}
+// fn done_combination(
+//     ThreadsStatuses {
+//         current_combination,
+//         working_combinations,
+//     }: ThreadsStatuses,
+// ) -> ThreadsStatuses {
+//     let (_, vec) = working_combinations
+//         .get(&current_combination)
+//         .map(|x| x.clone())
+//         .unwrap_or((WorkStatus::Doing, vec![]));
+//     let mut new_working_combinations = working_combinations.clone();
+//     new_working_combinations.insert(current_combination.clone(), (WorkStatus::Done, vec));
+//     ThreadsStatuses {
+//         current_combination,
+//         working_combinations: new_working_combinations,
+//     }
+// }
 
 fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> BruteForceCryptor {
     match brute_force_state {
@@ -302,20 +280,20 @@ fn run_thread_work(
                     current_combination: new_tw.current_head.clone(),
                 }))
                 .unwrap();
-
-            combination_status_sender
-                .send(
-                    if new_tw.current_combination == tw.clone().current_combination {
-                        ThreadStatus::Start(new_tw.current_combination.clone())
-                    } else {
-                        ThreadStatus::ChangeFromTo(
-                            tw.current_combination.clone(),
-                            new_tw.current_combination.clone(),
-                            step,
-                        )
-                    },
-                )
-                .unwrap();
+            if new_tw.current_combination != tw.clone().current_combination {
+                combination_status_sender
+                    .send(ThreadStatus::Done(
+                        thread_number,
+                        tw.current_combination.clone(),
+                    ))
+                    .unwrap();
+                combination_status_sender
+                    .send(ThreadStatus::Doing(
+                        thread_number,
+                        new_tw.current_combination.clone(),
+                    ))
+                    .unwrap();
+            }
 
             let first = apply_decrypt(new_tw.current_head.clone(), strings.clone());
             if first.len() > 0 {
@@ -332,10 +310,13 @@ fn run_thread_work(
                     candidates_sender.clone(),
                 );
             }
-            combination_status_sender
-                .send(ThreadStatus::Done(new_tw.current_combination))
-                .unwrap();
         } else {
+            combination_status_sender
+                .send(ThreadStatus::Done(
+                    thread_number,
+                    tw.current_combination.clone(),
+                ))
+                .unwrap();
             break;
         }
     }
@@ -421,35 +402,67 @@ mod tests {
         );
     }
 
-    #[test]
-    fn add_working_combination() {
-        assert_eq!(
-            ThreadsStatuses {
-                current_combination: DoneLine {
-                    args: Some(String::from("Vigenere:1:2")),
-                    combinations: String::from("Join Vigenere")
-                },
+    // #[test]
+    // fn add_working_combination() {
+    //     assert_eq!(
+    //         ThreadsStatuses {
+    //             current_combination: DoneLine {
+    //                 args: Some(String::from("Vigenere:1:2")),
+    //                 combinations: String::from("Join Vigenere")
+    //             },
 
-                working_combinations: vec![(
+    //             working_combinations: vec![(
+    //                 DoneLine {
+    //                     args: Some(String::from("Vigenere:1:2")),
+    //                     combinations: String::from("Join Vigenere")
+    //                 },
+    //                 (WorkStatus::Doing, vec![(), ()])
+    //             )]
+    //             .into_iter()
+    //             .collect(),
+    //         },
+    //         super::add_working_combination(super::add_working_combination(ThreadsStatuses {
+    //             current_combination: DoneLine {
+    //                 args: Some(String::from("Vigenere:1:2")),
+    //                 combinations: String::from("Join Vigenere")
+    //             },
+    //             working_combinations: vec![].into_iter().collect(),
+    //         }))
+    //     )
+    // }
+
+    #[test]
+    fn combination_is_over_works() {
+        assert_eq!(
+            (
+                ThreadsStatuses {
+                    workload: vec![(
+                        1,
+                        (
+                            Some(DoneLine {
+                                args: None,
+                                combinations: String::from("Join")
+                            }),
+                            vec![]
+                        ),
+                    )]
+                    .into_iter()
+                    .collect()
+                },
+                None
+            ),
+            apply_state(
+                ThreadStatus::Doing(
+                    1,
                     DoneLine {
                         args: Some(String::from("Vigenere:1:2")),
-                        combinations: String::from("Join Vigenere")
+                        combinations: String::from("Vigenere")
                     },
-                    (WorkStatus::Doing, vec![(), ()])
-                )]
-                .into_iter()
-                .collect(),
-            },
-            super::add_working_combination(super::add_working_combination(ThreadsStatuses {
-                current_combination: DoneLine {
-                    args: Some(String::from("Vigenere:1:2")),
-                    combinations: String::from("Join Vigenere")
-                },
-                working_combinations: vec![].into_iter().collect(),
-            }))
-        )
+                ),
+                ThreadsStatuses {
+                    workload: BTreeMap::new()
+                }
+            )
+        );
     }
-
-    #[test]
-    fn combination_is_over_works() {}
 }
