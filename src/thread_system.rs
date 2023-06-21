@@ -146,7 +146,7 @@ pub struct ThreadWork {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct ThreadsStatuses {
-    // pub steps: BTreeMap<DoneLine,usize>
+    // pub steps: BTreeMap<DoneLine,Option<usize>>
     // pub workload: BTreeMap<usize,usize>
     pub current_combination: DoneLine,
     pub working_combinations: BTreeMap<DoneLine, (WorkStatus, Vec<()>)>,
