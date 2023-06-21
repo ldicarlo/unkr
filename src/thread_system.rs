@@ -82,15 +82,20 @@ fn thread_combination_status_function(
 }
 
 enum ThreadStatus {
-    Start(DoneLine, usize),
-    ChangeFromTo(DoneLine, DoneLine, usize),
-    Done(DoneLine, usize),
+    StartFromTo(DoneLine, DoneLine, usize, usize),
+    Done(DoneLine, usize, usize),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub enum WorkStatus {
     Doing,
     Done,
+}
+
+fn apply_done_state(
+    thread_status: ThreadStatus,
+    state: ThreadsStatuses,
+) -> (ThreadsStatuses, Option<DoneLine>) {
 }
 
 fn thread_combination_status(
@@ -141,7 +146,8 @@ pub struct ThreadWork {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct ThreadsStatuses {
-    // pub workload: BTreeMap<usize,(usize, DoneLine)>
+    // pub steps: BTreeMap<DoneLine,usize>
+    // pub workload: BTreeMap<usize,usize>
     pub current_combination: DoneLine,
     pub working_combinations: BTreeMap<DoneLine, (WorkStatus, Vec<()>)>,
 }
