@@ -98,9 +98,42 @@ fn apply_state(
     thread_status: ThreadStatus,
     state: ThreadsStatuses,
 ) -> (ThreadsStatuses, Option<DoneLine>) {
+    let mut mutable_state = state.clone();
     match thread_status {
-        ThreadStatus::Doing(thread_number, done_line) => todo!(),
-        ThreadStatus::Done(thread_number, done_line) => todo!(),
+        ThreadStatus::Doing(thread_number, done_line) => {
+            let current = state
+                .workload
+                .get(&thread_number)
+                .map(|(_, b)| (Some(done_line.clone()), b.clone()))
+                .unwrap_or((Some(done_line), vec![]));
+            mutable_state.workload.insert(thread_number, current);
+            (mutable_state, None)
+        }
+        ThreadStatus::Done(thread_number, done_line) => {
+            let current = state
+                .workload
+                .get(&thread_number)
+                .map(|(_, b)| {
+                    let mut mutable_vec = b.clone();
+                    mutable_vec.push(done_line.clone());
+
+                    (None, mutable_vec)
+                })
+                .unwrap_or((None, vec![done_line.clone()]));
+            mutable_state.workload.insert(thread_number, current);
+
+            let done = if mutable_state
+                .workload
+                .iter()
+                .all(|(_, (_, v))| v.contains(&done_line))
+            {
+                Some(done_line.clone())
+            } else {
+                None
+            };
+
+            (mutable_state, done)
+        }
     }
 }
 
@@ -112,6 +145,11 @@ fn thread_combination_status(
     let mut state = tw.lock().unwrap();
 
     let (result, done_to_push) = apply_state(thread_status, state.clone());
+
+    if let Some(done) = done_to_push {
+        cache::push_done(done, cache_args);
+    }
+
     *state = result;
 }
 
@@ -251,7 +289,7 @@ fn run_thread_work(
     sender: Sender<()>,
     thread_number: usize,
     thread_count: usize,
-    tw: ThreadWork,
+    mut tw: ThreadWork,
     clues: Vec<String>,
     strings: Vec<String>,
     candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
@@ -264,7 +302,9 @@ fn run_thread_work(
 
     loop {
         if let Some(new_tw) = increase_thread_work(tw.clone()) {
+            tw = new_tw.clone();
             step = step + 1;
+
             if step % thread_count != thread_number {
                 continue;
             }
@@ -280,6 +320,7 @@ fn run_thread_work(
                     current_combination: new_tw.current_head.clone(),
                 }))
                 .unwrap();
+
             if new_tw.current_combination != tw.clone().current_combination {
                 combination_status_sender
                     .send(ThreadStatus::Done(
@@ -432,7 +473,7 @@ mod tests {
     // }
 
     #[test]
-    fn combination_is_over_works() {
+    fn apply_state_works() {
         assert_eq!(
             (
                 ThreadsStatuses {
@@ -455,8 +496,46 @@ mod tests {
                 ThreadStatus::Doing(
                     1,
                     DoneLine {
-                        args: Some(String::from("Vigenere:1:2")),
-                        combinations: String::from("Vigenere")
+                        args: None,
+                        combinations: String::from("Join")
+                    },
+                ),
+                ThreadsStatuses {
+                    workload: BTreeMap::new()
+                }
+            )
+        );
+    }
+
+    #[test]
+    fn apply_state_works_2() {
+        assert_eq!(
+            (
+                ThreadsStatuses {
+                    workload: vec![(
+                        1,
+                        (
+                            None,
+                            vec![DoneLine {
+                                args: None,
+                                combinations: String::from("Join")
+                            }]
+                        ),
+                    )]
+                    .into_iter()
+                    .collect()
+                },
+                Some(DoneLine {
+                    args: None,
+                    combinations: String::from("Join")
+                })
+            ),
+            apply_state(
+                ThreadStatus::Done(
+                    1,
+                    DoneLine {
+                        args: None,
+                        combinations: String::from("Join")
                     },
                 ),
                 ThreadsStatuses {
