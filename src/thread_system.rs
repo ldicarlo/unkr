@@ -82,8 +82,9 @@ fn thread_combination_status_function(
 }
 
 enum ThreadStatus {
-    Start(DoneLine),
-    Done(DoneLine),
+    Start(DoneLine, usize),
+    ChangeFromTo(DoneLine, DoneLine, usize),
+    Done(DoneLine, usize),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -123,6 +124,7 @@ fn thread_combination_status(
 
             //  *state = Some(done_combination(value.clone()));
         }
+        (Some(value), ThreadStatus::ChangeFromTo(a, b, c)) => todo!(),
         _ => panic!("This should not happen."),
     };
 }
@@ -296,7 +298,17 @@ fn run_thread_work(
                 .unwrap();
 
             combination_status_sender
-                .send(ThreadStatus::Start(new_tw.current_combination.clone()))
+                .send(
+                    if new_tw.current_combination == tw.clone().current_combination {
+                        ThreadStatus::Start(new_tw.current_combination.clone())
+                    } else {
+                        ThreadStatus::ChangeFromTo(
+                            tw.current_combination.clone(),
+                            new_tw.current_combination.clone(),
+                            step,
+                        )
+                    },
+                )
                 .unwrap();
 
             let first = apply_decrypt(new_tw.current_head.clone(), strings.clone());
@@ -431,4 +443,7 @@ mod tests {
             }))
         )
     }
+
+    #[test]
+    fn combination_is_over_works() {}
 }
