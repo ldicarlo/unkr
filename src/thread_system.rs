@@ -6,6 +6,7 @@ use crate::console::ThreadStatusPayload;
 use crate::models;
 use crate::models::BruteForceCryptor;
 use crate::models::BruteForceState;
+use crate::models::Cryptor;
 use crate::models::DoneLine;
 use crate::models::PermuteBruteForceState;
 use crate::models::VigenereBruteForceState;
@@ -26,7 +27,7 @@ pub fn start(
     clues: Vec<String>,
     strings: Vec<String>,
     cache_args: models::CacheArgs,
-    candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
+    candidates_sender: Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
     console_sender: Sender<PrintableMessage>,
 ) {
     let total = combinations.len();
@@ -292,7 +293,7 @@ fn run_thread_work(
     mut tw: ThreadWork,
     clues: Vec<String>,
     strings: Vec<String>,
-    candidates_sender: Sender<(Vec<String>, Vec<String>, String)>,
+    candidates_sender: Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
     console_sender: Sender<PrintableMessage>,
     total: usize,
     done_cache: BTreeSet<models::DoneLine>,

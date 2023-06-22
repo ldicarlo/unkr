@@ -1,6 +1,9 @@
 use crate::{
     atbash, caesar, cut, enigma, join,
-    models::{BruteForceCryptor, BruteForceState, PermuteBruteForceState, VigenereBruteForceState},
+    models::{
+        BruteForceCryptor, BruteForceState, Cryptor, PermuteBruteForceState,
+        VigenereBruteForceState,
+    },
     permute, reverse, swap, transpose, vigenere,
 };
 
@@ -86,35 +89,32 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
     }
 }
 
-pub fn get_name(bfs: &BruteForceCryptor) -> String {
+pub fn get_cryptor(bfs: &BruteForceState) -> Cryptor {
     match bfs {
-        // send args with it.
-        BruteForceCryptor::Vigenere(_) => String::from("Vigenere"),
-        BruteForceCryptor::Cut => String::from("Cut"),
-        BruteForceCryptor::Caesar => String::from("Caesar"),
-        BruteForceCryptor::Transpose => String::from("Transpose"),
-        BruteForceCryptor::AtBash => String::from("AtBash"),
-        BruteForceCryptor::Reverse => String::from("Reverse"),
-        BruteForceCryptor::Swap => String::from("Swap"),
-        BruteForceCryptor::Join => String::from("Join"),
-        BruteForceCryptor::Permute(_) => String::from("Permute"),
-        BruteForceCryptor::Enigma => String::from("Enigma"),
+        BruteForceState::Vigenere(_) => todo!(),
+        BruteForceState::Cut(_) => todo!(),
+        BruteForceState::Caesar(_) => todo!(),
+        BruteForceState::Transpose(_) => todo!(),
+        BruteForceState::AtBash => todo!(),
+        BruteForceState::Reverse => todo!(),
+        BruteForceState::Swap(_) => todo!(),
+        BruteForceState::Join => todo!(),
+        BruteForceState::Permute(_) => todo!(),
+        BruteForceState::Enigma(_) => todo!(),
     }
 }
 
 pub fn loop_decrypt(
-    acc: Option<String>,
+    acc: Vec<Cryptor>,
     mut to_use: Vec<BruteForceCryptor>,
     strings: Vec<String>,
     clues: Vec<String>,
-    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, String)>,
+    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
 ) {
     if let Some(current) = to_use.pop() {
         let mut bfs = start_state(current.clone());
-        let current_acc = acc
-            .clone()
-            .map(|existing| existing + " " + &get_name(&current))
-            .unwrap_or(get_name(&current));
+        let mut current_acc = acc.clone();
+        current_acc.push(get_cryptor(&bfs));
         loop {
             let new_str = apply_decrypt(bfs.clone(), strings.clone());
             if new_str.len() > 0 {

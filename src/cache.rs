@@ -123,7 +123,7 @@ fn hash(str: String) -> String {
 }
 
 fn hit_to_string(hit_line: models::HitLine) -> String {
-    format!("{};{}", hit_line.result, hit_line.args)
+    format!("{};{:?}", hit_line.result, hit_line.args)
 }
 
 pub fn to_done(combination: Vec<models::BruteForceCryptor>) -> DoneLine {

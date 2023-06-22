@@ -121,7 +121,7 @@ pub struct CacheArgs {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct HitLine {
-    pub args: String,
+    pub args: Vec<Cryptor>,
     pub result: String,
 }
 
