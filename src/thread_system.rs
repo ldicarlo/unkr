@@ -1,6 +1,8 @@
 use crate::brute_force_state;
 use crate::brute_force_state::apply_decrypt;
 use crate::cache;
+use crate::candidates;
+use crate::console;
 use crate::console::PrintableMessage;
 use crate::console::ThreadStatusPayload;
 use crate::models;
@@ -22,14 +24,31 @@ use std::thread;
 // https://doc.rust-lang.org/std/collections/struct.VecDeque.html#method.pop_front
 
 pub fn start(
+    str: String,
     thread_count: usize,
     combinations: Vec<Vec<BruteForceCryptor>>,
     clues: Vec<String>,
-    strings: Vec<String>,
-    cache_args: models::CacheArgs,
-    candidates_sender: Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
-    console_sender: Sender<PrintableMessage>,
+    cache_name: String,
 ) {
+    let strings = vec![str.clone()];
+    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
+
+    let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
+    let (candidates_sender, candidates_receiver) = channel();
+    let (console_sender, console_receiver) = channel();
+    let local_cache_args = cache_args.clone();
+    thread::spawn(move || console::thread_consume_messages(console_receiver, thread_count));
+
+    let local_console_sender = console_sender.clone();
+    let local_results_accumulator = results_accumulator.clone();
+    thread::spawn(move || {
+        candidates::candidate_receiver(
+            candidates_receiver,
+            local_cache_args,
+            local_results_accumulator.clone(),
+            local_console_sender,
+        )
+    });
     let total = combinations.len();
     let thread_work =
         start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
@@ -265,24 +284,45 @@ fn increase_thread_work(
 //     }
 // }
 
-fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> BruteForceCryptor {
+// fn get_bruteforce_cryptor_from_state(brute_force_state: &BruteForceState) -> BruteForceCryptor {
+//     match brute_force_state {
+//         BruteForceState::Vigenere(VigenereBruteForceState {
+//             brute_force_args,
+//             args: _,
+//         }) => BruteForceCryptor::Vigenere(*brute_force_args),
+//         BruteForceState::Cut(_) => BruteForceCryptor::Cut,
+//         BruteForceState::Caesar(_) => BruteForceCryptor::Caesar,
+//         BruteForceState::Transpose(_) => BruteForceCryptor::Transpose,
+//         BruteForceState::AtBash => BruteForceCryptor::AtBash,
+//         BruteForceState::Reverse => BruteForceCryptor::Reverse,
+//         BruteForceState::Swap(_) => BruteForceCryptor::Swap,
+//         BruteForceState::Join => BruteForceCryptor::Join,
+//         BruteForceState::Permute(PermuteBruteForceState {
+//             brute_force_args,
+//             args: _,
+//         }) => BruteForceCryptor::Permute(brute_force_args.clone()),
+//         BruteForceState::Enigma(_) => BruteForceCryptor::Enigma,
+//     }
+// }
+
+fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> Cryptor {
     match brute_force_state {
         BruteForceState::Vigenere(VigenereBruteForceState {
-            brute_force_args,
-            args: _,
-        }) => BruteForceCryptor::Vigenere(*brute_force_args),
-        BruteForceState::Cut(_) => BruteForceCryptor::Cut,
-        BruteForceState::Caesar(_) => BruteForceCryptor::Caesar,
-        BruteForceState::Transpose(_) => BruteForceCryptor::Transpose,
-        BruteForceState::AtBash => BruteForceCryptor::AtBash,
-        BruteForceState::Reverse => BruteForceCryptor::Reverse,
-        BruteForceState::Swap(_) => BruteForceCryptor::Swap,
-        BruteForceState::Join => BruteForceCryptor::Join,
+            brute_force_args: _,
+            args,
+        }) => Cryptor::Vigenere(args.clone()),
+        BruteForceState::Cut(args) => Cryptor::Cut(args.clone()),
+        BruteForceState::Caesar(args) => Cryptor::Caesar(args.clone()),
+        BruteForceState::Transpose(args) => Cryptor::Transpose(args.clone()),
+        BruteForceState::AtBash => Cryptor::AtBash,
+        BruteForceState::Reverse => Cryptor::Reverse,
+        BruteForceState::Swap(args) => Cryptor::Swap(args.clone()),
+        BruteForceState::Join => Cryptor::Join,
         BruteForceState::Permute(PermuteBruteForceState {
-            brute_force_args,
-            args: _,
-        }) => BruteForceCryptor::Permute(brute_force_args.clone()),
-        BruteForceState::Enigma(_) => BruteForceCryptor::Enigma,
+            brute_force_args: _,
+            args,
+        }) => Cryptor::Permute(args.clone()),
+        BruteForceState::Enigma(args) => Cryptor::Enigma(args.clone()),
     }
 }
 
@@ -339,13 +379,12 @@ fn run_thread_work(
 
             let first = apply_decrypt(new_tw.current_head.clone(), strings.clone());
             if first.len() > 0 {
-                let acc =
-                    brute_force_state::get_name(&get_cryptor_from_state(&new_tw.current_head));
+                let acc = vec![get_cryptor_from_state(&new_tw.current_head)];
                 candidates_sender
                     .send((first.clone(), clues.clone(), acc.clone()))
                     .unwrap();
                 brute_force_state::loop_decrypt(
-                    Some(acc),
+                    acc,
                     new_tw.current_tail.clone(),
                     first,
                     clues.clone(),

@@ -1,8 +1,5 @@
 use super::combinator;
 use crate::atbash;
-use crate::cache;
-use crate::candidates;
-use crate::console;
 use crate::enigma;
 use crate::join;
 use crate::models;
@@ -12,11 +9,6 @@ use crate::permute;
 use crate::reverse;
 use crate::swap;
 use crate::thread_system;
-use std::collections::BTreeSet;
-use std::sync::mpsc::channel;
-use std::sync::Arc;
-use std::sync::Mutex;
-use std::thread;
 use std::vec;
 
 pub fn brute_force_unique_combination(
@@ -26,41 +18,12 @@ pub fn brute_force_unique_combination(
     threads_count: u8,
     cache_name: String,
 ) {
-    // todo join that in next function
-    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
-    let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
-    let (candidates_sender, candidates_receiver) = channel();
-    let (console_sender, console_receiver) = channel();
-    let local_cache_args = cache_args.clone();
-    thread::spawn(move || {
-        console::thread_consume_messages(console_receiver, threads_count as usize)
-    });
 
-    let local_console_sender = console_sender.clone();
-    let local_results_accumulator = results_accumulator.clone();
-    thread::spawn(move || {
-        candidates::candidate_receiver(
-            candidates_receiver,
-            local_cache_args,
-            local_results_accumulator.clone(),
-            local_console_sender,
-        )
-    });
-    thread_system::start(
-        threads_count as usize,
-        vec![decr],
-        clues,
-        vec![str],
-        cache_args,
-        candidates_sender,
-        console_sender,
-    );
-
-    eprintln!("Result: {:?}", results_accumulator.lock().unwrap());
+    thread_system::start(str, threads_count as usize, vec![decr], clues, cache_name);
 }
 
 pub fn brute_force_decrypt(
@@ -71,29 +34,10 @@ pub fn brute_force_decrypt(
     threads_count: u8,
     cache_name: String,
 ) {
-    let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
     let decr: Vec<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
-    let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
-    let (candidates_sender, candidates_receiver) = channel();
-    let (console_sender, console_receiver) = channel();
-    let local_cache_args = cache_args.clone();
-    thread::spawn(move || {
-        console::thread_consume_messages(console_receiver, threads_count as usize)
-    });
-
-    let local_console_sender = console_sender.clone();
-    let local_results_accumulator = results_accumulator.clone();
-    thread::spawn(move || {
-        candidates::candidate_receiver(
-            candidates_receiver,
-            local_cache_args,
-            local_results_accumulator.clone(),
-            local_console_sender,
-        )
-    });
 
     let combinations: Vec<Vec<BruteForceCryptor>> =
         combinator::combine_elements(decr.len().try_into().unwrap(), steps)
@@ -112,16 +56,12 @@ pub fn brute_force_decrypt(
     }
 
     thread_system::start(
+        str,
         threads_count as usize,
         filtered_combinations,
         clues,
-        vec![str],
-        cache_args,
-        candidates_sender,
-        console_sender,
+        cache_name,
     );
-
-    eprintln!("Result: {:?}", results_accumulator.lock().unwrap());
 }
 
 pub fn skip_combination(combination: Vec<BruteForceCryptor>) -> bool {
