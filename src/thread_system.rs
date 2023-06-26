@@ -247,64 +247,6 @@ fn increase_thread_work(
         })
 }
 
-// fn add_working_combination(
-//     ThreadsStatuses {
-//         current_combination,
-//         working_combinations,
-//     }: ThreadsStatuses,
-// ) -> ThreadsStatuses {
-//     let (done, mut vec) = working_combinations
-//         .get(&current_combination)
-//         .map(|x| x.clone())
-//         .unwrap_or((WorkStatus::Doing, vec![]));
-//     vec.push(());
-//     let mut new_working_combinations = working_combinations.clone();
-//     new_working_combinations.insert(current_combination.clone(), (done, vec));
-//     ThreadsStatuses {
-//         current_combination,
-//         working_combinations: new_working_combinations,
-//     }
-// }
-
-// fn done_combination(
-//     ThreadsStatuses {
-//         current_combination,
-//         working_combinations,
-//     }: ThreadsStatuses,
-// ) -> ThreadsStatuses {
-//     let (_, vec) = working_combinations
-//         .get(&current_combination)
-//         .map(|x| x.clone())
-//         .unwrap_or((WorkStatus::Doing, vec![]));
-//     let mut new_working_combinations = working_combinations.clone();
-//     new_working_combinations.insert(current_combination.clone(), (WorkStatus::Done, vec));
-//     ThreadsStatuses {
-//         current_combination,
-//         working_combinations: new_working_combinations,
-//     }
-// }
-
-// fn get_bruteforce_cryptor_from_state(brute_force_state: &BruteForceState) -> BruteForceCryptor {
-//     match brute_force_state {
-//         BruteForceState::Vigenere(VigenereBruteForceState {
-//             brute_force_args,
-//             args: _,
-//         }) => BruteForceCryptor::Vigenere(*brute_force_args),
-//         BruteForceState::Cut(_) => BruteForceCryptor::Cut,
-//         BruteForceState::Caesar(_) => BruteForceCryptor::Caesar,
-//         BruteForceState::Transpose(_) => BruteForceCryptor::Transpose,
-//         BruteForceState::AtBash => BruteForceCryptor::AtBash,
-//         BruteForceState::Reverse => BruteForceCryptor::Reverse,
-//         BruteForceState::Swap(_) => BruteForceCryptor::Swap,
-//         BruteForceState::Join => BruteForceCryptor::Join,
-//         BruteForceState::Permute(PermuteBruteForceState {
-//             brute_force_args,
-//             args: _,
-//         }) => BruteForceCryptor::Permute(brute_force_args.clone()),
-//         BruteForceState::Enigma(_) => BruteForceCryptor::Enigma,
-//     }
-// }
-
 fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> Cryptor {
     match brute_force_state {
         BruteForceState::Vigenere(VigenereBruteForceState {
