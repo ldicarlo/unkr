@@ -14,6 +14,7 @@ use crate::models::PermuteBruteForceState;
 use crate::models::VigenereBruteForceState;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::collections::VecDeque;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -26,7 +27,7 @@ use std::thread;
 pub fn start(
     str: String,
     thread_count: usize,
-    combinations: Vec<Vec<BruteForceCryptor>>,
+    combinations: Vec<VecDeque<BruteForceCryptor>>,
     clues: Vec<String>,
     cache_name: String,
 ) {
@@ -176,9 +177,9 @@ fn thread_combination_status(
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct ThreadWork {
     pub current_head: BruteForceState,
-    pub current_tail: Vec<BruteForceCryptor>,
+    pub current_tail: VecDeque<BruteForceCryptor>,
     pub current_combination: DoneLine,
-    pub remaining_combinations: Vec<Vec<BruteForceCryptor>>,
+    pub remaining_combinations: Vec<VecDeque<BruteForceCryptor>>,
     pub clues: Vec<String>,
     pub strings: Vec<String>,
 }
@@ -189,14 +190,14 @@ pub struct ThreadsStatuses {
 }
 
 fn start_thread_work(
-    combinations: Vec<Vec<BruteForceCryptor>>,
+    combinations: Vec<VecDeque<BruteForceCryptor>>,
     clues: Vec<String>,
     strings: Vec<String>,
 ) -> Option<ThreadWork> {
     let mut remaining_combinations = combinations.clone();
     remaining_combinations.pop().and_then(|x| {
         let mut popable = x.clone();
-        popable.pop().map(|bfc| {
+        popable.pop_front().map(|bfc| {
             let current_head = brute_force_state::start_state(bfc);
             ThreadWork {
                 current_head,
@@ -234,7 +235,7 @@ fn increase_thread_work(
             let maybe_new_current_combination = mut_remaining_combinations.pop();
             maybe_new_current_combination.map(|new_current_combination| {
                 let mut mut_new_current_combination = new_current_combination.clone();
-                let new_head = mut_new_current_combination.pop().unwrap();
+                let new_head = mut_new_current_combination.pop_front().unwrap();
                 ThreadWork {
                     current_head: brute_force_state::start_state(new_head),
                     current_tail,
@@ -350,7 +351,6 @@ fn run_thread_work(
 mod tests {
     use super::*;
     use crate::models::BruteForceVigenereArgs;
-    use crate::vigenere;
     #[test]
     fn increase_thread_works() {
         assert_eq!(
@@ -364,7 +364,8 @@ mod tests {
                 current_tail: vec![BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
                     alphabet_depth: 1,
                     key_depth: 2
-                }),],
+                }),]
+                .into(),
                 remaining_combinations: vec![],
                 strings: vec![String::from("ENCRYPTED")]
             }),
@@ -377,7 +378,8 @@ mod tests {
                 current_tail: vec![BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
                     alphabet_depth: 1,
                     key_depth: 2
-                }),],
+                }),]
+                .into(),
                 clues: vec![String::from("hello")],
                 remaining_combinations: vec![vec![
                     BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
@@ -385,7 +387,9 @@ mod tests {
                         key_depth: 1
                     }),
                     BruteForceCryptor::Join
-                ]],
+                ]
+                .into()]
+                .into(),
                 strings: vec![String::from("ENCRYPTED")]
             })
         );
@@ -400,14 +404,12 @@ mod tests {
                     args: Some(String::from("Vigenere:1:2")),
                     combinations: String::from("Join Vigenere")
                 },
-                current_head: BruteForceState::Vigenere(VigenereBruteForceState {
-                    args: vigenere::init(),
-                    brute_force_args: BruteForceVigenereArgs {
-                        alphabet_depth: 1,
-                        key_depth: 2
-                    }
-                }),
-                current_tail: vec![BruteForceCryptor::Join],
+                current_head: BruteForceState::Join,
+                current_tail: vec![BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
+                    alphabet_depth: 1,
+                    key_depth: 2
+                })]
+                .into(),
                 remaining_combinations: vec![],
                 strings: vec![String::from("ENCRYPTED")]
             }),
@@ -418,41 +420,13 @@ mod tests {
                         alphabet_depth: 1,
                         key_depth: 2
                     }),
-                ]],
+                ]
+                .into()],
                 vec![String::from("hello")],
                 vec![String::from("ENCRYPTED")],
             )
         );
     }
-
-    // #[test]
-    // fn add_working_combination() {
-    //     assert_eq!(
-    //         ThreadsStatuses {
-    //             current_combination: DoneLine {
-    //                 args: Some(String::from("Vigenere:1:2")),
-    //                 combinations: String::from("Join Vigenere")
-    //             },
-
-    //             working_combinations: vec![(
-    //                 DoneLine {
-    //                     args: Some(String::from("Vigenere:1:2")),
-    //                     combinations: String::from("Join Vigenere")
-    //                 },
-    //                 (WorkStatus::Doing, vec![(), ()])
-    //             )]
-    //             .into_iter()
-    //             .collect(),
-    //         },
-    //         super::add_working_combination(super::add_working_combination(ThreadsStatuses {
-    //             current_combination: DoneLine {
-    //                 args: Some(String::from("Vigenere:1:2")),
-    //                 combinations: String::from("Join Vigenere")
-    //             },
-    //             working_combinations: vec![].into_iter().collect(),
-    //         }))
-    //     )
-    // }
 
     #[test]
     fn apply_state_works() {

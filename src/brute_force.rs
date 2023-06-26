@@ -9,6 +9,7 @@ use crate::permute;
 use crate::reverse;
 use crate::swap;
 use crate::thread_system;
+use std::collections::VecDeque;
 use std::vec;
 
 pub fn brute_force_unique_combination(
@@ -18,7 +19,7 @@ pub fn brute_force_unique_combination(
     threads_count: u8,
     cache_name: String,
 ) {
-    let decr: Vec<models::BruteForceCryptor> = decryptors
+    let decr: VecDeque<models::BruteForceCryptor> = decryptors
         .iter()
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
@@ -39,7 +40,7 @@ pub fn brute_force_decrypt(
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
 
-    let combinations: Vec<Vec<BruteForceCryptor>> =
+    let combinations: Vec<VecDeque<BruteForceCryptor>> =
         combinator::combine_elements(decr.len().try_into().unwrap(), steps)
             .into_iter()
             .map(|x| {
@@ -64,9 +65,9 @@ pub fn brute_force_decrypt(
     );
 }
 
-pub fn skip_combination(combination: Vec<BruteForceCryptor>) -> bool {
+pub fn skip_combination(combination: VecDeque<BruteForceCryptor>) -> bool {
     let not_first = vec![Some(&BruteForceCryptor::Join)];
-    if not_first.contains(&combination.first()) {
+    if not_first.contains(&combination.front()) {
         return true;
     }
 
@@ -74,7 +75,7 @@ pub fn skip_combination(combination: Vec<BruteForceCryptor>) -> bool {
         Some(&BruteForceCryptor::Join),
         Some(&BruteForceCryptor::Cut),
     ];
-    if not_last.contains(&combination.last()) {
+    if not_last.contains(&combination.back()) {
         return true;
     }
     let mut last = None;
@@ -115,12 +116,15 @@ mod tests {
     #[test]
     fn skip_combination_works() {
         assert_eq!(
-            skip_combination(vec![
-                models::BruteForceCryptor::Permute(models::BruteForcePermuteArgs {
-                    max_permutations: 4
-                },),
-                models::BruteForceCryptor::AtBash
-            ]),
+            skip_combination(
+                vec![
+                    models::BruteForceCryptor::Permute(models::BruteForcePermuteArgs {
+                        max_permutations: 4
+                    },),
+                    models::BruteForceCryptor::AtBash
+                ]
+                .into()
+            ),
             false
         )
     }

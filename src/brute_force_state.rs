@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::{
     atbash, caesar, cut, enigma, join,
     models::{
@@ -106,12 +108,12 @@ pub fn get_cryptor(bfs: &BruteForceState) -> Cryptor {
 
 pub fn loop_decrypt(
     acc: Vec<Cryptor>,
-    mut to_use: Vec<BruteForceCryptor>,
+    mut to_use: VecDeque<BruteForceCryptor>,
     strings: Vec<String>,
     clues: Vec<String>,
     candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
 ) {
-    if let Some(current) = to_use.pop() {
+    if let Some(current) = to_use.pop_front() {
         let mut bfs = start_state(current.clone());
         let mut current_acc = acc.clone();
         current_acc.push(get_cryptor(&bfs));

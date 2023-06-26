@@ -1,5 +1,5 @@
 use crate::models::{self, DoneLine};
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeSet, HashSet, VecDeque};
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
@@ -126,7 +126,7 @@ fn hit_to_string(hit_line: models::HitLine) -> String {
     format!("{};{:?}", hit_line.result, hit_line.args)
 }
 
-pub fn to_done(combination: Vec<models::BruteForceCryptor>) -> DoneLine {
+pub fn to_done(combination: VecDeque<models::BruteForceCryptor>) -> DoneLine {
     let (left, right) = combinations_string(combination);
     models::DoneLine {
         combinations: left,
@@ -135,7 +135,7 @@ pub fn to_done(combination: Vec<models::BruteForceCryptor>) -> DoneLine {
 }
 
 pub fn combinations_string(
-    brute_force_cryptors: Vec<models::BruteForceCryptor>,
+    brute_force_cryptors: VecDeque<models::BruteForceCryptor>,
 ) -> (String, Option<String>) {
     let strings: Vec<(String, Option<String>)> = brute_force_cryptors
         .iter()
@@ -284,14 +284,17 @@ pub mod tests {
     #[test]
     fn to_done_works() {
         assert_eq!(
-            super::to_done(vec![
-                models::BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
-                    alphabet_depth: 4,
-                    key_depth: 7
-                },),
-                models::BruteForceCryptor::Transpose,
-                models::BruteForceCryptor::Caesar,
-            ],),
+            super::to_done(
+                vec![
+                    models::BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
+                        alphabet_depth: 4,
+                        key_depth: 7
+                    },),
+                    models::BruteForceCryptor::Transpose,
+                    models::BruteForceCryptor::Caesar,
+                ]
+                .into(),
+            ),
             models::DoneLine {
                 combinations: String::from("Vigenere Transpose Caesar"),
                 args: Some(String::from("Vigenere:4:7"))
@@ -302,10 +305,13 @@ pub mod tests {
     #[test]
     fn to_done_no_args_works() {
         assert_eq!(
-            super::to_done(vec![
-                models::BruteForceCryptor::Transpose,
-                models::BruteForceCryptor::Caesar,
-            ],),
+            super::to_done(
+                vec![
+                    models::BruteForceCryptor::Transpose,
+                    models::BruteForceCryptor::Caesar,
+                ]
+                .into(),
+            ),
             models::DoneLine {
                 combinations: String::from("Transpose Caesar"),
                 args: None
