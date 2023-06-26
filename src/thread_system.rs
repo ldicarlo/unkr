@@ -351,6 +351,7 @@ fn run_thread_work(
 mod tests {
     use super::*;
     use crate::models::BruteForceVigenereArgs;
+    use pretty_assertions::{assert_eq, assert_ne};
     #[test]
     fn increase_thread_works() {
         assert_eq!(
