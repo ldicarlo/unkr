@@ -38,7 +38,7 @@ pub fn char_position(c: char, alphabet: Vec<char>) -> Option<usize> {
 }
 
 pub fn char_position_base(c: char) -> Option<usize> {
-    char_position(c, get_alphabet())
+    Some((c as u32 - 65) as usize)
 }
 
 pub fn char_mod_custom_alphabet(
