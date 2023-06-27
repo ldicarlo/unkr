@@ -29,6 +29,22 @@ pub fn fuzz_bench(c: &mut Criterion) {
     group.finish()
 }
 
+pub fn char_position(c: &mut Criterion) {
+    c.bench_function("char_pos", |b| {
+        b.iter(|| {
+            let _ = unkr::char_position('R').unwrap();
+        })
+    });
+}
+
+pub fn char_position_native(c: &mut Criterion) {
+    c.bench_function("char_pos_native", |b| {
+        b.iter(|| {
+            let _ = 'R' as u32 - 63;
+        })
+    });
+}
+
 criterion_group! {
   name = benches;
   config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
@@ -36,6 +52,7 @@ criterion_group! {
     //fuzz_bench,
      enigma_bench,
      fuzz_next_bench,
+     char_position,char_position_native
 }
 
 criterion_main!(benches);
