@@ -238,7 +238,7 @@ fn increase_thread_work(
                 let new_head = mut_new_current_combination.pop_front().unwrap();
                 ThreadWork {
                     current_head: brute_force_state::start_state(new_head),
-                    current_tail,
+                    current_tail: mut_new_current_combination,
                     current_combination: cache::to_done(new_current_combination),
                     remaining_combinations: mut_remaining_combinations,
                     clues,
@@ -351,7 +351,7 @@ fn run_thread_work(
 mod tests {
     use super::*;
     use crate::models::BruteForceVigenereArgs;
-    use pretty_assertions::{assert_eq, assert_ne};
+    use pretty_assertions::assert_eq;
     #[test]
     fn increase_thread_works() {
         assert_eq!(
@@ -359,12 +359,12 @@ mod tests {
                 clues: vec![String::from("hello")],
                 current_combination: DoneLine {
                     args: Some(String::from("Vigenere:1:1")),
-                    combinations: String::from("Vigenere Join")
+                    combinations: String::from("Join Vigenere")
                 },
                 current_head: BruteForceState::Join,
                 current_tail: vec![BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
                     alphabet_depth: 1,
-                    key_depth: 2
+                    key_depth: 1
                 }),]
                 .into(),
                 remaining_combinations: vec![],
@@ -376,18 +376,14 @@ mod tests {
                     combinations: String::from("")
                 },
                 current_head: BruteForceState::Join,
-                current_tail: vec![BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
-                    alphabet_depth: 1,
-                    key_depth: 2
-                }),]
-                .into(),
+                current_tail: vec![].into(),
                 clues: vec![String::from("hello")],
                 remaining_combinations: vec![vec![
+                    BruteForceCryptor::Join,
                     BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
                         alphabet_depth: 1,
                         key_depth: 1
                     }),
-                    BruteForceCryptor::Join
                 ]
                 .into()]
                 .into(),
