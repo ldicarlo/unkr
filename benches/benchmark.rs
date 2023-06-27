@@ -32,7 +32,7 @@ pub fn fuzz_bench(c: &mut Criterion) {
 pub fn char_position(c: &mut Criterion) {
     c.bench_function("char_pos", |b| {
         b.iter(|| {
-            let _ = unkr::char_position('R').unwrap();
+            let _ = unkr::char_position('R');
         })
     });
 }
@@ -52,7 +52,8 @@ criterion_group! {
     //fuzz_bench,
      enigma_bench,
      fuzz_next_bench,
-     char_position,char_position_native
+     char_position,
+     char_position_native
 }
 
 criterion_main!(benches);

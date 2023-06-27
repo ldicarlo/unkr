@@ -107,15 +107,15 @@ fn string_to_args(str: String) -> EnigmaArgs {
         .expect(&format!("Could not deserialize {} to reflector", chars[0]));
     let l_rotor = (
         char_to_rotor_unwraped(chars[1]),
-        char_position_base(chars[2]).unwrap() as u8,
+        char_position_base(chars[2]) as u8,
     );
     let m_rotor = (
         char_to_rotor_unwraped(chars[3]),
-        char_position_base(chars[4]).unwrap() as u8,
+        char_position_base(chars[4]) as u8,
     );
     let r_rotor = (
         char_to_rotor_unwraped(chars[5]),
-        char_position_base(chars[6]).unwrap() as u8,
+        char_position_base(chars[6]) as u8,
     );
 
     let l0_rotor: Option<(Rotor, u8)> = chars
@@ -124,12 +124,11 @@ fn string_to_args(str: String) -> EnigmaArgs {
         .nth(7)
         .into_iter()
         .flat_map(|c1| {
-            chars.clone().into_iter().nth(8).map(|c2| {
-                (
-                    char_to_rotor_unwraped(c1),
-                    char_position_base(c2).unwrap() as u8,
-                )
-            })
+            chars
+                .clone()
+                .into_iter()
+                .nth(8)
+                .map(|c2| (char_to_rotor_unwraped(c1), char_position_base(c2) as u8))
         })
         .nth(0);
 
@@ -221,9 +220,8 @@ fn pass_through_rotors_m3(char: char, rotors: EnigmaArgs) -> (char, EnigmaArgs) 
         r_rotor: (r_r, r_i),
     } = increment_rotors_m3(rotors);
 
-    let new_char_1 = char_utils::char_position_base(char).unwrap() as u8
-        + get_rotor(r_r.clone())
-            [(char_utils::char_position_base(char).unwrap() + (r_i as usize)) % 26];
+    let new_char_1 = char_utils::char_position_base(char) as u8
+        + get_rotor(r_r.clone())[(char_utils::char_position_base(char) + (r_i as usize)) % 26];
     let new_char_2 =
         new_char_1 + get_rotor(m_r.clone())[(new_char_1 as usize + (m_i as usize)) % 26];
     let new_char_3 =
@@ -420,7 +418,7 @@ fn _print_reflector(key: &str, str: &str) {
 fn _print_any(prefix: &str, key: &str, str: &str) {
     let mut offsets = Vec::new();
     for (i, c) in str.chars().enumerate() {
-        offsets.push((char_utils::char_position_base(c).unwrap() + 26 - i) % 26);
+        offsets.push((char_utils::char_position_base(c) + 26 - i) % 26);
     }
     println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
 }
@@ -438,8 +436,8 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
     for (i, c) in str.chars().enumerate() {
-        offsets[char_utils::char_position_base(c).unwrap()] =
-            (26 + i - char_utils::char_position_base(c).unwrap()) % 26;
+        offsets[char_utils::char_position_base(c)] =
+            (26 + i - char_utils::char_position_base(c)) % 26;
     }
     println!("{}::{} =>\tvec!{:?},", prefix, key, offsets);
 }

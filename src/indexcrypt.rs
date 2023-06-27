@@ -22,7 +22,7 @@ fn decrypt_string(string: String, base: String) -> String {
     let mut new_base = base.clone();
     let mut result: Vec<char> = vec![];
     for i in 0..string.len() {
-        let idx = char_utils::char_position_base(string.chars().nth(i).unwrap()).unwrap();
+        let idx = char_utils::char_position_base(string.chars().nth(i).unwrap());
         result.push(new_base.remove(idx % new_base.len()));
     }
     result.into_iter().collect::<String>()

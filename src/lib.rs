@@ -108,6 +108,6 @@ pub fn fuzz_next(str: &Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> 
     fuzzer::fuzz_next(str, len_max, base)
 }
 
-pub fn char_position(c: char) -> Option<usize> {
+pub fn char_position(c: char) -> usize {
     char_utils::char_position_base(c)
 }
