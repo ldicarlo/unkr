@@ -1,5 +1,5 @@
 use enigma::EnigmaArgs;
-use models::BruteForceCryptor;
+use models::{BruteForceCryptor, NumberArgs};
 
 mod atbash;
 mod base;
@@ -45,18 +45,6 @@ pub fn fuzz_next_string_ruled(
         pair_length_constraint,
         sorted_by_pair_constraint,
     )
-}
-
-pub fn enigma_next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
-    enigma::next(enigma_args)
-}
-
-pub fn enigma_init() -> EnigmaArgs {
-    enigma::init()
-}
-
-pub fn enigma_encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
-    enigma::encrypt(strs, enigma_args)
 }
 
 pub fn print_encrypt(strs: Vec<String>, decryptors: Vec<String>) {
@@ -106,4 +94,28 @@ pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
 
 pub fn fuzz_next(str: &Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> {
     fuzzer::fuzz_next(str, len_max, base)
+}
+
+pub fn enigma_next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
+    enigma::next(enigma_args)
+}
+
+pub fn enigma_init() -> EnigmaArgs {
+    enigma::init()
+}
+
+pub fn enigma_encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
+    enigma::encrypt(strs, enigma_args)
+}
+
+pub fn transpose_init() -> NumberArgs {
+    transpose::init()
+}
+
+pub fn transpose_next(strs: Vec<String>, number_args: NumberArgs) -> Option<NumberArgs> {
+    transpose::next(strs, number_args)
+}
+
+pub fn transpose_encrypt(strs: Vec<String>, number_args: NumberArgs) -> Vec<String> {
+    transpose::encrypt(strs, number_args)
 }
