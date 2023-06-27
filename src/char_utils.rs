@@ -96,4 +96,10 @@ mod tests {
     fn char_pos() {
         assert_eq!(super::char_position_base('D'), Some(3));
     }
+
+    #[test]
+    fn char_pos_tests() {
+        assert_eq!(65, 'A' as u32);
+        assert_eq!(66, String::from("ABCD").chars().nth(1).unwrap() as u32);
+    }
 }
