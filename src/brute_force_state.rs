@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use crate::{
-    atbash, caesar, cut, enigma, join,
+    atbash, brute_force, caesar, cut, enigma, join,
     models::{
         BruteForceCryptor, BruteForceState, Cryptor, PermuteBruteForceState,
         VigenereBruteForceState,
@@ -93,16 +93,22 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
 
 pub fn get_cryptor(bfs: &BruteForceState) -> Cryptor {
     match bfs {
-        BruteForceState::Vigenere(_) => todo!(),
-        BruteForceState::Cut(_) => todo!(),
-        BruteForceState::Caesar(_) => todo!(),
-        BruteForceState::Transpose(_) => todo!(),
-        BruteForceState::AtBash => todo!(),
-        BruteForceState::Reverse => todo!(),
-        BruteForceState::Swap(_) => todo!(),
-        BruteForceState::Join => todo!(),
-        BruteForceState::Permute(_) => todo!(),
-        BruteForceState::Enigma(_) => todo!(),
+        BruteForceState::Vigenere(VigenereBruteForceState {
+            brute_force_args: _,
+            args,
+        }) => Cryptor::Vigenere(args.clone()),
+        BruteForceState::Cut(args) => Cryptor::Cut(args.clone()),
+        BruteForceState::Caesar(args) => Cryptor::Caesar(args.clone()),
+        BruteForceState::Transpose(args) => Cryptor::Transpose(args.clone()),
+        BruteForceState::AtBash => Cryptor::AtBash,
+        BruteForceState::Reverse => Cryptor::Reverse,
+        BruteForceState::Swap(args) => Cryptor::Swap(args.clone()),
+        BruteForceState::Join => Cryptor::Join,
+        BruteForceState::Permute(PermuteBruteForceState {
+            brute_force_args: _,
+            args,
+        }) => Cryptor::Permute(args.clone()),
+        BruteForceState::Enigma(args) => Cryptor::Enigma(args.clone()),
     }
 }
 
