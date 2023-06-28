@@ -1,5 +1,5 @@
 use enigma::EnigmaArgs;
-use models::{BruteForceCryptor, NumberArgs};
+use models::{BruteForceCryptor, NumberArgs, PermuteArgs};
 
 mod atbash;
 mod base;
@@ -28,6 +28,9 @@ mod swap;
 mod thread_system;
 mod transpose;
 mod vigenere;
+
+pub use self::models::BruteForcePermuteArgs;
+pub use self::models::PermuteBruteForceState;
 
 pub fn fuzz_next_string_ruled(
     str: &String,
@@ -116,6 +119,24 @@ pub fn transpose_next(strs: Vec<String>, number_args: NumberArgs) -> Option<Numb
     transpose::next(strs, number_args)
 }
 
-pub fn transpose_encrypt(strs: Vec<String>, number_args: NumberArgs) -> Vec<String> {
-    transpose::encrypt(strs, number_args)
+pub fn transpose_decrypt(strs: Vec<String>, number_args: NumberArgs) -> Vec<String> {
+    transpose::decrypt(strs, number_args)
+}
+
+pub fn permute_init() -> PermuteArgs {
+    permute::init()
+}
+
+pub fn permute_next(
+    permute_brute_force_state: models::PermuteBruteForceState,
+) -> Option<models::PermuteArgs> {
+    permute::next(permute_brute_force_state)
+}
+
+pub fn permute_decrypt(strs: Vec<String>, permute_args: PermuteArgs) -> Vec<std::string::String> {
+    permute::decrypt(strs, permute_args)
+}
+
+pub fn char_position(c: char) -> usize {
+    char_utils::char_position_base(c)
 }

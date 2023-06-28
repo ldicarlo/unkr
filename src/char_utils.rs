@@ -37,8 +37,8 @@ pub fn char_position(c: char, alphabet: Vec<char>) -> Option<usize> {
     alphabet.into_iter().position(|elem| elem == c)
 }
 
-pub fn char_position_base(c: char) -> Option<usize> {
-    char_position(c, get_alphabet())
+pub fn char_position_base(c: char) -> usize {
+    char_position(c, get_alphabet()).unwrap()
 }
 
 pub fn char_mod_custom_alphabet(
@@ -94,6 +94,6 @@ mod tests {
 
     #[test]
     fn char_pos() {
-        assert_eq!(super::char_position_base('D'), Some(3));
+        assert_eq!(super::char_position_base('D'), 3);
     }
 }
