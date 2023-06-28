@@ -1,5 +1,5 @@
 use enigma::EnigmaArgs;
-use models::BruteForceCryptor;
+use models::{BruteForceCryptor, NumberArgs, PermuteArgs};
 
 mod atbash;
 mod base;
@@ -29,6 +29,9 @@ mod thread_system;
 mod transpose;
 mod vigenere;
 
+pub use self::models::BruteForcePermuteArgs;
+pub use self::models::PermuteBruteForceState;
+
 pub fn fuzz_next_string_ruled(
     str: &String,
     len_max: usize,
@@ -45,18 +48,6 @@ pub fn fuzz_next_string_ruled(
         pair_length_constraint,
         sorted_by_pair_constraint,
     )
-}
-
-pub fn enigma_next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
-    enigma::next(enigma_args)
-}
-
-pub fn enigma_init() -> EnigmaArgs {
-    enigma::init()
-}
-
-pub fn enigma_encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
-    enigma::encrypt(strs, enigma_args)
 }
 
 pub fn print_encrypt(strs: Vec<String>, decryptors: Vec<String>) {
@@ -106,6 +97,44 @@ pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
 
 pub fn fuzz_next(str: &Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> {
     fuzzer::fuzz_next(str, len_max, base)
+}
+
+pub fn enigma_next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
+    enigma::next(enigma_args)
+}
+
+pub fn enigma_init() -> EnigmaArgs {
+    enigma::init()
+}
+
+pub fn enigma_encrypt(strs: Vec<String>, enigma_args: EnigmaArgs) -> Vec<String> {
+    enigma::encrypt(strs, enigma_args)
+}
+
+pub fn transpose_init() -> NumberArgs {
+    transpose::init()
+}
+
+pub fn transpose_next(strs: Vec<String>, number_args: NumberArgs) -> Option<NumberArgs> {
+    transpose::next(strs, number_args)
+}
+
+pub fn transpose_decrypt(strs: Vec<String>, number_args: NumberArgs) -> Vec<String> {
+    transpose::decrypt(strs, number_args)
+}
+
+pub fn permute_init() -> PermuteArgs {
+    permute::init()
+}
+
+pub fn permute_next(
+    permute_brute_force_state: models::PermuteBruteForceState,
+) -> Option<models::PermuteArgs> {
+    permute::next(permute_brute_force_state)
+}
+
+pub fn permute_decrypt(strs: Vec<String>, permute_args: PermuteArgs) -> Vec<std::string::String> {
+    permute::decrypt(strs, permute_args)
 }
 
 pub fn char_position(c: char) -> usize {
