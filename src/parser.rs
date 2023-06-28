@@ -233,7 +233,9 @@ mod tests {
 
         writer
             .serialize(Cryptor::Permute(PermuteArgs {
-                permutations: vec![('A', 'B'), ('C', 'D')],
+                permutations: vec![('A', 'B'), ('C', 'D'), ('B', 'A'), ('D', 'C')]
+                    .into_iter()
+                    .collect(),
             }))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))

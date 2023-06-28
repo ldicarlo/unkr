@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::{char_utils, fuzzer, models};
 
 pub fn skip_if_previous_in(args: models::BruteForcePermuteArgs) -> Vec<models::BruteForceCryptor> {
@@ -6,7 +8,7 @@ pub fn skip_if_previous_in(args: models::BruteForcePermuteArgs) -> Vec<models::B
 
 pub fn init() -> models::PermuteArgs {
     models::PermuteArgs {
-        permutations: vec![],
+        permutations: BTreeMap::new(),
     }
 }
 
@@ -43,14 +45,9 @@ pub fn decrypt(
         .collect()
 }
 
-pub fn decrypt_string(str: String, permutations: Vec<(char, char)>) -> String {
+pub fn decrypt_string(str: String, permutations: BTreeMap<char, char>) -> String {
     str.chars()
-        .map(|c| {
-            permutations
-                .iter()
-                .find(|(a, b)| c == *a || c == *b)
-                .map_or(c, |(a, b)| if c == *a { *b } else { *a })
-        })
+        .map(|c| permutations.get(&c).unwrap_or(&c).clone())
         .collect()
 }
 
@@ -61,7 +58,10 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            super::decrypt_string("KRYPTOS".to_string(), vec![('K', 'R')]),
+            super::decrypt_string(
+                "KRYPTOS".to_string(),
+                vec![('K', 'R'), ('R', 'K')].into_iter().collect()
+            ),
             "RKYPTOS".to_string()
         );
     }
@@ -71,14 +71,14 @@ mod tests {
         assert_eq!(
             super::next(PermuteBruteForceState {
                 args: PermuteArgs {
-                    permutations: vec![('J', 'I')]
+                    permutations: vec![('J', 'I'), ('I', 'J')].into_iter().collect()
                 },
                 brute_force_args: BruteForcePermuteArgs {
                     max_permutations: 2
                 }
             }),
             Some(PermuteArgs {
-                permutations: vec![('J', 'K')]
+                permutations: vec![('J', 'K'), ('K', 'J')].into_iter().collect()
             },)
         );
     }

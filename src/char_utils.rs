@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 pub fn get_alphabet() -> Vec<char> {
     vec![
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
@@ -12,7 +14,7 @@ pub fn get_alphabet_prefixed() -> Vec<char> {
     ]
 }
 
-pub fn pairs_to_vec<A>(input: Vec<(A, A)>) -> Vec<A> {
+pub fn pairs_to_vec<A>(input: BTreeMap<A, A>) -> Vec<A> {
     input.into_iter().flat_map(|(a, b)| vec![a, b]).collect()
 }
 
