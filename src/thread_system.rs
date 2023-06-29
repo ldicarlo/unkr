@@ -12,12 +12,12 @@ use crate::models::Cryptor;
 use crate::models::DoneLine;
 use crate::models::PermuteBruteForceState;
 use crate::models::VigenereBruteForceState;
+use crossbeam::channel::unbounded;
+use crossbeam::channel::Receiver;
+use crossbeam::channel::Sender;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::VecDeque;
-use std::sync::mpsc::channel;
-use std::sync::mpsc::Receiver;
-use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
@@ -35,8 +35,8 @@ pub fn start(
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
 
     let cache_args = cache::prepare_cache_args(cache_name.clone(), str.clone(), clues.clone());
-    let (candidates_sender, candidates_receiver) = channel();
-    let (console_sender, console_receiver) = channel();
+    let (candidates_sender, candidates_receiver) = unbounded();
+    let (console_sender, console_receiver) = unbounded();
     let local_cache_args = cache_args.clone();
     thread::spawn(move || console::thread_consume_messages(console_receiver, thread_count));
 
@@ -56,8 +56,8 @@ pub fn start(
     let am_tw = Arc::new(Mutex::new(ThreadsStatuses {
         workload: BTreeMap::new(),
     }));
-    let (thread_status_sender, thread_status_receiver) = channel();
-    let (thread_combination_status_sender, thread_combination_status_receiver) = channel();
+    let (thread_status_sender, thread_status_receiver) = unbounded();
+    let (thread_combination_status_sender, thread_combination_status_receiver) = unbounded();
 
     let done_cache = cache::get_done_cache(cache_args.clone());
     for i in 0..thread_count {
@@ -92,23 +92,34 @@ pub fn start(
         });
     }
 
+    let (over_sender, over_receiver) = unbounded();
+
     thread::spawn(move || {
-        thread_combination_status_function(thread_combination_status_receiver, am_tw, cache_args);
+        thread_combination_status_function(
+            thread_combination_status_receiver,
+            am_tw,
+            cache_args,
+            over_sender,
+        );
     });
 
     for _ in 0..thread_count {
         thread_status_receiver.recv().unwrap();
     }
+
+    while let Ok(()) = over_receiver.recv() {}
 }
 
 fn thread_combination_status_function(
     r: Receiver<ThreadStatus>,
     tw: Arc<Mutex<ThreadsStatuses>>,
     cache_args: models::CacheArgs,
+    over_sender: Sender<()>,
 ) {
     r.iter().for_each(|status| {
         thread_combination_status(status, tw.clone(), cache_args.clone());
     });
+    over_sender.send(()).unwrap();
 }
 
 enum ThreadStatus {
@@ -155,7 +166,6 @@ fn apply_state(
                 .iter()
                 .all(|(_, (_, v))| v.contains(&done_line))
             {
-                println!("{:?}", mutable_state.workload);
                 Some(done_line.clone())
             } else {
                 None

@@ -1,13 +1,13 @@
-use std::collections::VecDeque;
-
 use crate::{
-    atbash, brute_force, caesar, cut, enigma, join,
+    atbash, caesar, cut, enigma, join,
     models::{
         BruteForceCryptor, BruteForceState, Cryptor, PermuteBruteForceState,
         VigenereBruteForceState,
     },
     permute, reverse, swap, transpose, vigenere,
 };
+use crossbeam::channel::Sender;
+use std::collections::VecDeque;
 
 pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
     match brute_force_cryptor {
@@ -117,7 +117,7 @@ pub fn loop_decrypt(
     mut to_use: VecDeque<BruteForceCryptor>,
     strings: Vec<String>,
     clues: Vec<String>,
-    candidates_sender: std::sync::mpsc::Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
+    candidates_sender: Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
 ) {
     if let Some(current) = to_use.pop_front() {
         let mut bfs = start_state(current.clone());

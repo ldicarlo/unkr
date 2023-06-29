@@ -1,12 +1,11 @@
-use std::sync::mpsc::Receiver;
-use std::sync::mpsc::Sender;
-
 use crate::cache;
 use crate::console;
 use crate::console::PrintableMessage;
 use crate::models::CacheArgs;
 use crate::models::Cryptor;
 use crate::models::HitLine;
+use crossbeam::channel::Receiver;
+use crossbeam::channel::Sender;
 use std::collections::BTreeSet;
 use std::sync::Arc;
 use std::sync::Mutex;

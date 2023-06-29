@@ -1,3 +1,4 @@
+use crossbeam::channel::Receiver;
 use crossterm::{
     cursor::MoveTo,
     style::Print,
@@ -7,7 +8,6 @@ use crossterm::{
 use std::{thread, time};
 // https://docs.rs/crossterm/latest/crossterm/
 use std::io::{stdout, Write};
-use std::sync::mpsc::Receiver;
 
 use crate::models::BruteForceState;
 
