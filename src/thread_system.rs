@@ -58,8 +58,15 @@ pub fn start(
     }));
     let (thread_status_sender, thread_status_receiver) = channel();
     let (thread_combination_status_sender, thread_combination_status_receiver) = channel();
+
     let done_cache = cache::get_done_cache(cache_args.clone());
     for i in 0..thread_count {
+        thread_combination_status_sender
+            .send(ThreadStatus::Doing(
+                i,
+                thread_work.clone().current_combination,
+            ))
+            .unwrap();
         let local_tw = thread_work.clone();
         let local_sender = thread_status_sender.clone();
         let local_clues = clues.clone();
@@ -148,6 +155,7 @@ fn apply_state(
                 .iter()
                 .all(|(_, (_, v))| v.contains(&done_line))
             {
+                println!("{:?}", mutable_state.workload);
                 Some(done_line.clone())
             } else {
                 None
