@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 pub fn get_alphabet() -> Vec<char> {
     vec![
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
@@ -12,7 +14,7 @@ pub fn get_alphabet_prefixed() -> Vec<char> {
     ]
 }
 
-pub fn pairs_to_vec<A>(input: Vec<(A, A)>) -> Vec<A> {
+pub fn pairs_to_vec<A>(input: BTreeMap<A, A>) -> Vec<A> {
     input.into_iter().flat_map(|(a, b)| vec![a, b]).collect()
 }
 
@@ -38,7 +40,7 @@ pub fn char_position(c: char, alphabet: Vec<char>) -> Option<usize> {
 }
 
 pub fn char_position_base(c: char) -> usize {
-    char_position(c, get_alphabet()).unwrap()
+    (c as u32 - 65) as usize
 }
 
 pub fn char_mod_custom_alphabet(
@@ -95,5 +97,11 @@ mod tests {
     #[test]
     fn char_pos() {
         assert_eq!(super::char_position_base('D'), 3);
+    }
+
+    #[test]
+    fn char_pos_tests() {
+        assert_eq!(65, 'A' as u32);
+        assert_eq!(66, String::from("ABCD").chars().nth(1).unwrap() as u32);
     }
 }

@@ -104,11 +104,11 @@ mod tests {
                         permute::decrypt(
                             strs.clone(),
                             models::PermuteArgs {
-                                permutations: vec![('H', 'E')]
+                                permutations: vec![('H', 'E'), ('E', 'H')].into_iter().collect()
                             }
                         ),
                         models::PermuteArgs {
-                            permutations: vec![('H', 'E')]
+                            permutations: vec![('H', 'E'), ('E', 'H')].into_iter().collect()
                         }
                     ),
                     strs.clone()

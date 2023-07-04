@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::enigma::EnigmaArgs;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -94,7 +96,8 @@ pub struct SwapArgs {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct PermuteArgs {
-    pub permutations: Vec<(char, char)>,
+    pub permutations: BTreeMap<char, char>,
+    pub reversed_permutations: BTreeMap<char, char>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
