@@ -1,19 +1,19 @@
-use super::models::{Cryptor, CryptorTypeWithArgs, NumberArgs, VigenereArgs};
+use super::models::{CryptorTypeWithArgs, NumberArgs, VigenereArgs};
 use crate::{
     enigma::EnigmaArgs,
     models::{
-        BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs,
-        CryptorTypeWithBruteForceArgs, PermuteArgs, StringArgs, SwapArgs,
+        BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
+        CLIPermuteArgs, CryptorTypeWithBruteForceArgs, StringArgs, SwapArgs,
     },
 };
 
-fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
+fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> CLICryptor {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b':')
         .from_reader(str.as_bytes());
     match cryptor_type {
-        CryptorTypeWithArgs::Vigenere => Cryptor::Vigenere(
+        CryptorTypeWithArgs::Vigenere => CLICryptor::Vigenere(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -21,7 +21,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<VigenereArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Cut => Cryptor::Cut(
+        CryptorTypeWithArgs::Cut => CLICryptor::Cut(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -29,7 +29,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Caesar => Cryptor::Caesar(
+        CryptorTypeWithArgs::Caesar => CLICryptor::Caesar(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -37,7 +37,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Transpose => Cryptor::Transpose(
+        CryptorTypeWithArgs::Transpose => CLICryptor::Transpose(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -45,7 +45,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<NumberArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Swap => Cryptor::Swap(
+        CryptorTypeWithArgs::Swap => CLICryptor::Swap(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -53,7 +53,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<SwapArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Colors => Cryptor::Colors(
+        CryptorTypeWithArgs::Colors => CLICryptor::Colors(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -61,7 +61,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<StringArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::IndexCrypt => Cryptor::IndexCrypt(
+        CryptorTypeWithArgs::IndexCrypt => CLICryptor::IndexCrypt(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -69,15 +69,15 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
                 .deserialize::<StringArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Permute => Cryptor::Permute(
+        CryptorTypeWithArgs::Permute => CLICryptor::Permute(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
                 .expect("cannot find record")
-                .deserialize::<PermuteArgs>(None)
+                .deserialize::<CLIPermuteArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithArgs::Enigma => Cryptor::Enigma(
+        CryptorTypeWithArgs::Enigma => CLICryptor::Enigma(
             rdr.records()
                 .find(|_| true)
                 .unwrap()
@@ -88,7 +88,7 @@ fn read(str: String, cryptor_type: CryptorTypeWithArgs) -> Cryptor {
     }
 }
 
-pub fn read_parameters(mut str: String) -> Cryptor {
+pub fn read_parameters(mut str: String) -> CLICryptor {
     let type_name: String = str.drain(..str.find(':').unwrap_or(str.len())).collect();
     if str.len() > 0 {
         str.drain(0..1);
@@ -97,10 +97,10 @@ pub fn read_parameters(mut str: String) -> Cryptor {
         "vigenere" => read(str, CryptorTypeWithArgs::Vigenere),
         "cut" => read(str, CryptorTypeWithArgs::Cut),
         "transpose" => read(str, CryptorTypeWithArgs::Transpose),
-        "reverse" => Cryptor::Reverse,
-        "atbash" => Cryptor::AtBash,
+        "reverse" => CLICryptor::Reverse,
+        "atbash" => CLICryptor::AtBash,
         "swap" => read(str, CryptorTypeWithArgs::Swap),
-        "join" => Cryptor::Join,
+        "join" => CLICryptor::Join,
         "colors" => read(str, CryptorTypeWithArgs::Colors),
         "indexcrypt" => read(str, CryptorTypeWithArgs::IndexCrypt),
         "permute" => read(str, CryptorTypeWithArgs::Permute),
@@ -159,10 +159,10 @@ mod tests {
 
     use crate::{
         enigma::{EnigmaArgs, Reflector, Rotor},
-        models::{BruteForceCryptor, PermuteArgs, SwapArgs},
+        models::{BruteForceCryptor, CLICryptor, CLIPermuteArgs, SwapArgs},
     };
 
-    use super::{read, Cryptor, VigenereArgs};
+    use super::{read, VigenereArgs};
 
     #[test]
     fn all_cryptors_readable() {}
@@ -170,7 +170,7 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(
-            Cryptor::Vigenere(VigenereArgs {
+            CLICryptor::Vigenere(VigenereArgs {
                 key: "K".to_string(),
                 alphabet: "ALP".to_string()
             }),
@@ -186,7 +186,7 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(Cryptor::Vigenere(VigenereArgs {
+            .serialize(CLICryptor::Vigenere(VigenereArgs {
                 key: "K".to_string(),
                 alphabet: "ALP".to_string(),
             }))
@@ -205,7 +205,7 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(Cryptor::Swap(SwapArgs { order: vec![1, 2] }))
+            .serialize(CLICryptor::Swap(SwapArgs { order: vec![1, 2] }))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
             .expect("Cannot convert utf8");
@@ -217,7 +217,7 @@ mod tests {
     fn read_whole_line() {
         assert_eq!(
             super::read_parameters(String::from("vigenere:KEY:ALPHABET")),
-            Cryptor::Vigenere(VigenereArgs {
+            CLICryptor::Vigenere(VigenereArgs {
                 key: String::from("KEY"),
                 alphabet: String::from("ALPHABET")
             })
@@ -232,10 +232,8 @@ mod tests {
             .from_writer(vec![]);
 
         writer
-            .serialize(Cryptor::Permute(PermuteArgs {
-                permutations: vec![('A', 'B'), ('C', 'D'), ('B', 'A'), ('D', 'C')]
-                    .into_iter()
-                    .collect(),
+            .serialize(CLICryptor::Permute(CLIPermuteArgs {
+                permutations: vec![('A', 'B'), ('C', 'D')].into_iter().collect(),
             }))
             .expect("FAIL");
         let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))

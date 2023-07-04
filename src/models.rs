@@ -4,6 +4,23 @@ use crate::enigma::EnigmaArgs;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 #[serde(tag = "name", deny_unknown_fields)]
+pub enum CLICryptor {
+    Vigenere(VigenereArgs),
+    Cut(NumberArgs),
+    Caesar(NumberArgs),
+    Transpose(NumberArgs),
+    AtBash,
+    Reverse,
+    Swap(SwapArgs),
+    Join,
+    Colors(StringArgs),
+    IndexCrypt(StringArgs),
+    Permute(CLIPermuteArgs),
+    Enigma(EnigmaArgs),
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[serde(tag = "name", deny_unknown_fields)]
 pub enum Cryptor {
     Vigenere(VigenereArgs),
     Cut(NumberArgs),
@@ -97,6 +114,11 @@ pub struct SwapArgs {
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct PermuteArgs {
     pub permutations: BTreeMap<char, char>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+pub struct CLIPermuteArgs {
+    pub permutations: Vec<(char, char)>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]

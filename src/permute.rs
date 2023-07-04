@@ -36,18 +36,43 @@ pub fn next(
     })
 }
 
+pub fn cli_decrypt(
+    strs: Vec<String>,
+    models::CLIPermuteArgs { permutations }: models::CLIPermuteArgs,
+) -> Vec<String> {
+    decrypt(
+        strs,
+        models::PermuteArgs {
+            permutations: permutations.into_iter().collect(),
+        },
+    )
+}
 pub fn decrypt(
     strs: Vec<String>,
     models::PermuteArgs { permutations }: models::PermuteArgs,
 ) -> Vec<String> {
+    let reversed: BTreeMap<char, char> = permutations
+        .clone()
+        .into_iter()
+        .map(|(a, b)| (b, a))
+        .collect();
     strs.iter()
-        .map(|str| decrypt_string(str.clone(), permutations.clone()))
+        .map(|str| decrypt_string(str.clone(), permutations.clone(), reversed.clone()))
         .collect()
 }
 
-pub fn decrypt_string(str: String, permutations: BTreeMap<char, char>) -> String {
+pub fn decrypt_string(
+    str: String,
+    permutations: BTreeMap<char, char>,
+    reversed_permutations: BTreeMap<char, char>,
+) -> String {
     str.chars()
-        .map(|c| permutations.get(&c).unwrap_or(&c).clone())
+        .map(|c| {
+            permutations
+                .get(&c)
+                .unwrap_or(reversed_permutations.get(&c).unwrap_or(&c))
+                .clone()
+        })
         .collect()
 }
 
@@ -60,7 +85,8 @@ mod tests {
         assert_eq!(
             super::decrypt_string(
                 "KRYPTOS".to_string(),
-                vec![('K', 'R'), ('R', 'K')].into_iter().collect()
+                vec![('K', 'R'),].into_iter().collect(),
+                vec![('R', 'K')].into_iter().collect()
             ),
             "RKYPTOS".to_string()
         );
@@ -71,14 +97,14 @@ mod tests {
         assert_eq!(
             super::next(PermuteBruteForceState {
                 args: PermuteArgs {
-                    permutations: vec![('J', 'I'), ('I', 'J')].into_iter().collect()
+                    permutations: vec![('I', 'J')].into_iter().collect()
                 },
                 brute_force_args: BruteForcePermuteArgs {
                     max_permutations: 2
                 }
             }),
             Some(PermuteArgs {
-                permutations: vec![('J', 'K'), ('K', 'J')].into_iter().collect()
+                permutations: vec![('I', 'K')].into_iter().collect()
             },)
         );
     }
