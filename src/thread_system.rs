@@ -107,7 +107,9 @@ pub fn start(
         thread_status_receiver.recv().unwrap();
     }
 
-    while let Ok(()) = over_receiver.recv() {}
+    over_receiver.recv().unwrap();
+
+    println!("OVER");
 }
 
 fn thread_combination_status_function(
@@ -116,10 +118,12 @@ fn thread_combination_status_function(
     cache_args: models::CacheArgs,
     over_sender: Sender<()>,
 ) {
-    r.iter().for_each(|status| {
+    while let Ok(status) = r.recv() {
         thread_combination_status(status, tw.clone(), cache_args.clone());
-    });
+    }
+
     over_sender.send(()).unwrap();
+    drop(over_sender);
 }
 
 enum ThreadStatus {
@@ -363,6 +367,10 @@ fn run_thread_work(
         }
     }
     sender.send(()).unwrap();
+    drop(console_sender);
+    drop(sender);
+    drop(combination_status_sender);
+    drop(candidates_sender);
 }
 
 #[cfg(test)]
