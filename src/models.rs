@@ -97,7 +97,6 @@ pub struct SwapArgs {
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct PermuteArgs {
     pub permutations: BTreeMap<char, char>,
-    pub reversed_permutations: BTreeMap<char, char>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
