@@ -91,39 +91,25 @@ pub fn start(
             )
         });
     }
-
-    let (over_sender, over_receiver) = unbounded();
+    drop(thread_combination_status_sender);
 
     thread::spawn(move || {
-        thread_combination_status_function(
-            thread_combination_status_receiver,
-            am_tw,
-            cache_args,
-            over_sender,
-        );
+        thread_combination_status_function(thread_combination_status_receiver, am_tw, cache_args);
     });
 
     for _ in 0..thread_count {
         thread_status_receiver.recv().unwrap();
     }
-
-    over_receiver.recv().unwrap();
-
-    println!("OVER");
 }
 
 fn thread_combination_status_function(
     r: Receiver<ThreadStatus>,
     tw: Arc<Mutex<ThreadsStatuses>>,
     cache_args: models::CacheArgs,
-    over_sender: Sender<()>,
 ) {
     while let Ok(status) = r.recv() {
         thread_combination_status(status, tw.clone(), cache_args.clone());
     }
-
-    over_sender.send(()).unwrap();
-    drop(over_sender);
 }
 
 enum ThreadStatus {
@@ -367,10 +353,6 @@ fn run_thread_work(
         }
     }
     sender.send(()).unwrap();
-    drop(console_sender);
-    drop(sender);
-    drop(combination_status_sender);
-    drop(candidates_sender);
 }
 
 #[cfg(test)]
