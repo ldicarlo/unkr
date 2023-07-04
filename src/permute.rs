@@ -9,12 +9,17 @@ pub fn skip_if_previous_in(args: models::BruteForcePermuteArgs) -> Vec<models::B
 pub fn init() -> models::PermuteArgs {
     models::PermuteArgs {
         permutations: BTreeMap::new(),
+        reversed_permutations: BTreeMap::new(),
     }
 }
 
 pub fn next(
     models::PermuteBruteForceState {
-        args: models::PermuteArgs { permutations },
+        args:
+            models::PermuteArgs {
+                permutations,
+                reversed_permutations: _,
+            },
         brute_force_args: models::BruteForcePermuteArgs { max_permutations },
     }: models::PermuteBruteForceState,
 ) -> Option<models::PermuteArgs> {
@@ -28,11 +33,21 @@ pub fn next(
         true,
         true,
     );
-    next.map(|str| models::PermuteArgs {
-        permutations: char_utils::vec_to_pairs(&str.chars().collect())
+    next.map(|str| {
+        let new_permutations: BTreeMap<char, char> =
+            char_utils::vec_to_pairs(&str.chars().collect())
+                .into_iter()
+                .map(|(a, b)| (a as char, b as char))
+                .collect();
+        let reversed_permutations = new_permutations
+            .clone()
             .into_iter()
-            .map(|(a, b)| (a as char, b as char))
-            .collect(),
+            .map(|(a, b)| (b, a))
+            .collect();
+        models::PermuteArgs {
+            permutations: new_permutations,
+            reversed_permutations,
+        }
     })
 }
 
@@ -44,20 +59,29 @@ pub fn cli_decrypt(
         strs,
         models::PermuteArgs {
             permutations: permutations.into_iter().collect(),
+            reversed_permutations: permutations
+                .clone()
+                .into_iter()
+                .map(|(a, b)| (b, a))
+                .collect(),
         },
     )
 }
 pub fn decrypt(
     strs: Vec<String>,
-    models::PermuteArgs { permutations }: models::PermuteArgs,
+    models::PermuteArgs {
+        permutations,
+        reversed_permutations,
+    }: models::PermuteArgs,
 ) -> Vec<String> {
-    let reversed: BTreeMap<char, char> = permutations
-        .clone()
-        .into_iter()
-        .map(|(a, b)| (b, a))
-        .collect();
     strs.iter()
-        .map(|str| decrypt_string(str.clone(), permutations.clone(), reversed.clone()))
+        .map(|str| {
+            decrypt_string(
+                str.clone(),
+                permutations.clone(),
+                reversed_permutations.clone(),
+            )
+        })
         .collect()
 }
 
@@ -97,14 +121,16 @@ mod tests {
         assert_eq!(
             super::next(PermuteBruteForceState {
                 args: PermuteArgs {
-                    permutations: vec![('I', 'J')].into_iter().collect()
+                    permutations: vec![('I', 'J')].into_iter().collect(),
+                    reversed_permutations: vec![('J', 'I')].into_iter().collect()
                 },
                 brute_force_args: BruteForcePermuteArgs {
                     max_permutations: 2
                 }
             }),
             Some(PermuteArgs {
-                permutations: vec![('I', 'K')].into_iter().collect()
+                permutations: vec![('I', 'K')].into_iter().collect(),
+                reversed_permutations: vec![('K', 'I')].into_iter().collect()
             },)
         );
     }
