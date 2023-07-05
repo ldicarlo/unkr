@@ -1,5 +1,1 @@
 HELLOTEST was found in HELLOTEST;[Permute(PermuteArgs { permutations: [('D', 'H'), ('E', 'R'), ('L', 'O')] })]
-HELLOTEST was found in HELLOTEST;[Permute(PermuteArgs { permutations: [('D', 'H'), ('E', 'R'), ('L', 'O')] })]
-HELLOTEST was found in HELLOTEST;[Permute(PermuteArgs { permutations: [('D', 'H'), ('E', 'R'), ('L', 'O')] })]
-HELLOTEST was found in HELLOTEST;[Permute(PermuteArgs { permutations: {'D': 'H', 'E': 'R', 'L': 'O'}, reversed_permutations: {'H': 'D', 'O': 'L', 'R': 'E'} })]
-HELLOTEST was found in HELLOTEST;[Permute(PermuteArgs { permutations: {'D': 'H', 'E': 'R', 'L': 'O'}, reversed_permutations: {'H': 'D', 'O': 'L', 'R': 'E'} })]

@@ -51,8 +51,6 @@ fn print_default(str: String, thread_count: usize) {
         .unwrap()
         .flush()
         .unwrap();
-    let ten_millis = time::Duration::from_millis(1000);
-    thread::sleep(ten_millis);
 }
 
 fn print_thread_status(
@@ -68,7 +66,7 @@ fn print_thread_status(
         .execute(Clear(terminal::ClearType::CurrentLine))
         .unwrap()
         .execute(Print(format!(
-            "thread_{:02}: {:03} ({})",
+            "thread_{:02}: {:04} ({})",
             thread_number,
             step,
             print_brute_force_state(current_combination)

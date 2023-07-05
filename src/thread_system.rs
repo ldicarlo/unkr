@@ -321,7 +321,6 @@ fn run_thread_work(
             if cache::already_done(done_cache.clone(), new_tw.current_combination.clone()) {
                 continue;
             }
-
             console_sender
                 .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
                     thread_number,
@@ -329,7 +328,6 @@ fn run_thread_work(
                     current_combination: new_tw.current_head.clone(),
                 }))
                 .unwrap();
-
             if new_tw.current_combination != tw.clone().current_combination {
                 combination_status_sender
                     .send(ThreadStatus::Done(
