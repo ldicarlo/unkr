@@ -32,7 +32,6 @@ pub fn fuzz_next_string_ruled(
 ) -> Option<String> {
     fuzz_next_r(
         str.chars()
-            .into_iter()
             .flat_map(|c| char_utils::char_position(c, get_alphabet_prefixed()))
             .map(|c| c as u8)
             .collect(),

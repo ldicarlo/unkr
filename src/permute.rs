@@ -58,7 +58,7 @@ pub fn cli_decrypt(
     decrypt(
         strs,
         models::PermuteArgs {
-            permutations: permutations.into_iter().collect(),
+            permutations: permutations.clone().into_iter().collect(),
             reversed_permutations: permutations
                 .clone()
                 .into_iter()

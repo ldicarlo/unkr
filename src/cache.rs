@@ -97,7 +97,7 @@ pub fn push_done(
     );
 }
 
-pub fn already_done(cache: BTreeSet<models::DoneLine>, done_line: DoneLine) -> bool {
+pub fn already_done(cache: BTreeSet<DoneLine>, done_line: DoneLine) -> bool {
     cache.contains(&done_line)
 }
 

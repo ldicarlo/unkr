@@ -50,7 +50,6 @@ pub fn start(
             local_console_sender,
         )
     });
-    let total = combinations.len();
     let thread_work =
         start_thread_work(combinations, clues.clone(), strings.clone()).expect("Nothing to do.");
     let am_tw = Arc::new(Mutex::new(ThreadsStatuses {
@@ -85,7 +84,6 @@ pub fn start(
                 local_strings,
                 local_candidates_sender,
                 local_console_sender,
-                total,
                 local_done_cache,
                 local_combination_status_sender,
             )
@@ -219,6 +217,42 @@ fn start_thread_work(
     })
 }
 
+fn cached_increase_thread_work(
+    tw: ThreadWork,
+    done_cache: BTreeSet<models::DoneLine>,
+) -> Option<ThreadWork> {
+    increase_thread_work(tw).and_then(|opt| {
+        if cache::already_done(done_cache.clone(), opt.clone().current_combination) {
+            println!("{:?}", opt.clone().current_combination);
+            increase_combination(opt.remaining_combinations, opt.clues, opt.strings)
+                .and_then(|n| cached_increase_thread_work(n, done_cache.clone()))
+        } else {
+            Some(opt)
+        }
+    })
+}
+
+fn increase_combination(
+    remaining_combinations: Vec<VecDeque<BruteForceCryptor>>,
+    clues: Vec<String>,
+    strings: Vec<String>,
+) -> Option<ThreadWork> {
+    let mut mut_remaining_combinations = remaining_combinations.clone();
+    let maybe_new_current_combination = mut_remaining_combinations.pop();
+    maybe_new_current_combination.map(|new_current_combination| {
+        let mut mut_new_current_combination = new_current_combination.clone();
+        let new_head = mut_new_current_combination.pop_front().unwrap();
+        ThreadWork {
+            current_head: brute_force_state::start_state(new_head),
+            current_tail: mut_new_current_combination,
+            current_combination: cache::to_done(new_current_combination),
+            remaining_combinations: mut_remaining_combinations,
+            clues,
+            strings,
+        }
+    })
+}
+
 fn increase_thread_work(
     ThreadWork {
         current_head,
@@ -229,7 +263,7 @@ fn increase_thread_work(
         strings,
     }: ThreadWork,
 ) -> Option<ThreadWork> {
-    brute_force_state::increase_state(current_head, strings.clone())
+    brute_force_state::increase_state(current_head.clone(), strings.clone())
         .map(|new_head| ThreadWork {
             current_head: new_head,
             current_tail: current_tail.clone(),
@@ -238,22 +272,7 @@ fn increase_thread_work(
             clues: clues.clone(),
             strings: strings.clone(),
         })
-        .or({
-            let mut mut_remaining_combinations = remaining_combinations.clone();
-            let maybe_new_current_combination = mut_remaining_combinations.pop();
-            maybe_new_current_combination.map(|new_current_combination| {
-                let mut mut_new_current_combination = new_current_combination.clone();
-                let new_head = mut_new_current_combination.pop_front().unwrap();
-                ThreadWork {
-                    current_head: brute_force_state::start_state(new_head),
-                    current_tail: mut_new_current_combination,
-                    current_combination: cache::to_done(new_current_combination),
-                    remaining_combinations: mut_remaining_combinations,
-                    clues,
-                    strings,
-                }
-            })
-        })
+        .or(increase_combination(remaining_combinations, clues, strings))
 }
 
 fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> Cryptor {
@@ -286,14 +305,13 @@ fn run_thread_work(
     strings: Vec<String>,
     candidates_sender: Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
     console_sender: Sender<PrintableMessage>,
-    total: usize,
     done_cache: BTreeSet<models::DoneLine>,
     combination_status_sender: Sender<ThreadStatus>,
 ) {
     let mut step = 0;
 
     loop {
-        if let Some(new_tw) = increase_thread_work(tw.clone()) {
+        if let Some(new_tw) = cached_increase_thread_work(tw.clone(), done_cache.clone()) {
             tw = new_tw.clone();
             step = step + 1;
 
@@ -308,7 +326,6 @@ fn run_thread_work(
                 .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
                     thread_number,
                     step,
-                    total,
                     current_combination: new_tw.current_head.clone(),
                 }))
                 .unwrap();

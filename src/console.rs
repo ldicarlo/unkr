@@ -19,7 +19,6 @@ pub enum PrintableMessage {
 pub struct ThreadStatusPayload {
     pub thread_number: usize,
     pub step: usize,
-    pub total: usize,
     pub current_combination: BruteForceState,
 }
 
@@ -60,7 +59,6 @@ fn print_thread_status(
     ThreadStatusPayload {
         thread_number,
         step,
-        total,
         current_combination,
     }: ThreadStatusPayload,
 ) {
@@ -70,10 +68,9 @@ fn print_thread_status(
         .execute(Clear(terminal::ClearType::CurrentLine))
         .unwrap()
         .execute(Print(format!(
-            "thread_{:02}: {:03}/{:03} ({})",
+            "thread_{:02}: {:03} ({})",
             thread_number,
             step,
-            total,
             print_brute_force_state(current_combination)
         )))
         .unwrap()
