@@ -231,9 +231,20 @@ pub fn combinations_string(
 }
 
 pub fn to_partial(cryptor: Cryptor, tail: VecDeque<BruteForceCryptor>) -> PartialLine {
-    PartialLine {
-      args:,
-    }
+    PartialLine { cryptor, tail }
+}
+
+pub fn partial_to_string(partial_line: PartialLine) -> String {
+    let mut writer = csv::WriterBuilder::new()
+        .has_headers(false)
+        .delimiter(b';')
+        .from_writer(vec![]);
+
+    writer.serialize(partial_line.clone()).expect("FAIL");
+    String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
+        .expect("Cannot convert utf8")
+        .trim()
+        .to_string()
 }
 
 #[cfg(test)]
@@ -242,7 +253,8 @@ pub mod tests {
 
     use crate::{
         cache::{prepare_cache_args, push_done, unique_sorted_clues},
-        models,
+        enigma::{EnigmaArgs, Reflector, Rotor},
+        models::{self, BruteForceCryptor},
     };
 
     use super::{already_done, get_done_cache, push_line};
@@ -365,6 +377,31 @@ pub mod tests {
                 combinations: String::from("Transpose Caesar"),
                 args: None
             }
+        )
+    }
+
+    #[test]
+    fn to_partial_to_string() {
+        assert_eq!(
+            super::partial_to_string(super::to_partial(
+                models::Cryptor::Enigma(EnigmaArgs {
+                    reflector: Reflector::B,
+                    l0_rotor: None,
+                    l_rotor: (Rotor::I, 1),
+                    m_rotor: (Rotor::II, 6),
+                    r_rotor: (Rotor::III, 24)
+                },),
+                vec![
+                    BruteForceCryptor::Cut,
+                    BruteForceCryptor::Vigenere(models::BruteForceVigenereArgs {
+                        alphabet_depth: 3,
+                        key_depth: 4
+                    })
+                ]
+                .into_iter()
+                .collect()
+            )),
+            String::from("")
         )
     }
 }

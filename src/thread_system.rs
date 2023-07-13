@@ -59,6 +59,7 @@ pub fn start(
     let (thread_combination_status_sender, thread_combination_status_receiver) = unbounded();
 
     let done_cache = cache::get_done_cache(cache_args.clone());
+    let partial_cache = cache::get_partial_cache(cache_args.clone());
     for i in 0..thread_count {
         thread_combination_status_sender
             .send(ThreadStatus::Doing(
@@ -74,6 +75,7 @@ pub fn start(
         let local_console_sender = console_sender.clone();
         let local_done_cache = done_cache.clone();
         let local_combination_status_sender = thread_combination_status_sender.clone();
+        let local_partial_cache = partial_cache.clone();
         thread::spawn(move || {
             run_thread_work(
                 local_sender,
@@ -85,6 +87,7 @@ pub fn start(
                 local_candidates_sender,
                 local_console_sender,
                 local_done_cache,
+                local_partial_cache,
                 local_combination_status_sender,
             )
         });
@@ -319,9 +322,9 @@ fn run_thread_work(
             if step % thread_count != thread_number {
                 continue;
             }
-            if cache::partial_done(partial_cache.clone(), new_tw.head.clone()) {
-                continue;
-            }
+            // if cache::partial_done(partial_cache.clone(), new_tw.head.clone()) {
+            //     continue;
+            // }
             console_sender
                 .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
                     thread_number,

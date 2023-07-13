@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 
 use crate::enigma::EnigmaArgs;
 
@@ -165,8 +165,7 @@ pub struct DoneLine {
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
 pub struct PartialLine {
     pub cryptor: Cryptor,
-    pub combinations: String,
-    pub args: Option<String>,
+    pub tail: VecDeque<BruteForceCryptor>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
