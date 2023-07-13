@@ -20,6 +20,7 @@ mod enigma;
 mod fuzzer;
 mod indexcrypt;
 mod join;
+mod mapper;
 mod models;
 mod parser;
 mod permute;

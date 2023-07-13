@@ -5,6 +5,7 @@ use crate::candidates;
 use crate::console;
 use crate::console::PrintableMessage;
 use crate::console::ThreadStatusPayload;
+use crate::mapper;
 use crate::models;
 use crate::models::BruteForceCryptor;
 use crate::models::BruteForceState;
@@ -76,6 +77,7 @@ pub fn start(
         let local_done_cache = done_cache.clone();
         let local_combination_status_sender = thread_combination_status_sender.clone();
         let local_partial_cache = partial_cache.clone();
+        let local_cache_args = cache_args.clone();
         thread::spawn(move || {
             run_thread_work(
                 local_sender,
@@ -88,6 +90,7 @@ pub fn start(
                 local_console_sender,
                 local_done_cache,
                 local_partial_cache,
+                local_cache_args,
                 local_combination_status_sender,
             )
         });
@@ -211,7 +214,7 @@ fn start_thread_work(
             ThreadWork {
                 current_head,
                 current_tail: popable,
-                current_combination: cache::to_done(x),
+                current_combination: mapper::to_done(x),
                 remaining_combinations,
                 clues,
                 strings,
@@ -248,7 +251,7 @@ fn increase_combination(
         ThreadWork {
             current_head: brute_force_state::start_state(new_head),
             current_tail: mut_new_current_combination,
-            current_combination: cache::to_done(new_current_combination),
+            current_combination: mapper::to_done(new_current_combination),
             remaining_combinations: mut_remaining_combinations,
             clues,
             strings,
@@ -310,6 +313,7 @@ fn run_thread_work(
     console_sender: Sender<PrintableMessage>,
     done_cache: BTreeSet<models::DoneLine>,
     partial_cache: BTreeSet<models::PartialLine>,
+    cache_args: models::CacheArgs,
     combination_status_sender: Sender<ThreadStatus>,
 ) {
     let mut step = 0;
@@ -322,9 +326,13 @@ fn run_thread_work(
             if step % thread_count != thread_number {
                 continue;
             }
-            // if cache::partial_done(partial_cache.clone(), new_tw.head.clone()) {
-            //     continue;
-            // }
+            let partial_line = mapper::to_partial(
+                brute_force_state::get_cryptor(&new_tw.current_head),
+                new_tw.current_tail.clone(),
+            );
+            if cache::partial_done(partial_cache.clone(), partial_line.clone()) {
+                continue;
+            }
             console_sender
                 .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
                     thread_number,
@@ -361,6 +369,7 @@ fn run_thread_work(
                     candidates_sender.clone(),
                 );
             }
+            cache::push_partial(partial_line.clone(), cache_args.clone());
         } else {
             combination_status_sender
                 .send(ThreadStatus::Done(
