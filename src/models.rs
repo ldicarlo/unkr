@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, VecDeque};
 
 use crate::enigma::EnigmaArgs;
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 #[serde(tag = "name", deny_unknown_fields)]
 pub enum CLICryptor {
     Vigenere(VigenereArgs),
@@ -164,7 +164,7 @@ pub struct DoneLine {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
 pub struct PartialLine {
-    pub cryptor: Cryptor,
+    pub cryptor: CLICryptor,
     pub tail: VecDeque<BruteForceCryptor>,
 }
 

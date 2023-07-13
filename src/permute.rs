@@ -67,6 +67,7 @@ pub fn cli_decrypt(
         },
     )
 }
+
 pub fn decrypt(
     strs: Vec<String>,
     models::PermuteArgs {

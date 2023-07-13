@@ -1,13 +1,27 @@
 use std::collections::{HashSet, VecDeque};
 
 use crate::models::{
-    BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor, Cryptor,
-    DoneLine, HitLine, PartialLine,
+    BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor, CLIPermuteArgs,
+    Cryptor, DoneLine, HitLine, PartialLine,
 };
 
-pub fn cryptor_to_cli(cryptor: Cryptor)
-// -> CLICryptor
-{
+pub fn cryptor_to_cli(cryptor: Cryptor) -> CLICryptor {
+    match cryptor {
+        Cryptor::Vigenere(args) => CLICryptor::Vigenere(args),
+        Cryptor::Cut(args) => CLICryptor::Cut(args),
+        Cryptor::Caesar(args) => CLICryptor::Caesar(args),
+        Cryptor::Transpose(args) => CLICryptor::Transpose(args),
+        Cryptor::AtBash => CLICryptor::AtBash,
+        Cryptor::Reverse => CLICryptor::Reverse,
+        Cryptor::Swap(args) => CLICryptor::Swap(args),
+        Cryptor::Join => CLICryptor::Join,
+        Cryptor::Colors(args) => CLICryptor::Colors(args),
+        Cryptor::IndexCrypt(args) => CLICryptor::IndexCrypt(args),
+        Cryptor::Permute(args) => CLICryptor::Permute(CLIPermuteArgs {
+            permutations: args.permutations.into_iter().collect(),
+        }),
+        Cryptor::Enigma(args) => CLICryptor::Enigma(args),
+    }
 }
 
 pub fn hit_to_string(hit_line: HitLine) -> String {
@@ -23,7 +37,10 @@ pub fn to_done(combination: VecDeque<BruteForceCryptor>) -> DoneLine {
 }
 
 pub fn to_partial(cryptor: Cryptor, tail: VecDeque<BruteForceCryptor>) -> PartialLine {
-    PartialLine { cryptor, tail }
+    PartialLine {
+        cryptor: cryptor_to_cli(cryptor),
+        tail,
+    }
 }
 
 pub fn combinations_string(
