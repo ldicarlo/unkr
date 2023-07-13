@@ -19,7 +19,7 @@ pub enum CLICryptor {
     Enigma(EnigmaArgs),
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 #[serde(tag = "name", deny_unknown_fields)]
 pub enum Cryptor {
     Vigenere(VigenereArgs),
@@ -35,7 +35,9 @@ pub enum Cryptor {
     Permute(PermuteArgs),
     Enigma(EnigmaArgs),
 }
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
+#[derive(
+    Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone, Copy,
+)]
 pub enum CryptorTypeWithArgs {
     Vigenere,
     Cut,
@@ -48,7 +50,7 @@ pub enum CryptorTypeWithArgs {
     Enigma,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 #[serde(tag = "name", deny_unknown_fields)]
 pub enum BruteForceCryptor {
     Vigenere(BruteForceVigenereArgs),
@@ -94,45 +96,49 @@ pub struct PermuteBruteForceState {
     pub args: PermuteArgs,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct VigenereArgs {
     pub key: String,
     pub alphabet: String,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
+#[derive(
+    Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone, Copy,
+)]
 pub struct BruteForceVigenereArgs {
     pub alphabet_depth: usize,
     pub key_depth: usize,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct SwapArgs {
     pub order: Vec<u8>,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct PermuteArgs {
     pub permutations: BTreeMap<char, char>,
     pub reversed_permutations: BTreeMap<char, char>,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct CLIPermuteArgs {
     pub permutations: Vec<(char, char)>,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct BruteForcePermuteArgs {
     pub max_permutations: usize,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct StringArgs {
     pub letters: String,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
+#[derive(
+    Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone, Copy,
+)]
 pub struct NumberArgs {
     pub number: usize,
 }
@@ -152,6 +158,13 @@ pub struct HitLine {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
 pub struct DoneLine {
+    pub combinations: String,
+    pub args: Option<String>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
+pub struct PartialLine {
+    pub cryptor: Cryptor,
     pub combinations: String,
     pub args: Option<String>,
 }

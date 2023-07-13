@@ -306,6 +306,7 @@ fn run_thread_work(
     candidates_sender: Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
     console_sender: Sender<PrintableMessage>,
     done_cache: BTreeSet<models::DoneLine>,
+    partial_cache: BTreeSet<models::PartialLine>,
     combination_status_sender: Sender<ThreadStatus>,
 ) {
     let mut step = 0;
@@ -318,7 +319,7 @@ fn run_thread_work(
             if step % thread_count != thread_number {
                 continue;
             }
-            if cache::already_done(done_cache.clone(), new_tw.current_combination.clone()) {
+            if cache::partial_done(partial_cache.clone(), new_tw.head.clone()) {
                 continue;
             }
             console_sender

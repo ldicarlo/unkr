@@ -1,4 +1,5 @@
-use crate::models::{self, DoneLine};
+use crate::cryptors;
+use crate::models::{self, BruteForceCryptor, Cryptor, DoneLine, PartialLine};
 use std::collections::{BTreeSet, HashSet, VecDeque};
 use std::fs;
 use std::fs::OpenOptions;
@@ -30,6 +31,19 @@ fn hits_string(
     )
 }
 
+fn partial_string(
+    models::CacheArgs {
+        md5_clues,
+        md5_string,
+        path,
+    }: models::CacheArgs,
+) -> (String, String) {
+    (
+        format!("{}/{}/{}", path, md5_string, md5_clues),
+        String::from("partials"),
+    )
+}
+
 pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLine> {
     let (done_folder, done_file) = done_string(cache_args);
     fs::create_dir_all(done_folder.clone()).unwrap();
@@ -48,6 +62,31 @@ pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLin
 
     for result in rdr.records() {
         let record: models::DoneLine = result
+            .expect("Failed to deserialize element.")
+            .deserialize(None)
+            .expect("Failed to deserialize element.");
+        cache.insert(record);
+    }
+    cache
+}
+pub fn get_partial_cache(cache_args: models::CacheArgs) -> BTreeSet<models::PartialLine> {
+    let (done_folder, done_file) = partial_string(cache_args);
+    fs::create_dir_all(done_folder.clone()).unwrap();
+    OpenOptions::new()
+        .create(true)
+        .write(true)
+        .open(format!("{}/{}", done_folder, done_file))
+        .expect(&format!("Not found: {}/{}", done_folder, done_file));
+    let mut cache: BTreeSet<models::PartialLine> = BTreeSet::new();
+
+    let mut rdr = csv::ReaderBuilder::new()
+        .has_headers(false)
+        .delimiter(b';')
+        .from_path(format!("{}/{}", done_folder, done_file))
+        .unwrap();
+
+    for result in rdr.records() {
+        let record: models::PartialLine = result
             .expect("Failed to deserialize element.")
             .deserialize(None)
             .expect("Failed to deserialize element.");
@@ -99,6 +138,10 @@ pub fn push_done(
 
 pub fn already_done(cache: BTreeSet<DoneLine>, done_line: DoneLine) -> bool {
     cache.contains(&done_line)
+}
+
+pub fn partial_done(cache: BTreeSet<PartialLine>, partial_line: PartialLine) -> bool {
+    cache.contains(&partial_line)
 }
 
 pub fn prepare_cache_args(path: String, str: String, clues: Vec<String>) -> models::CacheArgs {
@@ -185,6 +228,12 @@ pub fn combinations_string(
     };
 
     (left, right)
+}
+
+pub fn to_partial(cryptor: Cryptor, tail: VecDeque<BruteForceCryptor>) -> PartialLine {
+    PartialLine {
+      args:,
+    }
 }
 
 #[cfg(test)]

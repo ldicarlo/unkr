@@ -379,7 +379,7 @@ fn get_reflector(r: Reflector) -> Vec<u8> {
     }
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct EnigmaArgs {
     pub reflector: Reflector,
     pub l0_rotor: Option<(Rotor, u8)>,
@@ -388,7 +388,9 @@ pub struct EnigmaArgs {
     pub r_rotor: (Rotor, u8),
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, EnumIter)]
+#[derive(
+    Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord, EnumIter,
+)]
 pub enum Rotor {
     I,
     II,
@@ -400,7 +402,9 @@ pub enum Rotor {
     VIII,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, EnumIter)]
+#[derive(
+    Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord, EnumIter,
+)]
 pub enum Reflector {
     //   A,
     B,
