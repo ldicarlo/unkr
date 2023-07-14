@@ -11,6 +11,7 @@ use crate::models::BruteForceCryptor;
 use crate::models::BruteForceState;
 use crate::models::Cryptor;
 use crate::models::DoneLine;
+use crate::models::PartialLine;
 use crate::models::PermuteBruteForceState;
 use crate::models::VigenereBruteForceState;
 use crossbeam::channel::unbounded;
@@ -77,7 +78,6 @@ pub fn start(
         let local_done_cache = done_cache.clone();
         let local_combination_status_sender = thread_combination_status_sender.clone();
         let local_partial_cache = partial_cache.clone();
-        let local_cache_args = cache_args.clone();
         thread::spawn(move || {
             run_thread_work(
                 local_sender,
@@ -90,7 +90,6 @@ pub fn start(
                 local_console_sender,
                 local_done_cache,
                 local_partial_cache,
-                local_cache_args,
                 local_combination_status_sender,
             )
         });
@@ -119,6 +118,7 @@ fn thread_combination_status_function(
 enum ThreadStatus {
     Doing(usize, DoneLine),
     Done(usize, DoneLine),
+    DonePartial(PartialLine),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -130,7 +130,7 @@ pub enum WorkStatus {
 fn apply_state(
     thread_status: ThreadStatus,
     state: ThreadsStatuses,
-) -> (ThreadsStatuses, Option<DoneLine>) {
+) -> (ThreadsStatuses, Option<DoneLine>, Option<PartialLine>) {
     let mut mutable_state = state.clone();
     match thread_status {
         ThreadStatus::Doing(thread_number, done_line) => {
@@ -140,7 +140,7 @@ fn apply_state(
                 .map(|(_, b)| (Some(done_line.clone()), b.clone()))
                 .unwrap_or((Some(done_line), vec![]));
             mutable_state.workload.insert(thread_number, current);
-            (mutable_state, None)
+            (mutable_state, None, None)
         }
         ThreadStatus::Done(thread_number, done_line) => {
             let current = state
@@ -165,8 +165,9 @@ fn apply_state(
                 None
             };
 
-            (mutable_state, done)
+            (mutable_state, done, None)
         }
+        ThreadStatus::DonePartial(partial_line) => (state, None, Some(partial_line)),
     }
 }
 
@@ -177,10 +178,13 @@ fn thread_combination_status(
 ) {
     let mut state = tw.lock().unwrap();
 
-    let (result, done_to_push) = apply_state(thread_status, state.clone());
+    let (result, done_to_push, partial_to_push) = apply_state(thread_status, state.clone());
 
     if let Some(done) = done_to_push {
-        cache::push_done(done, cache_args);
+        cache::push_done(done, cache_args.clone());
+    }
+    if let Some(partial) = partial_to_push {
+        cache::push_partial(partial, cache_args.clone());
     }
 
     *state = result;
@@ -313,7 +317,6 @@ fn run_thread_work(
     console_sender: Sender<PrintableMessage>,
     done_cache: BTreeSet<models::DoneLine>,
     partial_cache: BTreeSet<models::PartialLine>,
-    cache_args: models::CacheArgs,
     combination_status_sender: Sender<ThreadStatus>,
 ) {
     let mut step = 0;
@@ -369,7 +372,10 @@ fn run_thread_work(
                     candidates_sender.clone(),
                 );
             }
-            cache::push_partial(partial_line.clone(), cache_args.clone());
+
+            combination_status_sender
+                .send(ThreadStatus::DonePartial(partial_line.clone()))
+                .unwrap();
         } else {
             combination_status_sender
                 .send(ThreadStatus::Done(
@@ -479,6 +485,7 @@ mod tests {
                     .into_iter()
                     .collect()
                 },
+                None,
                 None
             ),
             apply_state(
@@ -517,7 +524,8 @@ mod tests {
                 Some(DoneLine {
                     args: None,
                     combinations: String::from("Join")
-                })
+                }),
+                None
             ),
             apply_state(
                 ThreadStatus::Done(
