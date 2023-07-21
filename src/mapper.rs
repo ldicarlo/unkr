@@ -1,8 +1,8 @@
 use std::collections::{HashSet, VecDeque};
 
 use crate::models::{
-    BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor, CLIPermuteArgs,
-    Cryptor, DoneLine, HitLine, PartialLine,
+    self, BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
+    CLIPermuteArgs, Cryptor, DoneLine, HitLine, PartialLine,
 };
 
 pub fn cryptor_to_cli(cryptor: Cryptor) -> CLICryptor {
@@ -95,12 +95,29 @@ pub fn combinations_string(
 }
 
 pub fn partial_to_string(partial_line: PartialLine) -> String {
+    let mut first_writer = csv::WriterBuilder::new()
+        .has_headers(false)
+        .delimiter(b':')
+        .from_writer(vec![]);
+    first_writer
+        .serialize(partial_line.clone().cryptor)
+        .expect("FAIL");
+    let first_str = String::from_utf8(first_writer.into_inner().expect("Cannot convert utf8"))
+        .expect("Cannot convert utf8")
+        .trim()
+        .to_string();
+
     let mut writer = csv::WriterBuilder::new()
         .has_headers(false)
         .delimiter(b';')
         .from_writer(vec![]);
 
-    writer.serialize(partial_line.clone()).expect("FAIL");
+    writer
+        .serialize(models::SerializablePartialLine {
+            cryptor: first_str,
+            tail: partial_line.tail,
+        })
+        .expect("FAIL");
     String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
         .expect("Cannot convert utf8")
         .trim()
@@ -167,7 +184,7 @@ pub mod tests {
                 .into_iter()
                 .collect()
             )),
-            String::from("Enigma;B;;I;1;II;6;III;24;Cut;Vigenere;3;4")
+            String::from("Enigma:B::I:1:II:6:III:24;Cut;Vigenere;3;4")
         )
     }
 }

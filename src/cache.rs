@@ -69,6 +69,7 @@ pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLin
     }
     cache
 }
+
 pub fn get_partial_cache(cache_args: models::CacheArgs) -> BTreeSet<models::PartialLine> {
     let (done_folder, done_file) = partial_string(cache_args);
     fs::create_dir_all(done_folder.clone()).unwrap();
@@ -86,12 +87,22 @@ pub fn get_partial_cache(cache_args: models::CacheArgs) -> BTreeSet<models::Part
         .unwrap();
 
     for result in rdr.records() {
-        let record: models::PartialLine = result
+        let record: models::SerializablePartialLine = result
             .expect("Failed to deserialize element.")
             .deserialize(None)
             .expect("Failed to deserialize element.");
-        cache.insert(record);
+        let mut rdr2 = csv::ReaderBuilder::new()
+            .has_headers(false)
+            .delimiter(b':')
+            .from_reader(record.cryptor.as_bytes());
+        for result2 in rdr2.records() {
+            cache.insert(PartialLine {
+                cryptor: result2.unwrap().deserialize(None).unwrap(),
+                tail: record.tail.clone(),
+            });
+        }
     }
+
     cache
 }
 
@@ -148,16 +159,7 @@ pub fn push_partial(
         path,
     }: models::CacheArgs,
 ) {
-    let mut writer = csv::WriterBuilder::new()
-        .has_headers(false)
-        .delimiter(b';')
-        .from_writer(vec![]);
-
-    writer.serialize(partial_line.clone()).expect("FAIL");
-    let result = String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
-        .expect("Cannot convert utf8")
-        .trim()
-        .to_string();
+    let result = mapper::partial_to_string(partial_line);
     push_line(
         format!("{}/{}/{}", path, md5_string, md5_clues),
         String::from("partials"),
