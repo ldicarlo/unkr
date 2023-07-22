@@ -80,29 +80,7 @@ pub fn get_partial_cache(cache_args: models::CacheArgs) -> BTreeSet<models::Part
         .expect(&format!("Not found: {}/{}", done_folder, done_file));
     let mut cache: BTreeSet<models::PartialLine> = BTreeSet::new();
 
-    let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .delimiter(b';')
-        .from_path(format!("{}/{}", done_folder, done_file))
-        .unwrap();
-
-    for result in rdr.records() {
-        let record: models::SerializablePartialLine = result
-            .expect("Failed to deserialize element.")
-            .deserialize(None)
-            .expect("Failed to deserialize element.");
-        let mut rdr2 = csv::ReaderBuilder::new()
-            .has_headers(false)
-            .delimiter(b':')
-            .from_reader(record.cryptor.as_bytes());
-        for result2 in rdr2.records() {
-            cache.insert(PartialLine {
-                cryptor: result2.unwrap().deserialize(None).unwrap(),
-                tail: record.tail.clone(),
-            });
-        }
-    }
-
+    for result in rdr.records() {}
     cache
 }
 

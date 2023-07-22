@@ -3,7 +3,6 @@ use std::collections::{BTreeMap, VecDeque};
 use crate::enigma::EnigmaArgs;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
-#[serde(tag = "name", deny_unknown_fields)]
 pub enum CLICryptor {
     Vigenere(VigenereArgs),
     Cut(NumberArgs),
@@ -51,7 +50,6 @@ pub enum CryptorTypeWithArgs {
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
-#[serde(tag = "name", deny_unknown_fields)]
 pub enum BruteForceCryptor {
     Vigenere(BruteForceVigenereArgs),
     Cut,

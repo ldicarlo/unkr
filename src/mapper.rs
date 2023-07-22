@@ -124,11 +124,41 @@ pub fn partial_to_string(partial_line: PartialLine) -> String {
         .to_string()
 }
 
+pub fn string_to_partial(str: String) -> Vec<PartialLine> {
+    let mut rdr = csv::ReaderBuilder::new()
+        .has_headers(false)
+        .delimiter(b';')
+        .from_reader(str.as_bytes());
+    let mut out = vec![];
+    for result in rdr.records() {
+        println!("{:?}", result);
+        let record: models::SerializablePartialLine = result
+            .expect("Failed to deserialize element.")
+            .deserialize(None)
+            .expect("Failed to deserialize element.");
+        let mut rdr2 = csv::ReaderBuilder::new()
+            .has_headers(false)
+            .delimiter(b':')
+            .from_reader(record.cryptor.as_bytes());
+        println!("{:?}", record);
+
+        for result2 in rdr2.records() {
+            out.push(PartialLine {
+                cryptor: result2.unwrap().deserialize(None).unwrap(),
+                tail: record.tail.clone(),
+            });
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 pub mod tests {
     use crate::{
         enigma::{EnigmaArgs, Reflector, Rotor},
-        models::{BruteForceCryptor, BruteForceVigenereArgs, Cryptor, DoneLine},
+        models::{
+            BruteForceCryptor, BruteForceVigenereArgs, CLICryptor, Cryptor, DoneLine, PartialLine,
+        },
     };
 
     #[test]
@@ -164,7 +194,7 @@ pub mod tests {
     }
 
     #[test]
-    fn to_partial_to_string() {
+    fn to_partial_to_string_works() {
         assert_eq!(
             super::partial_to_string(super::to_partial(
                 Cryptor::Enigma(EnigmaArgs {
@@ -186,5 +216,18 @@ pub mod tests {
             )),
             String::from("Enigma:B::I:1:II:6:III:24;Cut;Vigenere;3;4")
         )
+    }
+
+    #[test]
+    fn string_to_partial_works() {
+        assert_eq!(
+            super::string_to_partial(String::from("Reverse;Enigma;Enigma")),
+            vec![PartialLine {
+                cryptor: CLICryptor::Reverse,
+                tail: vec![BruteForceCryptor::Enigma, BruteForceCryptor::Enigma]
+                    .into_iter()
+                    .collect()
+            }]
+        );
     }
 }
