@@ -45,6 +45,7 @@ fn partial_string(
 }
 
 pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLine> {
+    eprintln!("Loading done cache");
     let (done_folder, done_file) = done_string(cache_args);
     fs::create_dir_all(done_folder.clone()).unwrap();
     OpenOptions::new()
@@ -67,27 +68,30 @@ pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLin
             .expect("Failed to deserialize element.");
         cache.insert(record);
     }
+    eprintln!("Done cache loaded");
     cache
 }
 
 pub fn get_partial_cache(cache_args: models::CacheArgs) -> BTreeSet<PartialLine> {
-    let (done_folder, done_file) = partial_string(cache_args);
-    fs::create_dir_all(done_folder.clone()).unwrap();
+    eprintln!("Loading partial cache");
+    let (partial_folder, done_file) = partial_string(cache_args);
+    fs::create_dir_all(partial_folder.clone()).unwrap();
     let file = OpenOptions::new()
         .create(true)
+        .read(true)
         .write(true)
-        .open(format!("{}/{}", done_folder, done_file))
-        .expect(&format!("Not found: {}/{}", done_folder, done_file));
+        .open(format!("{}/{}", partial_folder, done_file))
+        .expect(&format!("Not found: {}/{}", partial_folder, done_file));
 
     let mut cache: BTreeSet<models::PartialLine> = BTreeSet::new();
 
     for result in io::BufReader::new(file).lines() {
-        if let Ok(line) = result {
-            for partial_line in mapper::string_to_partial(line) {
-                cache.insert(partial_line);
-            }
+        let line = result.unwrap();
+        for partial_line in mapper::string_to_partial(line) {
+            cache.insert(partial_line);
         }
     }
+    eprintln!("Partial cache ready");
     cache
 }
 
