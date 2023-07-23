@@ -1,8 +1,12 @@
 use std::collections::{HashSet, VecDeque};
 
-use crate::models::{
-    self, BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
-    CLIPermuteArgs, Cryptor, DoneLine, HitLine, PartialLine,
+use crate::{
+    models::{
+        self, BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
+        CLIPermuteArgs, Cryptor, DoneLine, HitLine, PartialLine, SerializablePartialLine,
+        SerializablePartialLine2,
+    },
+    parser::{self, read_bruteforce_parameters},
 };
 
 pub fn cryptor_to_cli(cryptor: Cryptor) -> CLICryptor {
@@ -113,7 +117,7 @@ pub fn partial_to_string(partial_line: PartialLine) -> String {
         .from_writer(vec![]);
 
     writer
-        .serialize(models::SerializablePartialLine {
+        .serialize(SerializablePartialLine2 {
             cryptor: first_str,
             tail: partial_line.tail,
         })
@@ -132,22 +136,23 @@ pub fn string_to_partial(str: String) -> Vec<PartialLine> {
     let mut out = vec![];
     for result in rdr.records() {
         println!("{:?}", result);
-        let record: models::SerializablePartialLine = result
+
+        let record: SerializablePartialLine = result
             .expect("Failed to deserialize element.")
             .deserialize(None)
             .expect("Failed to deserialize element.");
-        let mut rdr2 = csv::ReaderBuilder::new()
-            .has_headers(false)
-            .delimiter(b':')
-            .from_reader(record.cryptor.as_bytes());
+
         println!("{:?}", record);
 
-        for result2 in rdr2.records() {
-            out.push(PartialLine {
-                cryptor: result2.unwrap().deserialize(None).unwrap(),
-                tail: record.tail.clone(),
-            });
-        }
+        let head = parser::read_parameters(record.cryptor);
+        out.push(PartialLine {
+            cryptor: head,
+            tail: record
+                .tail
+                .into_iter()
+                .map(read_bruteforce_parameters)
+                .collect(),
+        });
     }
     out
 }

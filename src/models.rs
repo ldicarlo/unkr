@@ -172,6 +172,12 @@ pub struct PartialLine {
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
 pub struct SerializablePartialLine {
     pub cryptor: String,
+    pub tail: VecDeque<String>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
+pub struct SerializablePartialLine2 {
+    pub cryptor: String,
     pub tail: VecDeque<BruteForceCryptor>,
 }
 

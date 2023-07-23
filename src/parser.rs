@@ -109,6 +109,26 @@ pub fn read_parameters(mut str: String) -> CLICryptor {
     }
 }
 
+pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
+    let type_name: String = str.drain(..str.find(':').unwrap_or(str.len())).collect();
+    if str.len() > 0 {
+        str.drain(0..1);
+    }
+    match type_name.to_lowercase().as_str() {
+        "vigenere" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Vigenere),
+        "cut" => BruteForceCryptor::Cut,
+        "transpose" => BruteForceCryptor::Transpose,
+        "reverse" => BruteForceCryptor::Reverse,
+        "atbash" => BruteForceCryptor::AtBash,
+        "swap" => BruteForceCryptor::Swap,
+        "join" => BruteForceCryptor::Join,
+        //   "indexcrypt" => BruteForceCryptor::IndexCrypt,
+        "permute" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Permute),
+        "enigma" => BruteForceCryptor::Enigma,
+        _ => panic!("Cannot parse: {}", type_name),
+    }
+}
+
 fn read_bruteforce(str: String, cryptor_type: CryptorTypeWithBruteForceArgs) -> BruteForceCryptor {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
@@ -131,26 +151,6 @@ fn read_bruteforce(str: String, cryptor_type: CryptorTypeWithBruteForceArgs) -> 
                 .deserialize::<BruteForcePermuteArgs>(None)
                 .expect("cannot deserialize"),
         ),
-    }
-}
-
-pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
-    let type_name: String = str.drain(..str.find(':').unwrap_or(str.len())).collect();
-    if str.len() > 0 {
-        str.drain(0..1);
-    }
-    match type_name.as_str() {
-        "vigenere" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Vigenere),
-        "cut" => BruteForceCryptor::Cut,
-        "transpose" => BruteForceCryptor::Transpose,
-        "reverse" => BruteForceCryptor::Reverse,
-        "atbash" => BruteForceCryptor::AtBash,
-        "swap" => BruteForceCryptor::Swap,
-        "join" => BruteForceCryptor::Join,
-        //   "indexcrypt" => BruteForceCryptor::IndexCrypt,
-        "permute" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Permute),
-        "enigma" => BruteForceCryptor::Enigma,
-        _ => panic!("Cannot parse: {}", str),
     }
 }
 

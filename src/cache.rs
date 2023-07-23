@@ -70,7 +70,7 @@ pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLin
     cache
 }
 
-pub fn get_partial_cache(cache_args: models::CacheArgs) -> BTreeSet<models::PartialLine> {
+pub fn get_partial_cache(cache_args: models::CacheArgs) -> BTreeSet<PartialLine> {
     let (done_folder, done_file) = partial_string(cache_args);
     fs::create_dir_all(done_folder.clone()).unwrap();
     let file = OpenOptions::new()
