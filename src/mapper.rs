@@ -2,7 +2,7 @@ use std::collections::{HashSet, VecDeque};
 
 use crate::{
     models::{
-        self, BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
+        BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
         CLIPermuteArgs, Cryptor, DoneLine, HitLine, PartialLine, SerializablePartialLine,
         SerializablePartialLine2,
     },
@@ -128,33 +128,31 @@ pub fn partial_to_string(partial_line: PartialLine) -> String {
         .to_string()
 }
 
+// actually always returns one only
 pub fn string_to_partial(str: String) -> Vec<PartialLine> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b';')
         .from_reader(str.as_bytes());
-    let mut out = vec![];
-    for result in rdr.records() {
-        println!("{:?}", result);
+    rdr.records()
+        .into_iter()
+        .map(|result| {
+            let record: SerializablePartialLine = result
+                .expect("Failed to deserialize element.")
+                .deserialize(None)
+                .expect("Failed to deserialize element.");
 
-        let record: SerializablePartialLine = result
-            .expect("Failed to deserialize element.")
-            .deserialize(None)
-            .expect("Failed to deserialize element.");
-
-        println!("{:?}", record);
-
-        let head = parser::read_parameters(record.cryptor);
-        out.push(PartialLine {
-            cryptor: head,
-            tail: record
-                .tail
-                .into_iter()
-                .map(read_bruteforce_parameters)
-                .collect(),
-        });
-    }
-    out
+            let head = parser::read_parameters(record.cryptor);
+            PartialLine {
+                cryptor: head,
+                tail: record
+                    .tail
+                    .into_iter()
+                    .map(read_bruteforce_parameters)
+                    .collect(),
+            }
+        })
+        .collect()
 }
 
 #[cfg(test)]
