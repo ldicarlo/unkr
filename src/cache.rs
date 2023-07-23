@@ -1,9 +1,9 @@
 use crate::mapper;
 use crate::models::{self, DoneLine, PartialLine};
 use std::collections::BTreeSet;
-use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
+use std::{fs, io};
 
 fn done_string(
     models::CacheArgs {
@@ -73,14 +73,21 @@ pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLin
 pub fn get_partial_cache(cache_args: models::CacheArgs) -> BTreeSet<models::PartialLine> {
     let (done_folder, done_file) = partial_string(cache_args);
     fs::create_dir_all(done_folder.clone()).unwrap();
-    OpenOptions::new()
+    let file = OpenOptions::new()
         .create(true)
         .write(true)
         .open(format!("{}/{}", done_folder, done_file))
         .expect(&format!("Not found: {}/{}", done_folder, done_file));
+
     let mut cache: BTreeSet<models::PartialLine> = BTreeSet::new();
 
-    for result in rdr.records() {}
+    for result in io::BufReader::new(file).lines() {
+        if let Ok(line) = result {
+            for partial_line in mapper::string_to_partial(line) {
+                cache.insert(partial_line);
+            }
+        }
+    }
     cache
 }
 
