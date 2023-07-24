@@ -130,8 +130,10 @@ pub fn partial_to_string(partial_line: PartialLine) -> String {
 
 // actually always returns one only
 pub fn string_to_partial(str: String) -> Vec<PartialLine> {
+    println!("{}", str);
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
+        .flexible(true)
         .delimiter(b';')
         .from_reader(str.as_bytes());
     rdr.records()
@@ -232,5 +234,37 @@ pub mod tests {
                     .collect()
             }]
         );
+    }
+
+    use csv::ReaderBuilder;
+    use serde::Deserialize;
+    use std::error::Error;
+
+    #[derive(Debug, Deserialize, Eq, PartialEq)]
+    struct Row {
+        label: String,
+        values: Vec<i32>,
+    }
+    #[test]
+    fn example() -> Result<(), Box<dyn Error>> {
+        let data = "foo";
+        let mut rdr = ReaderBuilder::new()
+            .has_headers(false)
+            .from_reader(data.as_bytes());
+        let mut iter = rdr.deserialize();
+
+        if let Some(result) = iter.next() {
+            let record: Row = result?;
+            assert_eq!(
+                record,
+                Row {
+                    label: "foo".to_string(),
+                    values: vec![],
+                }
+            );
+            Ok(())
+        } else {
+            Err(From::from("expected at least one record but got none"))
+        }
     }
 }
