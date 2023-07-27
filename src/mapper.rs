@@ -130,7 +130,6 @@ pub fn partial_to_string(partial_line: PartialLine) -> String {
 
 // actually always returns one only
 pub fn string_to_partial(str: String) -> Vec<PartialLine> {
-    println!("{}", str);
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .flexible(true)
@@ -139,12 +138,12 @@ pub fn string_to_partial(str: String) -> Vec<PartialLine> {
     rdr.records()
         .into_iter()
         .map(|result| {
-            let record: SerializablePartialLine = result
+            let mut record: SerializablePartialLine = result
                 .expect("Failed to deserialize element.")
                 .deserialize(None)
                 .expect("Failed to deserialize element.");
 
-            let head = parser::read_parameters(record.cryptor);
+            let head = parser::read_parameters(record.tail.pop_front().unwrap());
             PartialLine {
                 cryptor: head,
                 tail: record
