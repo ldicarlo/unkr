@@ -1,4 +1,3 @@
-Reverse;Enigma;Enigma
 Permute:A:H;Enigma
 Permute:A:C;Enigma
 Permute:A:F;Enigma
@@ -54,3 +53,13 @@ Permute:C:K;Enigma
 Permute:B:R;Enigma
 Permute:C:G;Enigma
 Permute:B:W;Enigma
+Permute:A:W;Enigma
+Permute:B:E;Enigma
+Permute:A:Y;Enigma
+Permute:A:X;Enigma
+Permute:B:D;Enigma
+Permute:A:L;Enigma
+Permute:A:P;Enigma
+Permute:A:U;Enigma
+Permute:A:Q;Enigma
+Permute:B:F;Enigma
