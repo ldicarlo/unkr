@@ -17,6 +17,7 @@ pub enum CLICryptor {
     IndexCrypt(StringArgs),
     Permute(CLIPermuteArgs),
     Enigma(EnigmaArgs),
+    Reuse(CryptorBase),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
@@ -34,7 +35,25 @@ pub enum Cryptor {
     IndexCrypt(StringArgs),
     Permute(PermuteArgs),
     Enigma(EnigmaArgs),
+    Reuse(CryptorBase),
 }
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
+#[serde(tag = "name", deny_unknown_fields)]
+pub enum CryptorBase {
+    Vigenere,
+    Cut,
+    Caesar,
+    Transpose,
+    AtBash,
+    Reverse,
+    Swap,
+    Join,
+    IndexCrypt,
+    Permute,
+    Enigma,
+}
+
 #[derive(
     Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone, Copy,
 )]
@@ -65,6 +84,7 @@ pub enum BruteForceCryptor {
     //  IndexCrypt,
     Permute(BruteForcePermuteArgs),
     Enigma,
+    ReuseLast(CryptorBase),
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub enum CryptorTypeWithBruteForceArgs {
@@ -85,6 +105,7 @@ pub enum BruteForceState {
     //    IndexCrypt(StringArgs),
     Permute(PermuteBruteForceState),
     Enigma(EnigmaArgs),
+    Reuse,
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct VigenereBruteForceState {

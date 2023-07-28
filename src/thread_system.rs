@@ -303,6 +303,7 @@ fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> Cryptor {
             args,
         }) => Cryptor::Permute(args.clone()),
         BruteForceState::Enigma(args) => Cryptor::Enigma(args.clone()),
+        BruteForceState::Reuse => Cryptor::Reuse(),
     }
 }
 

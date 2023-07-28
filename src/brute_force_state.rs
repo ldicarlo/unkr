@@ -31,6 +31,7 @@ pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
             })
         }
         BruteForceCryptor::Enigma => BruteForceState::Enigma(enigma::init()),
+        BruteForceCryptor::ReuseLast(_) => BruteForceState::Reuse,
     }
 }
 
@@ -62,6 +63,7 @@ pub fn increase_state(bfs: BruteForceState, strs: Vec<String>) -> Option<BruteFo
         BruteForceState::Enigma(state) => {
             enigma::next(state).map(|args| BruteForceState::Enigma(args))
         }
+        BruteForceState::Reuse => None,
     }
 }
 
@@ -83,6 +85,7 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
             args,
         }) => permute::decrypt(strings.clone(), args),
         BruteForceState::Enigma(args) => enigma::decrypt(strings.clone(), args),
+        BruteForceState::Reuse =>,
     };
     if result == strings {
         vec![]
@@ -109,6 +112,7 @@ pub fn get_cryptor(bfs: &BruteForceState) -> Cryptor {
             args,
         }) => Cryptor::Permute(args.clone()),
         BruteForceState::Enigma(args) => Cryptor::Enigma(args.clone()),
+        BruteForceState::Reuse => todo!(),
     }
 }
 

@@ -1,10 +1,12 @@
 use std::collections::{HashSet, VecDeque};
 
+use clap::Args;
+
 use crate::{
     models::{
         BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
-        CLIPermuteArgs, Cryptor, DoneLine, HitLine, PartialLine, SerializablePartialLine,
-        SerializablePartialLine2,
+        CLIPermuteArgs, Cryptor, CryptorBase, DoneLine, HitLine, PartialLine,
+        SerializablePartialLine, SerializablePartialLine2,
     },
     parser::{self, read_bruteforce_parameters},
 };
@@ -25,6 +27,23 @@ pub fn cryptor_to_cli(cryptor: Cryptor) -> CLICryptor {
             permutations: args.permutations.into_iter().collect(),
         }),
         Cryptor::Enigma(args) => CLICryptor::Enigma(args),
+        Cryptor::Reuse(args) => CLICryptor::Reuse(args),
+    }
+}
+
+pub fn cryptor_base_to_string(cryptor: &CryptorBase) -> String {
+    match cryptor {
+        CryptorBase::Vigenere => todo!(),
+        CryptorBase::Cut => todo!(),
+        CryptorBase::Caesar => todo!(),
+        CryptorBase::Transpose => todo!(),
+        CryptorBase::AtBash => todo!(),
+        CryptorBase::Reverse => todo!(),
+        CryptorBase::Swap => todo!(),
+        CryptorBase::Join => todo!(),
+        CryptorBase::IndexCrypt => todo!(),
+        CryptorBase::Permute => todo!(),
+        CryptorBase::Enigma => String::from("Enigma"),
     }
 }
 
@@ -73,6 +92,9 @@ pub fn combinations_string(
                 Some(format!("Permute:{}", max_permutations)),
             ),
             BruteForceCryptor::Enigma => (String::from("Enigma"), None),
+            BruteForceCryptor::ReuseLast(arg) => {
+                (String::from("Reuse"), Some(cryptor_base_to_string(arg)))
+            }
         })
         .collect();
     //strings.sort_by_key(|(a, _)| a.clone());
