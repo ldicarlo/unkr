@@ -3,7 +3,7 @@ use crate::{
     enigma::EnigmaArgs,
     models::{
         BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
-        CLIPermuteArgs, CryptorTypeWithBruteForceArgs, StringArgs, SwapArgs,
+        CLIPermuteArgs, CryptorBase, CryptorTypeWithBruteForceArgs, StringArgs, SwapArgs,
     },
 };
 
@@ -125,6 +125,7 @@ pub fn read_bruteforce_parameters(mut str: String) -> BruteForceCryptor {
         //   "indexcrypt" => BruteForceCryptor::IndexCrypt,
         "permute" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Permute),
         "enigma" => BruteForceCryptor::Enigma,
+        "reuse" => read_bruteforce(str, CryptorTypeWithBruteForceArgs::Reuse),
         _ => panic!("Cannot parse: {}", type_name),
     }
 }
@@ -149,6 +150,14 @@ fn read_bruteforce(str: String, cryptor_type: CryptorTypeWithBruteForceArgs) -> 
                 .unwrap()
                 .expect("cannot find record")
                 .deserialize::<BruteForcePermuteArgs>(None)
+                .expect("cannot deserialize"),
+        ),
+        CryptorTypeWithBruteForceArgs::Reuse => BruteForceCryptor::Reuse(
+            rdr.records()
+                .find(|_| true)
+                .unwrap()
+                .expect("cannot find record")
+                .deserialize::<CryptorBase>(None)
                 .expect("cannot deserialize"),
         ),
     }

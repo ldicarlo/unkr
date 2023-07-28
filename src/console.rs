@@ -90,5 +90,6 @@ fn print_brute_force_state(brute_force_state: BruteForceState) -> String {
         BruteForceState::Join => todo!(),
         BruteForceState::Permute(state) => format!("{:?}", state.args),
         BruteForceState::Enigma(state) => format!("{:?}", state),
+        BruteForceState::Reuse(state) => format!("{:?}", state),
     }
 }

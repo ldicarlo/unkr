@@ -12,8 +12,6 @@ use crate::models::BruteForceState;
 use crate::models::Cryptor;
 use crate::models::DoneLine;
 use crate::models::PartialLine;
-use crate::models::PermuteBruteForceState;
-use crate::models::VigenereBruteForceState;
 use crossbeam::channel::unbounded;
 use crossbeam::channel::Receiver;
 use crossbeam::channel::Sender;
@@ -285,28 +283,6 @@ fn increase_thread_work(
         .or(increase_combination(remaining_combinations, clues, strings))
 }
 
-fn get_cryptor_from_state(brute_force_state: &BruteForceState) -> Cryptor {
-    match brute_force_state {
-        BruteForceState::Vigenere(VigenereBruteForceState {
-            brute_force_args: _,
-            args,
-        }) => Cryptor::Vigenere(args.clone()),
-        BruteForceState::Cut(args) => Cryptor::Cut(args.clone()),
-        BruteForceState::Caesar(args) => Cryptor::Caesar(args.clone()),
-        BruteForceState::Transpose(args) => Cryptor::Transpose(args.clone()),
-        BruteForceState::AtBash => Cryptor::AtBash,
-        BruteForceState::Reverse => Cryptor::Reverse,
-        BruteForceState::Swap(args) => Cryptor::Swap(args.clone()),
-        BruteForceState::Join => Cryptor::Join,
-        BruteForceState::Permute(PermuteBruteForceState {
-            brute_force_args: _,
-            args,
-        }) => Cryptor::Permute(args.clone()),
-        BruteForceState::Enigma(args) => Cryptor::Enigma(args.clone()),
-        BruteForceState::Reuse => Cryptor::Reuse(),
-    }
-}
-
 fn run_thread_work(
     sender: Sender<()>,
     thread_number: usize,
@@ -331,7 +307,7 @@ fn run_thread_work(
                 continue;
             }
             let partial_line = mapper::to_partial(
-                brute_force_state::get_cryptor(&new_tw.current_head),
+                brute_force_state::get_cryptor(&new_tw.current_head, vec![]),
                 new_tw.current_tail.clone(),
             );
             if cache::partial_done(partial_cache.clone(), partial_line.clone()) {
@@ -359,9 +335,9 @@ fn run_thread_work(
                     .unwrap();
             }
 
-            let first = apply_decrypt(new_tw.current_head.clone(), strings.clone());
+            let first = apply_decrypt(new_tw.current_head.clone(), strings.clone(), vec![]);
             if first.len() > 0 {
-                let acc = vec![get_cryptor_from_state(&new_tw.current_head)];
+                let acc = vec![brute_force_state::get_cryptor(&new_tw.current_head, vec![])];
                 candidates_sender
                     .send((first.clone(), clues.clone(), acc.clone()))
                     .unwrap();

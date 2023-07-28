@@ -97,6 +97,7 @@ pub fn skip_combination(combination: VecDeque<BruteForceCryptor>) -> bool {
                     permute::skip_if_previous_in(args).contains(&prev)
                 }
                 BruteForceCryptor::Enigma => enigma::skip_if_previous_in().contains(&prev),
+                BruteForceCryptor::Reuse(_) => false,
             })
             .unwrap_or(false)
         {

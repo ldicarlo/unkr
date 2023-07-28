@@ -1,10 +1,11 @@
 use crate::{
-    atbash, caesar, cut, enigma, join,
+    caesar, enigma,
+    mapper::cryptor_base_from_cryptor,
     models::{
         BruteForceCryptor, BruteForceState, Cryptor, PermuteBruteForceState,
         VigenereBruteForceState,
     },
-    permute, reverse, swap, transpose, vigenere,
+    permute, swap, transpose, vigenere,
 };
 use crossbeam::channel::Sender;
 use std::collections::VecDeque;
@@ -31,7 +32,7 @@ pub fn start_state(brute_force_cryptor: BruteForceCryptor) -> BruteForceState {
             })
         }
         BruteForceCryptor::Enigma => BruteForceState::Enigma(enigma::init()),
-        BruteForceCryptor::ReuseLast(_) => BruteForceState::Reuse,
+        BruteForceCryptor::Reuse(arg) => BruteForceState::Reuse(arg),
     }
 }
 
@@ -63,29 +64,32 @@ pub fn increase_state(bfs: BruteForceState, strs: Vec<String>) -> Option<BruteFo
         BruteForceState::Enigma(state) => {
             enigma::next(state).map(|args| BruteForceState::Enigma(args))
         }
-        BruteForceState::Reuse => None,
+        BruteForceState::Reuse(_) => None,
     }
 }
 
-pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> {
-    let result = match bfs {
-        BruteForceState::Vigenere(VigenereBruteForceState {
-            args,
-            brute_force_args: _,
-        }) => vigenere::decrypt(strings.clone(), args),
-        BruteForceState::Cut(args) => cut::encrypt(strings.clone(), args),
-        BruteForceState::Caesar(args) => caesar::decrypt(strings.clone(), args),
-        BruteForceState::Transpose(args) => transpose::decrypt(strings.clone(), args),
-        BruteForceState::AtBash => atbash::decrypt(strings.clone()),
-        BruteForceState::Reverse => reverse::decrypt(strings.clone()),
-        BruteForceState::Swap(args) => swap::decrypt(strings.clone(), args),
-        BruteForceState::Join => join::decrypt(strings.clone()),
-        BruteForceState::Permute(PermuteBruteForceState {
-            brute_force_args: _,
-            args,
-        }) => permute::decrypt(strings.clone(), args),
-        BruteForceState::Enigma(args) => enigma::decrypt(strings.clone(), args),
-        BruteForceState::Reuse =>,
+pub fn apply_decrypt(
+    bfs: BruteForceState,
+    strings: Vec<String>,
+    current_cryptors: Vec<Cryptor>,
+) -> Vec<String> {
+    sub_apply_decrypt(get_cryptor(&bfs, current_cryptors), strings)
+}
+
+fn sub_apply_decrypt(cryptor: Cryptor, strings: Vec<String>) -> Vec<String> {
+    let result = match cryptor {
+        Cryptor::Vigenere(args) => vigenere::decrypt(strings.clone(), args),
+        Cryptor::Cut(args) => todo!(),
+        Cryptor::Caesar(args) => todo!(),
+        Cryptor::Transpose(args) => todo!(),
+        Cryptor::AtBash => todo!(),
+        Cryptor::Reverse => todo!(),
+        Cryptor::Swap(args) => todo!(),
+        Cryptor::Join => todo!(),
+        Cryptor::Colors(args) => todo!(),
+        //Cryptor::IndexCrypt(_) => todo!(),
+        Cryptor::Permute(args) => permute::decrypt(strings.clone(), args),
+        Cryptor::Enigma(args) => enigma::decrypt(strings.clone(), args),
     };
     if result == strings {
         vec![]
@@ -94,7 +98,7 @@ pub fn apply_decrypt(bfs: BruteForceState, strings: Vec<String>) -> Vec<String> 
     }
 }
 
-pub fn get_cryptor(bfs: &BruteForceState) -> Cryptor {
+pub fn get_cryptor(bfs: &BruteForceState, previous_cryptors: Vec<Cryptor>) -> Cryptor {
     match bfs {
         BruteForceState::Vigenere(VigenereBruteForceState {
             brute_force_args: _,
@@ -112,7 +116,11 @@ pub fn get_cryptor(bfs: &BruteForceState) -> Cryptor {
             args,
         }) => Cryptor::Permute(args.clone()),
         BruteForceState::Enigma(args) => Cryptor::Enigma(args.clone()),
-        BruteForceState::Reuse => todo!(),
+        BruteForceState::Reuse(arg) => previous_cryptors
+            .into_iter()
+            .filter(|cr| cryptor_base_from_cryptor(&cr) == arg)
+            .nth(0)
+            .unwrap(),
     }
 }
 
@@ -126,9 +134,9 @@ pub fn loop_decrypt(
     if let Some(current) = to_use.pop_front() {
         let mut bfs = start_state(current.clone());
         let mut current_acc = acc.clone();
-        current_acc.push(get_cryptor(&bfs));
+        current_acc.push(get_cryptor(&bfs, current_acc.clone()));
         loop {
-            let new_str = apply_decrypt(bfs.clone(), strings.clone());
+            let new_str = apply_decrypt(bfs.clone(), strings.clone(), vec![]);
             if new_str.len() > 0 {
                 candidates_sender
                     .send((new_str.clone(), clues.clone(), current_acc.clone()))

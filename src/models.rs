@@ -17,7 +17,7 @@ pub enum CLICryptor {
     IndexCrypt(StringArgs),
     Permute(CLIPermuteArgs),
     Enigma(EnigmaArgs),
-    Reuse(CryptorBase),
+    //   Reuse(CryptorBase),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
@@ -32,14 +32,13 @@ pub enum Cryptor {
     Swap(SwapArgs),
     Join,
     Colors(StringArgs),
-    IndexCrypt(StringArgs),
+    //IndexCrypt(StringArgs),
     Permute(PermuteArgs),
     Enigma(EnigmaArgs),
-    Reuse(CryptorBase),
+    //   Reuse(CryptorBase),
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
-#[serde(tag = "name", deny_unknown_fields)]
 pub enum CryptorBase {
     Vigenere,
     Cut,
@@ -84,12 +83,13 @@ pub enum BruteForceCryptor {
     //  IndexCrypt,
     Permute(BruteForcePermuteArgs),
     Enigma,
-    ReuseLast(CryptorBase),
+    Reuse(CryptorBase),
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, Copy)]
 pub enum CryptorTypeWithBruteForceArgs {
     Vigenere,
     Permute,
+    Reuse,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
@@ -105,7 +105,7 @@ pub enum BruteForceState {
     //    IndexCrypt(StringArgs),
     Permute(PermuteBruteForceState),
     Enigma(EnigmaArgs),
-    Reuse,
+    Reuse(CryptorBase),
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone)]
 pub struct VigenereBruteForceState {

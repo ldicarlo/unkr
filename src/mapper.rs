@@ -1,7 +1,5 @@
 use std::collections::{HashSet, VecDeque};
 
-use clap::Args;
-
 use crate::{
     models::{
         BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
@@ -22,12 +20,12 @@ pub fn cryptor_to_cli(cryptor: Cryptor) -> CLICryptor {
         Cryptor::Swap(args) => CLICryptor::Swap(args),
         Cryptor::Join => CLICryptor::Join,
         Cryptor::Colors(args) => CLICryptor::Colors(args),
-        Cryptor::IndexCrypt(args) => CLICryptor::IndexCrypt(args),
+        //  Cryptor::IndexCrypt(args) => CLICryptor::IndexCrypt(args),
         Cryptor::Permute(args) => CLICryptor::Permute(CLIPermuteArgs {
             permutations: args.permutations.into_iter().collect(),
         }),
         Cryptor::Enigma(args) => CLICryptor::Enigma(args),
-        Cryptor::Reuse(args) => CLICryptor::Reuse(args),
+        //  Cryptor::Reuse(args) => CLICryptor::Reuse(args),
     }
 }
 
@@ -42,8 +40,24 @@ pub fn cryptor_base_to_string(cryptor: &CryptorBase) -> String {
         CryptorBase::Swap => todo!(),
         CryptorBase::Join => todo!(),
         CryptorBase::IndexCrypt => todo!(),
-        CryptorBase::Permute => todo!(),
+        CryptorBase::Permute => String::from("Permute"),
         CryptorBase::Enigma => String::from("Enigma"),
+    }
+}
+
+pub fn cryptor_base_from_cryptor(cryptor: &Cryptor) -> &CryptorBase {
+    match cryptor {
+        Cryptor::Vigenere(_) => &CryptorBase::Vigenere,
+        Cryptor::Cut(_) => &CryptorBase::Cut,
+        Cryptor::Caesar(_) => &CryptorBase::Caesar,
+        Cryptor::Transpose(_) => &CryptorBase::Transpose,
+        Cryptor::AtBash => &CryptorBase::AtBash,
+        Cryptor::Reverse => &CryptorBase::Reverse,
+        Cryptor::Swap(_) => &CryptorBase::Swap,
+        Cryptor::Join => &CryptorBase::Join,
+        Cryptor::Colors(_) => &CryptorBase::IndexCrypt,
+        Cryptor::Permute(_) => &CryptorBase::Permute,
+        Cryptor::Enigma(_) => &CryptorBase::Enigma,
     }
 }
 
@@ -92,7 +106,7 @@ pub fn combinations_string(
                 Some(format!("Permute:{}", max_permutations)),
             ),
             BruteForceCryptor::Enigma => (String::from("Enigma"), None),
-            BruteForceCryptor::ReuseLast(arg) => {
+            BruteForceCryptor::Reuse(arg) => {
                 (String::from("Reuse"), Some(cryptor_base_to_string(arg)))
             }
         })
@@ -186,6 +200,7 @@ pub mod tests {
             BruteForceCryptor, BruteForceVigenereArgs, CLICryptor, Cryptor, DoneLine, PartialLine,
         },
     };
+    use serde::Deserialize;
 
     #[test]
     fn to_done_works() {
@@ -257,35 +272,9 @@ pub mod tests {
         );
     }
 
-    use csv::ReaderBuilder;
-    use serde::Deserialize;
-    use std::error::Error;
-
     #[derive(Debug, Deserialize, Eq, PartialEq)]
     struct Row {
         label: String,
         values: Vec<i32>,
-    }
-    #[test]
-    fn example() -> Result<(), Box<dyn Error>> {
-        let data = "foo";
-        let mut rdr = ReaderBuilder::new()
-            .has_headers(false)
-            .from_reader(data.as_bytes());
-        let mut iter = rdr.deserialize();
-
-        if let Some(result) = iter.next() {
-            let record: Row = result?;
-            assert_eq!(
-                record,
-                Row {
-                    label: "foo".to_string(),
-                    values: vec![],
-                }
-            );
-            Ok(())
-        } else {
-            Err(From::from("expected at least one record but got none"))
-        }
     }
 }
