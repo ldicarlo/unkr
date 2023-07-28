@@ -1,11 +1,11 @@
 use crate::{
-    caesar, enigma,
+    atbash, caesar, colorize, cut, enigma, join,
     mapper::cryptor_base_from_cryptor,
     models::{
         BruteForceCryptor, BruteForceState, Cryptor, PermuteBruteForceState,
         VigenereBruteForceState,
     },
-    permute, swap, transpose, vigenere,
+    permute, reverse, swap, transpose, vigenere,
 };
 use crossbeam::channel::Sender;
 use std::collections::VecDeque;
@@ -79,14 +79,14 @@ pub fn apply_decrypt(
 fn sub_apply_decrypt(cryptor: Cryptor, strings: Vec<String>) -> Vec<String> {
     let result = match cryptor {
         Cryptor::Vigenere(args) => vigenere::decrypt(strings.clone(), args),
-        Cryptor::Cut(args) => todo!(),
-        Cryptor::Caesar(args) => todo!(),
-        Cryptor::Transpose(args) => todo!(),
-        Cryptor::AtBash => todo!(),
-        Cryptor::Reverse => todo!(),
-        Cryptor::Swap(args) => todo!(),
-        Cryptor::Join => todo!(),
-        Cryptor::Colors(args) => todo!(),
+        Cryptor::Cut(args) => cut::encrypt(strings.clone(), args),
+        Cryptor::Caesar(args) => caesar::decrypt(strings.clone(), args),
+        Cryptor::Transpose(args) => transpose::decrypt(strings.clone(), args),
+        Cryptor::AtBash => atbash::decrypt(strings.clone()),
+        Cryptor::Reverse => reverse::decrypt(strings.clone()),
+        Cryptor::Swap(args) => swap::decrypt(strings.clone(), args),
+        Cryptor::Join => join::decrypt(strings.clone()),
+        Cryptor::Colors(args) => colorize::colorize_letters(strings.clone(), args),
         //Cryptor::IndexCrypt(_) => todo!(),
         Cryptor::Permute(args) => permute::decrypt(strings.clone(), args),
         Cryptor::Enigma(args) => enigma::decrypt(strings.clone(), args),
@@ -136,7 +136,7 @@ pub fn loop_decrypt(
         let mut current_acc = acc.clone();
         current_acc.push(get_cryptor(&bfs, current_acc.clone()));
         loop {
-            let new_str = apply_decrypt(bfs.clone(), strings.clone(), vec![]);
+            let new_str = apply_decrypt(bfs.clone(), strings.clone(), current_acc.clone());
             if new_str.len() > 0 {
                 candidates_sender
                     .send((new_str.clone(), clues.clone(), current_acc.clone()))

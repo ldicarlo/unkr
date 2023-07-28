@@ -36,7 +36,7 @@ pub fn cryptor_base_to_string(cryptor: &CryptorBase) -> String {
         CryptorBase::Caesar => todo!(),
         CryptorBase::Transpose => todo!(),
         CryptorBase::AtBash => todo!(),
-        CryptorBase::Reverse => todo!(),
+        CryptorBase::Reverse => String::from("Reverse"),
         CryptorBase::Swap => todo!(),
         CryptorBase::Join => todo!(),
         CryptorBase::IndexCrypt => todo!(),
@@ -155,9 +155,9 @@ pub fn partial_to_string(partial_line: PartialLine) -> String {
     writer
         .serialize(SerializablePartialLine2 {
             cryptor: first_str,
-            tail: partial_line.tail,
+            tail: partial_line.clone().tail,
         })
-        .expect("FAIL");
+        .expect(&format!("FAIL: {:?}", partial_line));
     String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
         .expect("Cannot convert utf8")
         .trim()
