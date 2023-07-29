@@ -152,14 +152,23 @@ fn read_bruteforce(str: String, cryptor_type: CryptorTypeWithBruteForceArgs) -> 
                 .deserialize::<BruteForcePermuteArgs>(None)
                 .expect("cannot deserialize"),
         ),
-        CryptorTypeWithBruteForceArgs::Reuse => BruteForceCryptor::Reuse(
-            rdr.records()
-                .find(|_| true)
-                .unwrap()
-                .expect("cannot find record")
-                .deserialize::<CryptorBase>(None)
-                .expect("cannot deserialize"),
-        ),
+        CryptorTypeWithBruteForceArgs::Reuse => BruteForceCryptor::Reuse(read_cryptor_base(str)),
+    }
+}
+
+fn read_cryptor_base(str: String) -> CryptorBase {
+    match str.to_lowercase().as_str() {
+        "vigenere" => CryptorBase::Vigenere,
+        "cut" => CryptorBase::Cut,
+        "transpose" => CryptorBase::Transpose,
+        "reverse" => CryptorBase::Reverse,
+        "atbash" => CryptorBase::AtBash,
+        "swap" => CryptorBase::Swap,
+        "join" => CryptorBase::Join,
+        "indexcrypt" => CryptorBase::IndexCrypt,
+        "permute" => CryptorBase::Permute,
+        "enigma" => CryptorBase::Enigma,
+        _ => panic!("Cannot parse: {}", str),
     }
 }
 

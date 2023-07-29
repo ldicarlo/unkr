@@ -197,8 +197,10 @@ pub mod tests {
     use crate::{
         enigma::{EnigmaArgs, Reflector, Rotor},
         models::{
-            BruteForceCryptor, BruteForceVigenereArgs, CLICryptor, Cryptor, DoneLine, PartialLine,
+            BruteForceCryptor, BruteForceVigenereArgs, CLICryptor, Cryptor, CryptorBase, DoneLine,
+            PartialLine,
         },
+        BruteForcePermuteArgs,
     };
     use serde::Deserialize;
 
@@ -250,12 +252,16 @@ pub mod tests {
                     BruteForceCryptor::Vigenere(BruteForceVigenereArgs {
                         alphabet_depth: 3,
                         key_depth: 4
-                    })
+                    }),
+                    BruteForceCryptor::Permute(BruteForcePermuteArgs {
+                        max_permutations: 3
+                    }),
+                    BruteForceCryptor::Reuse(CryptorBase::Permute)
                 ]
                 .into_iter()
                 .collect()
             )),
-            String::from("Enigma:B::I:1:II:6:III:24;Cut;Vigenere;3;4")
+            String::from("Enigma:B::I:1:II:6:III:24;Cut;Vigenere;3;4;Permute;3;Reuse;Permute")
         )
     }
 

@@ -39,6 +39,7 @@ pub enum Cryptor {
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
+#[serde(tag = "name", deny_unknown_fields)]
 pub enum CryptorBase {
     Vigenere,
     Cut,
