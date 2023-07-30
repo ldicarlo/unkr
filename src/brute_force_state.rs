@@ -91,11 +91,7 @@ fn sub_apply_decrypt(cryptor: Cryptor, strings: Vec<String>) -> Vec<String> {
         Cryptor::Permute(args) => permute::decrypt(strings.clone(), args),
         Cryptor::Enigma(args) => enigma::decrypt(strings.clone(), args),
     };
-    if result == strings {
-        vec![]
-    } else {
-        result
-    }
+    result
 }
 
 pub fn get_cryptor(bfs: &BruteForceState, previous_cryptors: Vec<Cryptor>) -> Cryptor {
