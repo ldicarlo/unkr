@@ -4,7 +4,7 @@ use crate::{
     models::{
         BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
         CLIPermuteArgs, Cryptor, CryptorBase, DoneLine, HitLine, PartialLine,
-        SerializablePartialLine, SerializablePartialLine2,
+        SerializablePartialLine, SerializablePartialLine3,
     },
     parser::{self, read_bruteforce_parameters},
 };
@@ -34,7 +34,7 @@ pub fn cryptor_base_to_string(cryptor: &CryptorBase) -> String {
         CryptorBase::Vigenere => todo!(),
         CryptorBase::Cut => todo!(),
         CryptorBase::Caesar => todo!(),
-        CryptorBase::Transpose => todo!(),
+        CryptorBase::Transpose => String::from("Transpose"),
         CryptorBase::AtBash => todo!(),
         CryptorBase::Reverse => String::from("Reverse"),
         CryptorBase::Swap => todo!(),
@@ -66,7 +66,7 @@ pub fn hit_to_string(hit_line: HitLine) -> String {
 }
 
 pub fn to_done(combination: VecDeque<BruteForceCryptor>) -> DoneLine {
-    let (left, right) = combinations_string(combination);
+    let (left, right) = combinations_string(combination.into());
     DoneLine {
         combinations: left,
         args: right,
@@ -81,7 +81,7 @@ pub fn to_partial(cryptor: Cryptor, tail: VecDeque<BruteForceCryptor>) -> Partia
 }
 
 pub fn combinations_string(
-    brute_force_cryptors: VecDeque<BruteForceCryptor>,
+    brute_force_cryptors: Vec<BruteForceCryptor>,
 ) -> (String, Option<String>) {
     let strings: Vec<(String, Option<String>)> = brute_force_cryptors
         .iter()
@@ -106,9 +106,10 @@ pub fn combinations_string(
                 Some(format!("Permute:{}", max_permutations)),
             ),
             BruteForceCryptor::Enigma => (String::from("Enigma"), None),
-            BruteForceCryptor::Reuse(arg) => {
-                (String::from("Reuse"), Some(cryptor_base_to_string(arg)))
-            }
+            BruteForceCryptor::Reuse(arg) => (
+                String::from("Reuse"),
+                Some(format!("Reuse:{}", cryptor_base_to_string(arg))),
+            ),
         })
         .collect();
     //strings.sort_by_key(|(a, _)| a.clone());
@@ -147,17 +148,33 @@ pub fn partial_to_string(partial_line: PartialLine) -> String {
         .trim()
         .to_string();
 
+    let string_tail: Vec<String> = partial_line
+        .tail
+        .into_iter()
+        .map(|bfc| {
+            let mut w = csv::WriterBuilder::new()
+                .has_headers(false)
+                .delimiter(b':')
+                .from_writer(vec![]);
+            w.serialize(bfc).expect("FAIL");
+            String::from_utf8(w.into_inner().expect("Cannot convert utf8"))
+                .expect("Cannot convert utf8")
+                .trim()
+                .to_string()
+        })
+        .collect();
+
     let mut writer = csv::WriterBuilder::new()
         .has_headers(false)
         .delimiter(b';')
         .from_writer(vec![]);
-
+    let a = SerializablePartialLine3 {
+        cryptor: first_str,
+        tail: string_tail,
+    };
     writer
-        .serialize(SerializablePartialLine2 {
-            cryptor: first_str,
-            tail: partial_line.clone().tail,
-        })
-        .expect(&format!("FAIL: {:?}", partial_line));
+        .serialize(a.clone())
+        .expect(&format!("FAIL: {:?}", a));
     String::from_utf8(writer.into_inner().expect("Cannot convert utf8"))
         .expect("Cannot convert utf8")
         .trim()
@@ -197,12 +214,11 @@ pub mod tests {
     use crate::{
         enigma::{EnigmaArgs, Reflector, Rotor},
         models::{
-            BruteForceCryptor, BruteForceVigenereArgs, CLICryptor, Cryptor, CryptorBase, DoneLine,
-            PartialLine,
+            BruteForceCryptor, BruteForceVigenereArgs, CLICryptor, CLIPermuteArgs, Cryptor,
+            CryptorBase, DoneLine, PartialLine,
         },
         BruteForcePermuteArgs,
     };
-    use serde::Deserialize;
 
     #[test]
     fn to_done_works() {
@@ -215,12 +231,13 @@ pub mod tests {
                     },),
                     BruteForceCryptor::Transpose,
                     BruteForceCryptor::Caesar,
+                    BruteForceCryptor::Reuse(CryptorBase::Permute)
                 ]
                 .into(),
             ),
             DoneLine {
-                combinations: String::from("Vigenere Transpose Caesar"),
-                args: Some(String::from("Vigenere:4:7"))
+                combinations: String::from("Vigenere Transpose Caesar Reuse"),
+                args: Some(String::from("Vigenere:4:7 Reuse:Permute"))
             }
         )
     }
@@ -261,26 +278,29 @@ pub mod tests {
                 .into_iter()
                 .collect()
             )),
-            String::from("Enigma:B::I:1:II:6:III:24;Cut;Vigenere;3;4;Permute;3;Reuse;Permute")
+            String::from("Enigma:B::I:1:II:6:III:24;Cut;Vigenere:3:4;Permute:3;Reuse:Permute")
         )
     }
 
     #[test]
     fn string_to_partial_works() {
         assert_eq!(
-            super::string_to_partial(String::from("Reverse;Enigma;Enigma")),
+            super::string_to_partial(String::from(
+                "Permute:A:B;Reverse;Enigma;Enigma;Reuse:Permute"
+            )),
             vec![PartialLine {
-                cryptor: CLICryptor::Reverse,
-                tail: vec![BruteForceCryptor::Enigma, BruteForceCryptor::Enigma]
-                    .into_iter()
-                    .collect()
+                cryptor: CLICryptor::Permute(CLIPermuteArgs {
+                    permutations: vec![('A', 'B')]
+                }),
+                tail: vec![
+                    BruteForceCryptor::Reverse,
+                    BruteForceCryptor::Enigma,
+                    BruteForceCryptor::Enigma,
+                    BruteForceCryptor::Reuse(CryptorBase::Permute)
+                ]
+                .into_iter()
+                .collect()
             }]
         );
-    }
-
-    #[derive(Debug, Deserialize, Eq, PartialEq)]
-    struct Row {
-        label: String,
-        values: Vec<i32>,
     }
 }

@@ -145,7 +145,7 @@ fn apply_state(
                 .workload
                 .get(&thread_number)
                 .map(|(_, b)| {
-                    let mut mutable_vec = b.clone();
+                    let mut mutable_vec: Vec<DoneLine> = b.clone();
                     mutable_vec.push(done_line.clone());
 
                     (None, mutable_vec)

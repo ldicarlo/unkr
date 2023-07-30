@@ -63,9 +63,10 @@ pub fn get_done_cache(cache_args: models::CacheArgs) -> BTreeSet<models::DoneLin
 
     for result in rdr.records() {
         let record: models::DoneLine = result
+            .as_ref()
             .expect("Failed to deserialize element.")
             .deserialize(None)
-            .expect("Failed to deserialize element.");
+            .expect(&format!("Failed to deserialize element. {:?}", result));
         cache.insert(record);
     }
     eprintln!("Done cache loaded");

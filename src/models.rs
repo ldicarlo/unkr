@@ -203,6 +203,12 @@ pub struct SerializablePartialLine2 {
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
+pub struct SerializablePartialLine3 {
+    pub cryptor: String,
+    pub tail: Vec<String>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, Clone, PartialOrd, Ord)]
 pub enum FuzzerRule {
     UniqueLetters,
     EvenCount,
