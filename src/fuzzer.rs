@@ -57,7 +57,8 @@ pub fn fuzz_next_r(
     sorted_by_pair_constraint: bool,
 ) -> Option<Vec<u8>> {
     let mut last = str;
-    while let Some(result) = fuzz_next(&last, len_max, base) {
+    let u8_base = &(base as u8 - 1);
+    while let Some(result) = fuzz_next(&last, len_max, base, u8_base) {
         last = result.clone();
         if unique_letters_constraint && !unique_letters(&last) {
             continue;
@@ -73,9 +74,8 @@ pub fn fuzz_next_r(
     None
 }
 
-pub fn fuzz_next(str: &Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> {
-    let u8base = &(base as u8 - 1);
-    if str.len() == len_max && str.iter().all(|c| c == u8base) {
+pub fn fuzz_next(str: &Vec<u8>, len_max: usize, base: usize, u8_base_max: &u8) -> Option<Vec<u8>> {
+    if str.len() == len_max && str.iter().all(|c| c == u8_base_max) {
         return None;
     }
     Some(base::increment(str, base))

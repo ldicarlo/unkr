@@ -1,4 +1,4 @@
-use std::collections::{HashSet, VecDeque};
+use std::collections::VecDeque;
 
 use crate::{
     models::{
@@ -123,8 +123,6 @@ pub fn combinations_string(
     let rights = strings
         .into_iter()
         .flat_map(|(_, b)| b)
-        .collect::<HashSet<String>>()
-        .into_iter()
         .collect::<Vec<String>>();
     let right = if rights.is_empty() {
         None

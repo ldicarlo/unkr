@@ -97,7 +97,7 @@ pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
 }
 
 pub fn fuzz_next(str: &Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> {
-    fuzzer::fuzz_next(str, len_max, base)
+    fuzzer::fuzz_next(str, len_max, base, &(base as u8 - 1))
 }
 
 pub fn enigma_next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
