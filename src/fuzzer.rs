@@ -74,7 +74,8 @@ pub fn fuzz_next_r(
 }
 
 pub fn fuzz_next(str: &Vec<u8>, len_max: usize, base: usize) -> Option<Vec<u8>> {
-    if str.len() == len_max && str.into_iter().all(|c| *c as usize == base - 1) {
+    let u8base = &(base as u8 - 1);
+    if str.len() == len_max && str.iter().all(|c| c == u8base) {
         return None;
     }
     Some(base::increment(str, base))
