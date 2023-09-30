@@ -1,3 +1,5 @@
 target
 perf.data*
 cache-tests
+.direnv
+result
