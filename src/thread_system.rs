@@ -38,7 +38,7 @@ pub fn start(
     let (candidates_sender, candidates_receiver) = unbounded();
     let (console_sender, console_receiver) = unbounded();
     let local_cache_args = cache_args.clone();
-    thread::spawn(move || console::thread_consume_messages(console_receiver, thread_count));
+  //  thread::spawn(move || console::thread_consume_messages(console_receiver, thread_count));
 
     let local_console_sender = console_sender.clone();
     let local_results_accumulator = results_accumulator.clone();
@@ -72,7 +72,7 @@ pub fn start(
         let local_clues = clues.clone();
         let local_strings = strings.clone();
         let local_candidates_sender = candidates_sender.clone();
-        let local_console_sender = console_sender.clone();
+      //  let local_console_sender = console_sender.clone();
         let local_done_cache = done_cache.clone();
         let local_combination_status_sender = thread_combination_status_sender.clone();
         let local_partial_cache = partial_cache.clone();
@@ -85,7 +85,7 @@ pub fn start(
                 local_clues,
                 local_strings,
                 local_candidates_sender,
-                local_console_sender,
+              //  local_console_sender,
                 local_done_cache,
                 local_partial_cache,
                 local_combination_status_sender,
@@ -291,7 +291,6 @@ fn run_thread_work(
     clues: Vec<String>,
     strings: Vec<String>,
     candidates_sender: Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
-    console_sender: Sender<PrintableMessage>,
     done_cache: BTreeSet<models::DoneLine>,
     partial_cache: BTreeSet<models::PartialLine>,
     combination_status_sender: Sender<ThreadStatus>,
@@ -313,13 +312,13 @@ fn run_thread_work(
             if cache::partial_done(partial_cache.clone(), partial_line.clone()) {
                 continue;
             }
-            console_sender
-                .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
-                    thread_number,
-                    step,
-                    current_combination: new_tw.current_head.clone(),
-                }))
-                .unwrap();
+            // console_sender
+            //     .send(PrintableMessage::ThreadStatus(ThreadStatusPayload {
+            //         thread_number,
+            //         step,
+            //         current_combination: new_tw.current_head.clone(),
+            //     }))
+            //     .unwrap();
             if new_tw.current_combination != tw.clone().current_combination {
                 combination_status_sender
                     .send(ThreadStatus::Done(

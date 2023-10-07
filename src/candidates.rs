@@ -43,12 +43,12 @@ pub fn find_and_print_candidates(
 ) -> Vec<String> {
     let candidates = find_candidates(strs.clone(), clues.clone());
     if candidates.len() > 0 {
-        console_sender
-            .send(console::PrintableMessage::Default(format!(
-                "{:?} {:?}",
-                candidates, cryptor_str
-            )))
-            .unwrap();
+        // console_sender
+        //     .send(console::PrintableMessage::Default(format!(
+        //         "{:?} {:?}",
+        //         candidates, cryptor_str
+        //     )))
+        //     .unwrap();
         //  println!("{:?} {}", candidates, cryptor_str);
     }
     candidates
