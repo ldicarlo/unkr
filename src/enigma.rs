@@ -221,18 +221,18 @@ fn pass_through_rotors_m3(char: char, rotors: EnigmaArgs) -> (char, EnigmaArgs) 
     } = increment_rotors_m3(rotors);
 
     let new_char_1 = char_utils::char_position_base(char) as u8
-        + get_rotor(r_r.clone())[(char_utils::char_position_base(char) + (r_i as usize)) % 26];
+        + get_rotor(&r_r)[(char_utils::char_position_base(char) + (r_i as usize)) % 26];
     let new_char_2 =
-        new_char_1 + get_rotor(m_r.clone())[(new_char_1 as usize + (m_i as usize)) % 26];
+        new_char_1 + get_rotor(&m_r)[(new_char_1 as usize + (m_i as usize)) % 26];
     let new_char_3 =
-        new_char_2 + get_rotor(l_r.clone())[(new_char_2 as usize + (l_i as usize)) % 26];
-    let new_char_4 = new_char_3 + get_reflector(reflector.clone())[(new_char_3 as usize) % 26];
+        new_char_2 + get_rotor(&l_r)[(new_char_2 as usize + (l_i as usize)) % 26];
+    let new_char_4 = new_char_3 + get_reflector(&reflector)[(new_char_3 as usize) % 26];
     let new_char_5 =
-        new_char_4 + get_reversed_rotor(l_r.clone())[(new_char_4 as usize + (l_i as usize)) % 26];
+        new_char_4 + get_reversed_rotor(&l_r)[(new_char_4 as usize + (l_i as usize)) % 26];
     let new_char_6 =
-        new_char_5 + get_reversed_rotor(m_r.clone())[(new_char_5 as usize + (m_i as usize)) % 26];
+        new_char_5 + get_reversed_rotor(&m_r)[(new_char_5 as usize + (m_i as usize)) % 26];
     let new_char_7 =
-        new_char_6 + get_reversed_rotor(r_r.clone())[(new_char_6 as usize + (r_i as usize)) % 26];
+        new_char_6 + get_reversed_rotor(&r_r)[(new_char_6 as usize + (r_i as usize)) % 26];
     (
         char_utils::get_alphabet()[(new_char_7 % 26) as usize],
         EnigmaArgs {
@@ -256,15 +256,15 @@ fn increment_rotors_m3(
 ) -> EnigmaArgs {
     let new_r_rotor_i = (r_i + 1) % 26;
 
-    let r_notches = get_notches(r_r.clone());
+    let r_notches = get_notches(&r_r);
 
-    let m_notches = get_notches(m_r.clone());
+    let m_notches = get_notches(&m_r);
     let new_m_rotor_i = if r_notches.contains(&r_i) || m_notches.contains(&m_i) {
         (m_i + 1) % 26
     } else {
         m_i
     };
-    let l_notches = get_notches(r_r.clone());
+    let l_notches = get_notches(&r_r);
     let new_l_rotor_i = if m_notches.contains(&m_i) || l_notches.contains(&l_i) {
         (l_i + 1) % 26
     } else {
@@ -280,99 +280,99 @@ fn increment_rotors_m3(
     }
 }
 
-fn get_notches(r: Rotor) -> Vec<u8> {
+fn get_notches(r: &Rotor) -> Vec<u8> {
     match r {
-        Rotor::I => vec![16],
-        Rotor::II => vec![5],
-        Rotor::III => vec![22],
-        Rotor::IV => vec![10],
-        Rotor::V => vec![26],
-        Rotor::VI => vec![26, 13],
-        Rotor::VII => vec![26, 13],
-        Rotor::VIII => vec![26, 13],
+        &Rotor::I => vec![16],
+        &Rotor::II => vec![5],
+        &Rotor::III => vec![22],
+        &Rotor::IV => vec![10],
+        &Rotor::V => vec![26],
+        &Rotor::VI => vec![26, 13],
+        &Rotor::VII => vec![26, 13],
+        &Rotor::VIII => vec![26, 13],
     }
 }
 // let's ignore minus, and use only plus
-fn get_rotor(r: Rotor) -> Vec<u8> {
+fn get_rotor(r: &Rotor) -> Vec<u8> {
     match r {
-        Rotor::I => vec![
+        &Rotor::I => vec![
             4, 9, 10, 2, 7, 1, 23, 9, 13, 16, 3, 8, 2, 9, 10, 18, 7, 3, 0, 22, 6, 13, 5, 20, 4, 10,
         ],
-        Rotor::II => vec![
+        &Rotor::II => vec![
             0, 8, 1, 7, 14, 3, 11, 13, 15, 18, 1, 22, 10, 6, 24, 13, 0, 15, 7, 20, 21, 3, 9, 24,
             16, 5,
         ],
-        Rotor::III => vec![
+        &Rotor::III => vec![
             1, 2, 3, 4, 5, 6, 22, 8, 9, 10, 13, 10, 13, 0, 10, 15, 18, 5, 14, 7, 16, 17, 24, 21,
             18, 15,
         ],
-        Rotor::IV => vec![
+        &Rotor::IV => vec![
             4, 17, 12, 18, 11, 20, 3, 19, 16, 7, 10, 23, 5, 20, 9, 22, 23, 14, 1, 13, 16, 8, 6, 15,
             24, 2,
         ],
-        Rotor::V => vec![
+        &Rotor::V => vec![
             21, 24, 25, 14, 2, 3, 13, 17, 12, 6, 8, 18, 1, 20, 23, 8, 10, 5, 20, 16, 22, 19, 9, 7,
             4, 11,
         ],
-        Rotor::VI => vec![
+        &Rotor::VI => vec![
             9, 14, 4, 18, 10, 15, 6, 24, 16, 7, 17, 19, 1, 20, 11, 2, 13, 19, 8, 25, 3, 16, 12, 5,
             21, 23,
         ],
-        Rotor::VII => vec![
+        &Rotor::VII => vec![
             13, 24, 7, 4, 2, 12, 22, 16, 4, 15, 8, 11, 15, 1, 6, 16, 10, 17, 3, 18, 21, 9, 14, 19,
             5, 20,
         ],
-        Rotor::VIII => vec![
+        &Rotor::VIII => vec![
             5, 9, 14, 4, 15, 6, 17, 7, 20, 18, 25, 7, 3, 16, 11, 2, 10, 21, 12, 3, 19, 13, 24, 1,
             8, 22,
         ],
     }
 }
 
-fn get_reversed_rotor(r: Rotor) -> Vec<u8> {
+fn get_reversed_rotor(r: &Rotor) -> Vec<u8> {
     match r {
-        Rotor::I => vec![
+        &Rotor::I => vec![
             20, 21, 22, 3, 22, 24, 25, 8, 13, 16, 17, 19, 16, 23, 24, 4, 17, 6, 0, 18, 23, 13, 17,
             19, 16, 10,
         ],
-        Rotor::II => vec![
+        &Rotor::II => vec![
             0, 8, 13, 25, 21, 17, 11, 4, 23, 18, 19, 25, 2, 6, 10, 5, 0, 15, 12, 20, 13, 2, 16, 11,
             23, 19,
         ],
-        Rotor::III => vec![
+        &Rotor::III => vec![
             19, 25, 4, 24, 11, 23, 12, 22, 8, 21, 10, 20, 9, 0, 11, 18, 8, 17, 5, 16, 2, 16, 21,
             13, 16, 13,
         ],
-        Rotor::IV => vec![
+        &Rotor::IV => vec![
             7, 24, 20, 18, 22, 12, 13, 6, 3, 23, 10, 4, 11, 3, 14, 15, 19, 21, 9, 25, 16, 8, 2, 17,
             10, 6,
         ],
-        Rotor::V => vec![
+        &Rotor::V => vec![
             16, 1, 22, 8, 19, 17, 24, 6, 23, 10, 15, 3, 6, 25, 7, 20, 4, 12, 18, 13, 14, 5, 21, 18,
             9, 2,
         ],
-        Rotor::VI => vec![
+        &Rotor::VI => vec![
             18, 9, 21, 13, 7, 2, 22, 6, 14, 17, 7, 10, 20, 25, 16, 12, 19, 24, 1, 5, 11, 8, 3, 23,
             10, 15,
         ],
-        Rotor::VII => vec![
+        &Rotor::VII => vec![
             16, 11, 4, 21, 17, 10, 24, 22, 9, 19, 12, 8, 22, 13, 25, 5, 7, 14, 18, 6, 20, 23, 15,
             10, 11, 2,
         ],
-        Rotor::VIII => vec![
+        &Rotor::VIII => vec![
             16, 8, 6, 10, 14, 21, 18, 22, 13, 1, 17, 20, 5, 7, 19, 23, 12, 24, 19, 11, 2, 4, 23, 9,
             25, 15,
         ],
     }
 }
 
-fn get_reflector(r: Reflector) -> Vec<u8> {
+fn get_reflector(r: &Reflector) -> Vec<u8> {
     match r {
-        Reflector::B => vec![
+       & Reflector::B => vec![
             24, 16, 18, 4, 12, 13, 5, 22, 7, 14, 3, 21, 2, 23, 24, 19, 14, 10, 13, 6, 8, 1, 25, 12,
             2, 20,
         ],
-        Reflector::C => vec![
+        &Reflector::C => vec![
             5, 20, 13, 6, 4, 21, 8, 17, 22, 20, 7, 14, 11, 9, 18, 13, 3, 19, 2, 23, 24, 6, 17, 15,
             9, 12,
         ],
