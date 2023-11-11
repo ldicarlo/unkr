@@ -40,7 +40,7 @@
               inherit src;
               cargoArtifacts = rust-dependencies;
 
-              doCheck = false;
+              doCheck = true;
             };
             # postUnpack = ''
             #   cd $sourceRoot/api
