@@ -41,6 +41,7 @@
             pkgs.rustc
             pkgs.rustfmt
             pkgs.cargo
+            pkgs.flamegraph
           ];
         };
 
