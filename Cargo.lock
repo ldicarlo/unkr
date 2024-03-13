@@ -1050,6 +1050,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9091b6114800a5f2141aee1d1b9d6ca3592ac062dc5decb3764ec5895a47b4eb"
 
 [[package]]
+name = "stringzilla"
+version = "3.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3964e1a3f99a6c2cdbecbc39b86d86e7711bf19947f2c9fbfd2121b653c923e1"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1171,6 +1180,7 @@ dependencies = [
  "pretty_assertions",
  "rand",
  "serde",
+ "stringzilla",
  "strum",
  "strum_macros",
 ]
