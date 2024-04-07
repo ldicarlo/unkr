@@ -14,7 +14,7 @@ md5 = "0.7.0"
 strum = "0.25.0"
 strum_macros = "0.25.3"
 crossterm = "0.27.0"
-crossbeam = "0.8.2"
+crossbeam = "0.8.4"
 
 [dev-dependencies]
 pprof = { version = "0.13", features = ["flamegraph", "criterion"] }
