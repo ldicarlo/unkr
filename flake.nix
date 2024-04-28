@@ -48,5 +48,8 @@
         packages = rec {
           default = unkr;
         };
+
+        nixosSystem = { };
+
       });
 }

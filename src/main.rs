@@ -117,6 +117,9 @@ enum Commands {
         /// threads to run
         #[arg(long)]
         threads: u8,
+        /// using tty prints "nicely" (hey it's a shell don't be too picky) the logs
+        #[arg(long)]
+        tty: bool,
     },
     BruteForceCombination {
         /// String to try to decrypt
