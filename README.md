@@ -39,7 +39,7 @@
 - [ ] numbers in chars ??
 - [ ] fuzzer rules in CLI params
 - [ ] use EnumIter everywhere ?
-
+- [ ] https://github.com/ashvardanian/StringZilla
 # Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `
 - [x] use enhanced / encrypt methods when useful

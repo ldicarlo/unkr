@@ -11,11 +11,29 @@
       let
         pkgs = import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
         };
-        lib = import lib { };
+        lib = pkgs.lib;
         craneLib = crane.lib.${system};
-        code = pkgs.callPackage ./. { inherit nixpkgs system; };
+
+        commonArgs = {
+          src = lib.cleanSourceWith {
+            src = ./.;
+            filter = path: type:
+              (lib.hasInfix "tests/" path) ||
+              (lib.hasInfix "cache-tests/" path) ||
+              (craneLib.filterCargoSources path type)
+            ;
+          };
+          buildInputs = with pkgs; [ pkg-config openssl rustc ];
+        };
+        cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {
+          pname = "unkr";
+        });
+
+        unkr = craneLib.buildPackage (commonArgs // {
+          pname = "unkr";
+          inherit cargoArtifacts;
+        });
       in
       rec {
         devShells.default = pkgs.mkShell {
@@ -23,31 +41,15 @@
             pkgs.rustc
             pkgs.rustfmt
             pkgs.cargo
+            pkgs.flamegraph
           ];
         };
 
         packages = rec {
           default = unkr;
-          # https://crane.dev/getting-started.html
-          unkr = craneLib.buildPackage rec {
-            name = "unkr";
-            src = craneLib.cleanCargoSource ./.;
-            rust-dependencies = craneLib.buildDepsOnly {
-              inherit src;
-            };
-
-            rust-package-binary = craneLib.buildPackage {
-              inherit src;
-              cargoArtifacts = rust-dependencies;
-
-              doCheck = false;
-            };
-            # postUnpack = ''
-            #   cd $sourceRoot/api
-            #   sourceRoot="."
-            # '';
-          };
         };
-        #    defaultPackage = packages.all;
+
+        nixosSystem = { };
+
       });
 }

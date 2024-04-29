@@ -33,6 +33,7 @@ pub fn brute_force_decrypt(
     steps: u8,
     decryptors: Vec<String>,
     threads_count: u8,
+    pretty: bool,
     cache_name: String,
 ) {
     let decr: Vec<models::BruteForceCryptor> = decryptors
@@ -61,6 +62,7 @@ pub fn brute_force_decrypt(
         threads_count as usize,
         filtered_combinations,
         clues,
+        pretty,
         cache_name,
     );
 }
