@@ -49,7 +49,30 @@
           default = unkr;
         };
 
-        nixosSystem = { };
-
+        nixosModules.default = with lib; {
+          options.services.unkr = {
+            enable = mkEnableOption "Enable Unkr service";
+            command = mkOption {
+              type = types.str;
+              default = "get-combinations --elements-count 2 --picks 2";
+            };
+          };
+          config = mkIf cfg.enable
+            {
+              systemd.services.unkr = {
+                description = "Unkr runner";
+                wantedBy = [ "multi-user.target" ];
+                environment = { };
+                serviceConfig = {
+                  User = "nobody";
+                  Group = "rebalance";
+                  ExecStart = "${unkr}/bin/unkr ${options.command}";
+                  Restart = "on-failure";
+                  RestartSec = "100s";
+                  WorkingDirectory = "/var/lib/unkr";
+                };
+              };
+            };
+        };
       });
 }
