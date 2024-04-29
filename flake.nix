@@ -70,9 +70,9 @@
               {
                 users.users.unkr = {
                   group = "unkr";
-                  uid = config.ids.uids.unkr;
+                  isNormalUser = true;
                 };
-                users.groups.unkr.gid = config.ids.uids.unkr;
+                users.groups.unkr = { };
                 systemd = {
                   services.unkr = {
                     description = "Unkr runner";
