@@ -69,7 +69,7 @@
                   serviceConfig = {
                     User = "nobody";
                     Group = "rebalance";
-                    ExecStart = "${unkr}/bin/unkr ${options.command}";
+                    ExecStart = "${unkr}/bin/unkr ${cfg.command}";
                     Restart = "on-failure";
                     RestartSec = "100s";
                     WorkingDirectory = "/var/lib/unkr";
