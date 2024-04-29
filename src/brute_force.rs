@@ -24,7 +24,14 @@ pub fn brute_force_unique_combination(
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
 
-    thread_system::start(str, threads_count as usize, vec![decr], clues, cache_name);
+    thread_system::start(
+        str,
+        threads_count as usize,
+        vec![decr],
+        clues,
+        true,
+        cache_name,
+    );
 }
 
 pub fn brute_force_decrypt(

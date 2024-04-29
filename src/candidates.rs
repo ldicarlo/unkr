@@ -51,7 +51,6 @@ pub fn find_and_print_candidates(
                 candidates, cryptor_str
             )))
             .unwrap();
-        println!("{:?} {}", candidates, cryptor_str);
     }
     candidates
 }

@@ -49,6 +49,7 @@ pub fn start(
             local_cache_args,
             local_results_accumulator.clone(),
             local_console_sender,
+            pretty,
         )
     });
     let thread_work =
