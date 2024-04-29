@@ -34,12 +34,14 @@ fn main() {
             decryptors,
             steps,
             threads,
+            pretty,
         } => unkr::brute_force_decrypt(
             string,
             clues,
             steps,
             decryptors,
             threads,
+            pretty,
             String::from("cache"),
         ),
         Commands::GetDecryptors { decryptors } => println!(
@@ -117,9 +119,9 @@ enum Commands {
         /// threads to run
         #[arg(long)]
         threads: u8,
-        /// using tty prints "nicely" (hey it's a shell don't be too picky) the logs
+        /// using pretty prints "nicely" (hey it's a shell don't be too picky) the logs
         #[arg(long)]
-        tty: bool,
+        pretty: bool,
     },
     BruteForceCombination {
         /// String to try to decrypt

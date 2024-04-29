@@ -65,9 +65,18 @@ pub fn brute_force_decrypt(
     steps: u8,
     decryptors: Vec<String>,
     threads_count: u8,
+    pretty: bool,
     cache_name: String,
 ) {
-    brute_force::brute_force_decrypt(str, clues, steps, decryptors, threads_count, cache_name)
+    brute_force::brute_force_decrypt(
+        str,
+        clues,
+        steps,
+        decryptors,
+        threads_count,
+        pretty,
+        cache_name,
+    )
 }
 
 pub fn get_decryptors() -> Vec<BruteForceCryptor> {

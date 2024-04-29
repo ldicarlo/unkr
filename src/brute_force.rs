@@ -24,7 +24,14 @@ pub fn brute_force_unique_combination(
         .map(|str| parser::read_bruteforce_parameters(str.to_string()))
         .collect();
 
-    thread_system::start(str, threads_count as usize, vec![decr], clues, cache_name);
+    thread_system::start(
+        str,
+        threads_count as usize,
+        vec![decr],
+        clues,
+        true,
+        cache_name,
+    );
 }
 
 pub fn brute_force_decrypt(
@@ -33,6 +40,7 @@ pub fn brute_force_decrypt(
     steps: u8,
     decryptors: Vec<String>,
     threads_count: u8,
+    pretty: bool,
     cache_name: String,
 ) {
     let decr: Vec<models::BruteForceCryptor> = decryptors
@@ -61,6 +69,7 @@ pub fn brute_force_decrypt(
         threads_count as usize,
         filtered_combinations,
         clues,
+        pretty,
         cache_name,
     );
 }

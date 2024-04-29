@@ -29,6 +29,7 @@ pub fn start(
     thread_count: usize,
     combinations: Vec<VecDeque<BruteForceCryptor>>,
     clues: Vec<String>,
+    pretty: bool,
     cache_name: String,
 ) {
     let strings = vec![str.clone()];
@@ -48,6 +49,7 @@ pub fn start(
             local_cache_args,
             local_results_accumulator.clone(),
             local_console_sender,
+            pretty,
         )
     });
     let thread_work =
