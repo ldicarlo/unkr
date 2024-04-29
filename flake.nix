@@ -50,7 +50,7 @@
         };
 
         nixosModules.default = { config, lib, pkgs, ... }:
-          let cfg = config.services.rebalance;
+          let cfg = config.services.unkr;
           in
           with lib; {
             options.services.unkr = {
