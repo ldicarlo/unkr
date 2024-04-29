@@ -60,21 +60,34 @@
                 type = types.str;
                 default = "get-combinations --elements-count 2 --picks 2";
               };
+              dataDir = mkOption {
+                default = "/var/lib/unkr";
+                type = types.path;
+                description = "The data directory.";
+              };
             };
             config = mkIf cfg.enable
               {
-                systemd.services.unkr = {
-                  description = "Unkr runner";
-                  wantedBy = [ "multi-user.target" ];
-                  environment = { };
-                  serviceConfig = {
+                systemd = {
+                  services.unkr = {
+                    description = "Unkr runner";
+                    wantedBy = [ "multi-user.target" ];
+                    environment = { };
+                    serviceConfig = {
+                      Type = "simple";
+                      User = "unkr";
+                      Group = "unkr";
+                      ExecStart = "${unkr}/bin/unkr ${cfg.command}";
+                      Restart = "on-failure";
+                      RestartSec = "100s";
+                      WorkingDirectory = "/var/lib/unkr";
+                    };
 
-
-                    ExecStart = "${unkr}/bin/unkr ${cfg.command}";
-                    Restart = "on-failure";
-                    RestartSec = "100s";
-                    WorkingDirectory = "/var/lib/unkr";
                   };
+                  tmpfiles.rules = [
+                    "d '${cfg.dataDir}' - unkr unkr - -"
+                  ];
+
                 };
               };
           };
