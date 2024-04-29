@@ -68,8 +68,8 @@
                   wantedBy = [ "multi-user.target" ];
                   environment = { };
                   serviceConfig = {
-                    User = "nobody";
-                    Group = "rebalance";
+
+
                     ExecStart = "${unkr}/bin/unkr ${cfg.command}";
                     Restart = "on-failure";
                     RestartSec = "100s";
