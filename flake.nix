@@ -68,6 +68,10 @@
             };
             config = mkIf cfg.enable
               {
+                users.users.unkr = {
+                  group = "unkr";
+                };
+                users.groups.unkr = { };
                 systemd = {
                   services.unkr = {
                     description = "Unkr runner";
