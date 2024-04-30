@@ -106,6 +106,9 @@ pub fn start(
     for _ in 0..thread_count {
         thread_status_receiver.recv().unwrap();
     }
+
+    // known problem here: the last console statements won't arrive before the end of the main thread.
+    // ignored for now but to check.
 }
 
 fn thread_combination_status_function(
