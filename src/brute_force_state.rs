@@ -162,6 +162,12 @@ pub fn loop_decrypt(
 
 #[cfg(test)]
 mod tests {
+    use crate::{
+        brute_force_state::get_cryptor,
+        enigma::{EnigmaArgs, Rotor},
+        models::Cryptor,
+    };
+
     #[test]
     fn it_works() {
         assert_eq!(
@@ -190,6 +196,23 @@ mod tests {
                 vec![]
             ),
             None
+        );
+    }
+    #[test]
+    fn reuse_works() {
+        let pc = Cryptor::Enigma(EnigmaArgs {
+            reflector: crate::enigma::Reflector::B,
+            l0_rotor: None,
+            l_rotor: (Rotor::I, 0),
+            m_rotor: (Rotor::I, 10),
+            r_rotor: (Rotor::I, 0),
+        });
+        assert_eq!(
+            pc.clone(),
+            get_cryptor(
+                &super::BruteForceState::Reuse(crate::models::CryptorBase::Enigma),
+                vec![pc]
+            )
         );
     }
 }

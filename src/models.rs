@@ -2,6 +2,8 @@ use std::collections::{BTreeMap, VecDeque};
 
 use crate::enigma::EnigmaArgs;
 
+// This module is pure enum aberrations
+
 #[derive(Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq, PartialOrd, Ord, Clone)]
 #[serde(tag = "name", deny_unknown_fields)]
 pub enum CLICryptor {

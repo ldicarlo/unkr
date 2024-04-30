@@ -53,15 +53,7 @@ pub fn find_and_print_candidates(
     candidates
 }
 pub fn find_candidates(strs: Vec<String>, clues: Vec<String>) -> Vec<String> {
-    check_string_for_candidates(&strs.join(""), &clues)
-}
-
-fn check_string_for_candidates(string: &String, clues: &Vec<String>) -> Vec<String> {
-    let step1 = clue_is_in_string(string, clues);
-    if step1.len() > 0 {
-        return step1;
-    }
-    step1
+    clue_is_in_string(&strs.join(""), &clues)
 }
 
 fn clue_is_in_string(string: &String, clues: &Vec<String>) -> Vec<String> {
