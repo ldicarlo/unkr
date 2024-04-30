@@ -349,9 +349,11 @@ fn run_thread_work(
             let first = apply_decrypt(new_tw.current_head.clone(), strings.clone(), vec![]);
             if first.len() > 0 {
                 let acc = vec![brute_force_state::get_cryptor(&new_tw.current_head, vec![])];
-                candidates_sender
-                    .send((first.clone(), clues.clone(), acc.clone()))
-                    .unwrap();
+                if new_tw.current_tail.is_empty() || intermediate_steps {
+                    candidates_sender
+                        .send((first.clone(), clues.clone(), acc.clone()))
+                        .unwrap();
+                }
                 brute_force_state::loop_decrypt(
                     acc,
                     new_tw.current_tail.clone(),

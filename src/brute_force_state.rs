@@ -132,7 +132,7 @@ pub fn loop_decrypt(
         let mut bfs = start_state(current.clone());
         let mut current_acc = acc.clone();
         current_acc.push(get_cryptor(&bfs, current_acc.clone()));
-        let last = to_use.len() == 0;
+        let last = to_use.is_empty();
         loop {
             let new_str = apply_decrypt(bfs.clone(), strings.clone(), current_acc.clone());
             if new_str.len() > 0 {
