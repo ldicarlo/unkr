@@ -31,6 +31,7 @@ pub fn start(
     clues: Vec<String>,
     pretty: bool,
     cache_name: String,
+    intermediate_steps: bool,
 ) {
     let strings = vec![str.clone()];
     let results_accumulator = Arc::new(Mutex::new(BTreeSet::new()));
@@ -94,6 +95,7 @@ pub fn start(
                 local_done_cache,
                 local_partial_cache,
                 local_combination_status_sender,
+                intermediate_steps,
             )
         });
     }
@@ -303,6 +305,7 @@ fn run_thread_work(
     done_cache: BTreeSet<models::DoneLine>,
     partial_cache: BTreeSet<models::PartialLine>,
     combination_status_sender: Sender<ThreadStatus>,
+    intermediate_steps: bool,
 ) {
     let mut step = 0;
 
@@ -355,6 +358,7 @@ fn run_thread_work(
                     first,
                     clues.clone(),
                     candidates_sender.clone(),
+                    intermediate_steps,
                 );
             }
 

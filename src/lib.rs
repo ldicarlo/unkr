@@ -90,6 +90,7 @@ pub fn brute_force_unique_combination(
     threads_count: u8,
     cache_name: String,
     pretty: bool,
+    intermediate_steps: bool,
 ) {
     brute_force::brute_force_unique_combination(
         str,
@@ -98,6 +99,7 @@ pub fn brute_force_unique_combination(
         threads_count,
         cache_name,
         pretty,
+        intermediate_steps,
     )
 }
 

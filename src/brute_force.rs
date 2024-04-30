@@ -19,6 +19,7 @@ pub fn brute_force_unique_combination(
     threads_count: u8,
     cache_name: String,
     pretty: bool,
+    intermediate_steps: bool,
 ) {
     let decr: VecDeque<models::BruteForceCryptor> = decryptors
         .iter()
@@ -32,6 +33,7 @@ pub fn brute_force_unique_combination(
         clues,
         pretty,
         cache_name,
+        intermediate_steps,
     );
 }
 
@@ -72,6 +74,7 @@ pub fn brute_force_decrypt(
         clues,
         pretty,
         cache_name,
+        true,
     );
 }
 

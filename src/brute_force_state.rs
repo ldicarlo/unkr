@@ -126,23 +126,28 @@ pub fn loop_decrypt(
     strings: Vec<String>,
     clues: Vec<String>,
     candidates_sender: Sender<(Vec<String>, Vec<String>, Vec<Cryptor>)>,
+    intermediate_steps: bool,
 ) {
     if let Some(current) = to_use.pop_front() {
         let mut bfs = start_state(current.clone());
         let mut current_acc = acc.clone();
         current_acc.push(get_cryptor(&bfs, current_acc.clone()));
+        let last = to_use.len() == 0;
         loop {
             let new_str = apply_decrypt(bfs.clone(), strings.clone(), current_acc.clone());
             if new_str.len() > 0 {
-                candidates_sender
-                    .send((new_str.clone(), clues.clone(), current_acc.clone()))
-                    .unwrap();
+                if intermediate_steps || last {
+                    candidates_sender
+                        .send((new_str.clone(), clues.clone(), current_acc.clone()))
+                        .unwrap();
+                }
                 loop_decrypt(
                     acc.clone(),
                     to_use.clone(),
                     strings.clone(),
                     clues.clone(),
                     candidates_sender.clone(),
+                    intermediate_steps,
                 );
             }
             if let Some(next_is) = increase_state(bfs.clone(), strings.clone()) {

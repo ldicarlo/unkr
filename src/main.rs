@@ -66,6 +66,7 @@ fn main() {
             threads,
             decryptors,
             pretty,
+            intermediate_steps,
         } => unkr::brute_force_unique_combination(
             string,
             clues,
@@ -73,6 +74,7 @@ fn main() {
             threads,
             String::from("cache"),
             pretty,
+            intermediate_steps,
         ),
         //Commands::Crossterm {} => console::consume_message(),
     };
@@ -142,6 +144,9 @@ enum Commands {
         /// using pretty prints "nicely" (hey it's a shell don't be too picky) the logs
         #[arg(long)]
         pretty: bool,
+        /// check for clues during the intermediate steps of an encryption
+        #[arg(long)]
+        intermediate_steps: bool,
     },
     GetDecryptors {
         /// filter decryptors to use (empty means all)
