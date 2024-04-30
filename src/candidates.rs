@@ -15,10 +15,9 @@ pub fn candidate_receiver(
     cache_args: CacheArgs,
     result_accumulator: Arc<Mutex<BTreeSet<String>>>,
     console_sender: Sender<PrintableMessage>,
-    pretty: bool,
 ) {
     r.iter().for_each(|(a, b, c)| {
-        let result = find_and_print_candidates(a, b, c.clone(), console_sender.clone(), pretty);
+        let result = find_and_print_candidates(a, b, c.clone(), console_sender.clone());
 
         if result.len() > 0 {
             result_accumulator
@@ -41,10 +40,9 @@ pub fn find_and_print_candidates(
     clues: Vec<String>,
     cryptor_str: Vec<Cryptor>,
     console_sender: Sender<PrintableMessage>,
-    pretty: bool,
 ) -> Vec<String> {
     let candidates = find_candidates(strs.clone(), clues.clone());
-    if candidates.len() > 0 && pretty {
+    if candidates.len() > 0 {
         console_sender
             .send(console::PrintableMessage::Default(format!(
                 "{:?} {:?}",

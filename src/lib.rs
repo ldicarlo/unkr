@@ -89,8 +89,16 @@ pub fn brute_force_unique_combination(
     decryptors: Vec<String>,
     threads_count: u8,
     cache_name: String,
+    pretty: bool,
 ) {
-    brute_force::brute_force_unique_combination(str, clues, decryptors, threads_count, cache_name)
+    brute_force::brute_force_unique_combination(
+        str,
+        clues,
+        decryptors,
+        threads_count,
+        cache_name,
+        pretty,
+    )
 }
 
 pub fn print_combine_elements(elements_count: u8, picks: u8) {

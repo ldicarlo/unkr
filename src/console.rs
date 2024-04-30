@@ -34,6 +34,18 @@ pub fn thread_consume_messages(r: Receiver<PrintableMessage>, thread_count: usiz
     stdout.flush().unwrap();
 }
 
+pub fn thread_simple_consume_messages(r: Receiver<PrintableMessage>) {
+    r.iter().for_each(|x| {
+        println!(
+            "{}",
+            match x {
+                PrintableMessage::Default(str) => str,
+                PrintableMessage::ThreadStatus(t) => line_to_print(t),
+            }
+        )
+    });
+}
+
 fn print(pm: PrintableMessage, thread_count: usize) {
     match pm {
         PrintableMessage::ThreadStatus(p) => print_thread_status(p),
@@ -65,17 +77,31 @@ fn print_thread_status(
         .unwrap()
         .execute(Clear(terminal::ClearType::CurrentLine))
         .unwrap()
-        .execute(Print(format!(
-            "thread_{:02}: {:04} ({})",
+        .execute(Print(line_to_print(ThreadStatusPayload {
             thread_number,
             step,
-            print_brute_force_state(current_combination)
-        )))
+            current_combination,
+        })))
         .unwrap()
         .flush()
         .unwrap();
     let ten_millis = time::Duration::from_millis(1000);
     thread::sleep(ten_millis);
+}
+
+fn line_to_print(
+    ThreadStatusPayload {
+        thread_number,
+        step,
+        current_combination,
+    }: ThreadStatusPayload,
+) -> String {
+    format!(
+        "thread_{:02}: {:04} ({})",
+        thread_number,
+        step,
+        print_brute_force_state(current_combination)
+    )
 }
 
 fn print_brute_force_state(brute_force_state: BruteForceState) -> String {

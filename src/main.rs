@@ -65,12 +65,14 @@ fn main() {
             clues,
             threads,
             decryptors,
+            pretty,
         } => unkr::brute_force_unique_combination(
             string,
             clues,
             decryptors,
             threads,
             String::from("cache"),
+            pretty,
         ),
         //Commands::Crossterm {} => console::consume_message(),
     };
@@ -137,6 +139,9 @@ enum Commands {
         /// Combination of BrufteForce params to use
         #[arg(last = true)]
         decryptors: Vec<String>,
+        /// using pretty prints "nicely" (hey it's a shell don't be too picky) the logs
+        #[arg(long)]
+        pretty: bool,
     },
     GetDecryptors {
         /// filter decryptors to use (empty means all)

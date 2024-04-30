@@ -39,7 +39,11 @@ pub fn start(
     let (candidates_sender, candidates_receiver) = unbounded();
     let (console_sender, console_receiver) = unbounded();
     let local_cache_args = cache_args.clone();
-    thread::spawn(move || console::thread_consume_messages(console_receiver, thread_count));
+    if pretty {
+        thread::spawn(move || console::thread_consume_messages(console_receiver, thread_count));
+    } else {
+        thread::spawn(move || console::thread_simple_consume_messages(console_receiver));
+    }
 
     let local_console_sender = console_sender.clone();
     let local_results_accumulator = results_accumulator.clone();
@@ -49,7 +53,6 @@ pub fn start(
             local_cache_args,
             local_results_accumulator.clone(),
             local_console_sender,
-            pretty,
         )
     });
     let thread_work =
