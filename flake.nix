@@ -24,7 +24,7 @@
               (craneLib.filterCargoSources path type)
             ;
           };
-          buildInputs = with pkgs; [ pkg-config openssl rustc ];
+          buildInputs = with pkgs; [ pkg-config openssl ];
         };
         cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {
           pname = "unkr";
