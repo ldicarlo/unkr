@@ -84,7 +84,7 @@
                       ExecStart = "${unkr}/bin/unkr ${cfg.command}";
                       Restart = "on-failure";
                       RestartSec = "100s";
-                      WorkingDirectory = "/var/lib/unkr";
+                      WorkingDirectory = "${cfg.dataDir}";
                     };
 
                   };
