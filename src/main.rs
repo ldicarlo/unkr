@@ -88,6 +88,7 @@ struct Cli {
 }
 #[derive(Debug, Subcommand)]
 enum Commands {
+    /// run simple encryption
     #[command(arg_required_else_help = true)]
     Encrypt {
         /// String to try to encrypt (defaults to stdin)
@@ -98,6 +99,7 @@ enum Commands {
         #[arg(last = true)]
         steps: Vec<String>,
     },
+    /// run simple decryption
     Decrypt {
         /// String to try to decrypt (defaults to stdin)
         #[arg(short, long)]
@@ -106,6 +108,7 @@ enum Commands {
         #[arg(last = true)]
         steps: Vec<String>,
     },
+    /// bruteforce from known clues in the text
     BruteForce {
         /// String to try to decrypt
         #[arg(short, long)]
@@ -114,19 +117,24 @@ enum Commands {
         /// Consecutive steps in the bruteforce attempt
         #[arg(long)]
         steps: u8,
+
         /// filter decryptors to use (empty means all)
         #[arg(long)]
         decryptors: Vec<String>,
+
         /// words to search for (cannot be empty)
         #[arg(long)]
         clues: Vec<String>,
+
         /// threads to run
         #[arg(long)]
         threads: u8,
+
         /// using pretty prints "nicely" (hey it's a shell don't be too picky) the logs
         #[arg(long)]
         pretty: bool,
     },
+    /// bruteforce a single combination from known clues in the text
     BruteForceCombination {
         /// String to try to decrypt
         #[arg(short, long)]
@@ -135,24 +143,32 @@ enum Commands {
         /// words to search for (cannot be empty)
         #[arg(long)]
         clues: Vec<String>,
+
         /// threads to run
         #[arg(long)]
         threads: u8,
+
         /// Combination of BrufteForce params to use
         #[arg(last = true)]
         decryptors: Vec<String>,
+
         /// using pretty prints "nicely" (hey it's a shell don't be too picky) the logs
         #[arg(long)]
         pretty: bool,
+
         /// check for clues during the intermediate steps of an encryption
         #[arg(long)]
         intermediate_steps: bool,
     },
+
+    /// list all decryptors
     GetDecryptors {
         /// filter decryptors to use (empty means all)
         #[arg(long)]
         decryptors: Vec<String>,
     },
+
+    /// generate a combination list
     GetCombinations {
         /// Consecutive steps in the bruteforce attempt
         #[arg(long)]
@@ -161,6 +177,8 @@ enum Commands {
         #[arg(long)]
         picks: u8,
     },
+
+    /// generate strings knowing length (length 2 -> A -> ZZ)
     Fuzz {
         /// max_length of output
         #[arg(short, long)]
