@@ -64,7 +64,9 @@
 //!    ]);
 //! ```
 //!
+//! ## Bruteforce
 //!
+//! The second
 
 use cryptors::{
     char_utils,
