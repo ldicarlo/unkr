@@ -22,8 +22,8 @@ fn encrypt_bench(c: &mut Criterion) {
     group.bench_function("permute", |b| {
         b.iter(|| {
             let strs = vec![String::from("HELLO")];
-            let args_next = unkr::permute_next(unkr::PermuteBruteForceState {
-                brute_force_args: unkr::BruteForcePermuteArgs {
+            let args_next = unkr::permute_next(unkr::models::PermuteBruteForceState {
+                brute_force_args: unkr::models::BruteForcePermuteArgs {
                     max_permutations: 26,
                 },
                 args: unkr::permute_init(),

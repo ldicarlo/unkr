@@ -1,6 +1,6 @@
 use crate::{
-    base,
-    char_utils::{self, get_alphabet_prefixed},
+    base, cryptors,
+    cryptors::char_utils::{self, get_alphabet_prefixed},
 };
 
 pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
@@ -32,7 +32,7 @@ pub fn fuzz_next_string_ruled(
 ) -> Option<String> {
     fuzz_next_r(
         str.chars()
-            .flat_map(|c| char_utils::char_position(c, get_alphabet_prefixed()))
+            .flat_map(|c| cryptors::char_utils::char_position(c, get_alphabet_prefixed()))
             .map(|c| c as u8)
             .collect(),
         len_max,

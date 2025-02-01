@@ -1,5 +1,5 @@
 use crate::{
-    char_utils::{self, char_position_base},
+    cryptors::char_utils::{self, char_position_base},
     fuzzer, models,
 };
 use strum::IntoEnumIterator;
@@ -222,10 +222,8 @@ fn pass_through_rotors_m3(char: char, rotors: EnigmaArgs) -> (char, EnigmaArgs) 
 
     let new_char_1 = char_utils::char_position_base(char) as u8
         + get_rotor(&r_r)[(char_utils::char_position_base(char) + (r_i as usize)) % 26];
-    let new_char_2 =
-        new_char_1 + get_rotor(&m_r)[(new_char_1 as usize + (m_i as usize)) % 26];
-    let new_char_3 =
-        new_char_2 + get_rotor(&l_r)[(new_char_2 as usize + (l_i as usize)) % 26];
+    let new_char_2 = new_char_1 + get_rotor(&m_r)[(new_char_1 as usize + (m_i as usize)) % 26];
+    let new_char_3 = new_char_2 + get_rotor(&l_r)[(new_char_2 as usize + (l_i as usize)) % 26];
     let new_char_4 = new_char_3 + get_reflector(&reflector)[(new_char_3 as usize) % 26];
     let new_char_5 =
         new_char_4 + get_reversed_rotor(&l_r)[(new_char_4 as usize + (l_i as usize)) % 26];
@@ -368,7 +366,7 @@ fn get_reversed_rotor(r: &Rotor) -> Vec<u8> {
 
 fn get_reflector(r: &Reflector) -> Vec<u8> {
     match r {
-       & Reflector::B => vec![
+        &Reflector::B => vec![
             24, 16, 18, 4, 12, 13, 5, 22, 7, 14, 3, 21, 2, 23, 24, 19, 14, 10, 13, 6, 8, 1, 25, 12,
             2, 20,
         ],
@@ -449,7 +447,7 @@ fn _print_reverse(prefix: &str, key: &str, str: &str) {
 #[cfg(test)]
 mod tests {
     use super::args_to_string;
-    use crate::enigma::{EnigmaArgs, Reflector, Rotor};
+    use crate::cryptors::enigma::{EnigmaArgs, Reflector, Rotor};
     use strum::IntoEnumIterator;
 
     #[test]

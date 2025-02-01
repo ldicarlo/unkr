@@ -1,6 +1,6 @@
 use std::cmp::min;
 
-use super::models;
+use crate::models;
 
 pub fn encrypt(
     strs: Vec<String>,

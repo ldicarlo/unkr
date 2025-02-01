@@ -1,6 +1,6 @@
 use crate::models::NumberArgs;
 
-use super::char_utils::char_mod;
+use crate::cryptors::char_utils::char_mod;
 
 pub fn init() -> NumberArgs {
     NumberArgs { number: 0 }

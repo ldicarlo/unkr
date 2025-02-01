@@ -1,17 +1,17 @@
-use super::cut;
 use super::models;
 use super::parser;
-use super::vigenere;
-use crate::atbash;
-use crate::caesar;
 use crate::colorize;
-use crate::enigma;
-use crate::indexcrypt;
-use crate::join;
-use crate::permute;
-use crate::reverse;
-use crate::swap;
-use crate::transpose;
+use crate::cryptors::atbash;
+use crate::cryptors::caesar;
+use crate::cryptors::cut;
+use crate::cryptors::enigma;
+use crate::cryptors::indexcrypt;
+use crate::cryptors::join;
+use crate::cryptors::permute;
+use crate::cryptors::reverse;
+use crate::cryptors::swap;
+use crate::cryptors::transpose;
+use crate::cryptors::vigenere;
 
 pub fn decrypt(strs: Vec<String>, decryptors: Vec<String>) -> Vec<String> {
     decryptors

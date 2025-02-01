@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::{char_utils, fuzzer, models};
+use crate::{cryptors::char_utils, fuzzer, models};
 
 pub fn skip_if_previous_in(args: models::BruteForcePermuteArgs) -> Vec<models::BruteForceCryptor> {
     vec![models::BruteForceCryptor::Permute(args)]

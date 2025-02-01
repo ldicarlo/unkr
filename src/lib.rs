@@ -4,7 +4,7 @@
 //! - Bruteforce challenges when knowing a part of the clear text.
 //! - Print out all possible strings and look for words inside yourself.
 //!
-//! ## Examples
+//! ## Decrypt/Encrypt Examples
 //!
 //! ### Basic
 //! ```bash
@@ -20,40 +20,76 @@
 //! BETWEENSUBTLESHADINGANDTHEABSENCEOFLIGHTLIESTHENUANCEOFIQLUSION
 //! ```
 //!
-use enigma::EnigmaArgs;
-use models::{BruteForceCryptor, NumberArgs, PermuteArgs};
+//! ### Kryptos panel k2
+//!
+//! (passing string as argument instead of stdin)
+//!
+//! ```bash
+//! $ unkr decrypt --string 'VFPJUDEEHZWETZYVGWHKKQETGFQJNCEGGWHKK?DQMCPFQZDQMMIAGPFXHQRLGTIMVMZJANQLVKQEDAGDVFRPJUNGEUNAQZGZLECGYUXUEENJTBJLBQCRTBJDFHRRYIZETKZEMVDUFKSJHKFWHKUWQLSZFTIHHDDDUVH?DWKBFUFPWNTDFIYCUQZEREEVLDKFEZMOQQJLTTUGSYQPFEUNLAVIDXFLGGTEZ?FKZBSFDQVGOGIPUFXHHDRKFFHQNTGPUAECNUVPDJMQCLQUMUNEDFQELZZVRRGKFFVOEEXBDMVPNFQXEZLGREDNQFMPNZGLFLPMRJQYALMGNUVPDXVKPDQUMEBEDMHDAFMJGZNUPLGEWJLLAETG' -- 'vigenere:ABSCISSA:KRYPTOS'
+//! ITWASTOTALLYINVISIBLEHOWSTHATPOSSIBLE?THEYUSEDTHEEARTHSMAGNETICFIELDXTHEINFORMATIONWASGATHEREDANDTRANSMITTEDUNDERGRUUNDTOANUNKNOWNLOCATIONXDOESLANGLEYKNOWABOUTTHIS?THEYSHOULDITSBURIEDOUTTHERESOMEWHEREXWHOKNOWSTHEEXACTLOCATION?ONLYWWTHISWASHISLASTMESSAGEXTHIRTYEIGHTDEGREESFIFTYSEVENMINUTESSIXPOINTFIVESECONDSNORTHSEVENTYSEVENDEGREESEIGHTMINUTESFORTYFOURSECONDSWESTIDBYROWS
+//! ```
+//!
+//! ### Kryptos panel k3
+//!
+//! There is some confusion here between encrypt and decrypt, I need to fix the right verb but I am not sure about what to for `transpose` actually.
+//!
+//! Also symbols are totally ignored.
+//!
+//!```bash
+//! $ cargo run -- encrypt --string "ENDYAHROHNLSRHEOCPTEOIBIDYSHNAIACHTNREYULDSLLSLLNOHSNOSMRWXMNETPRNGATIHNRARPESLNNELEBLPIIACAEWMTWNDITEENRAHCTENEUDRETNHAEOETFOLSEDTIWENHAEIOYTEYQHEENCTAYCREIFTBRSPAMHHEWENATAMATEGYEERLBTEEFOASFIOTUETUAEOTOARMAEERTNRTIBSEDDNIAAHTTMSTEWPIEROAGRIEWFEBAECTDDHILCEIHSITEGOEAOSDDRYDLORITRKLMLEHAGTDHARDPNEOHMGFMFEUHEECDMRIPFEIMEHNLSSTTRTVDOHW?" -- transpose:24 reverse transpose:8 reverse join
+//! SLOWLYDESPARATLYSLOWLYTHEREMAINSOFPASSAGEDEBRISTHATENCUMBEREDTHELOWERPARTOFTHEDOORWAYWASREMOVEDWITHTREMBLINGHANDSIMADEATINYBREACHINTHEUPPERLEFTHANDCORNERANDTHENWIDENINGTHEHOLEALITTLEIINSERTEDTHECANDLEANDPEEREDINTHEHOTAIRESCAPINGFROMTHECHAMBERCAUSEDTHEFLAMETOFLICKERBUTPRESENTLYDETAILSOFTHEROOMWITHINEMERGEDFROMTHEMISTXCANYOUSEEANYTHINGQ
+//!```
+//!
+//! ## Cryptors
+//!
+//! Current cryptors are
+//! ```
+//! # use unkr::models::{BruteForceCryptor, NumberArgs, PermuteArgs,BruteForceVigenereArgs,BruteForcePermuteArgs};
+//! # let cryptors = unkr::get_decryptors();
+//! assert_eq!(cryptors,  vec![
+//!        BruteForceCryptor::Vigenere(BruteForceVigenereArgs { // [...]
+//!  #          alphabet_depth: 1,
+//!  #          key_depth: 2,
+//!        }),
+//!        BruteForceCryptor::Cut,
+//!        BruteForceCryptor::Caesar,
+//!        BruteForceCryptor::Transpose,
+//!        BruteForceCryptor::AtBash,
+//!        BruteForceCryptor::Reverse,
+//!        BruteForceCryptor::Swap,
+//!        BruteForceCryptor::Join,
+//!        BruteForceCryptor::Permute(BruteForcePermuteArgs { // [...]
+//!  #          max_permutations: 2,
+//!        }),
+//!    ]);
+//! ```
+//!
+//!
 
-mod atbash;
+use cryptors::{
+    char_utils,
+    enigma::{self, EnigmaArgs},
+    permute, transpose,
+};
+use models::{BruteForceCryptor, NumberArgs, PermuteArgs};
 mod base;
 mod brute_force;
 mod brute_force_state;
 mod cache;
-mod caesar;
 mod candidates;
-mod char_utils;
 mod colorize;
 mod combinator;
 mod console;
 mod cryptors;
-mod cut;
 mod decrypt;
+mod decryptors;
 mod encrypt;
-mod enigma;
 mod fuzzer;
-mod indexcrypt;
-mod join;
 mod mapper;
-mod models;
+// pub for benchmark, but not sure that it is really required
+pub mod models;
 mod parser;
-mod permute;
-mod reverse;
-mod swap;
 mod thread_system;
-mod transpose;
-mod vigenere;
-
-pub use self::models::BruteForcePermuteArgs;
-pub use self::models::PermuteBruteForceState;
 
 pub fn fuzz_next_string_ruled(
     str: &String,
@@ -103,7 +139,7 @@ pub fn brute_force_decrypt(
 
 /// Return current supported decryptors.
 pub fn get_decryptors() -> Vec<BruteForceCryptor> {
-    cryptors::get_decryptors()
+    decryptors::get_decryptors()
 }
 
 pub fn brute_force_unique_combination(

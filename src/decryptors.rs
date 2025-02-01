@@ -13,7 +13,6 @@ pub fn get_decryptors() -> Vec<BruteForceCryptor> {
         BruteForceCryptor::Reverse,
         BruteForceCryptor::Swap,
         BruteForceCryptor::Join,
-        // IndexCrypt,
         BruteForceCryptor::Permute(BruteForcePermuteArgs {
             max_permutations: 2,
         }),
@@ -22,13 +21,9 @@ pub fn get_decryptors() -> Vec<BruteForceCryptor> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        atbash, caesar, cut, join,
-        models::{self, BruteForceCryptor},
-        permute, reverse, swap, transpose, vigenere,
-    };
-
     use super::get_decryptors;
+    use crate::cryptors::{atbash, caesar, cut, join, permute, reverse, swap, transpose, vigenere};
+    use crate::models::{self, BruteForceCryptor};
 
     #[test]
     fn it_works() {

@@ -1,7 +1,7 @@
 use crate::fuzzer;
 
 use super::char_utils;
-use super::models;
+use crate::models;
 
 pub fn init() -> models::VigenereArgs {
     models::VigenereArgs {
