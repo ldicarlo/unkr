@@ -66,7 +66,12 @@
 //!
 //! ## Bruteforce
 //!
-//! The second
+//! The second interesting feature is bruteforcing using clues.
+//!
+//! ```bash
+//! cargo run -- bruteforce --decryptors enigma --string ILBDARKFH --clues HELLOTEST --threads 16
+//!
+//! ```
 
 use cryptors::{
     char_utils,
