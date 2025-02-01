@@ -1,3 +1,11 @@
+//! # Unkr decrypt and bruteforce old school cyphers
+//!
+//! - Encrypt and Decrypt strings using old school cryptography, like Vigenere, Transposition, and more.
+//! - Bruteforce challenges when knowing a part of the clear text.
+//! - Print out all possible strings and look for words inside yourself.
+//!
+//!
+//!
 use enigma::EnigmaArgs;
 use models::{BruteForceCryptor, NumberArgs, PermuteArgs};
 
@@ -79,6 +87,7 @@ pub fn brute_force_decrypt(
     )
 }
 
+/// Return current supported decryptors.
 pub fn get_decryptors() -> Vec<BruteForceCryptor> {
     cryptors::get_decryptors()
 }
