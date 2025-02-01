@@ -4,7 +4,21 @@
 //! - Bruteforce challenges when knowing a part of the clear text.
 //! - Print out all possible strings and look for words inside yourself.
 //!
+//! ## Examples
 //!
+//! ### Basic
+//! ```bash
+//! $ echo "ABCDEF" | unkr encrypt -- transpose:2
+//! ACE
+//! BDF
+//! ```
+//!
+//! ### Kryptos panel K1
+//!
+//! ```bash
+//! $ echo "EMUFPHZLRFAXYUSDJKZLDKRNSHGNFIVJYQTQUXQBQVYUVLLTREVJYQTMKYRDMFD" | unkr decrypt -- vigenere:PALIMPSEST:KRYPTOS
+//! BETWEENSUBTLESHADINGANDTHEABSENCEOFLIGHTLIESTHENUANCEOFIQLUSION
+//! ```
 //!
 use enigma::EnigmaArgs;
 use models::{BruteForceCryptor, NumberArgs, PermuteArgs};
