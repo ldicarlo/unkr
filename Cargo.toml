@@ -4,6 +4,9 @@ description = "A tool to decrypt old school cyphers"
 version = "0.1.1"
 edition = "2021"
 license = "GPL"
+keywords = ["cryptography"]
+categories = ["command-line-utilities"]
+repository = "https://github.com/ldicarlo/unkr"
 
 [dependencies]
 csv = "1.3"
