@@ -1,4 +1,12 @@
-# Unkr - see documentation at crate.io
+# Unkr
+
+unkr is a tool made to decrypt/encrypt using combinations of old school algorithms.
+
+For decryptions I am also developing a bruteforce command.
+
+See examples in documentation.
+(this README.md is used for tracking progress).
+
 
 ## Use Cases
 - [x] `cargo run -- bruteforce --string STRING --clue clue --clue clue2 `
