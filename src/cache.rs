@@ -202,7 +202,7 @@ pub mod tests {
     }
 
     pub fn empty_test_cache() {
-        fs::remove_dir_all(test_cache_name()).unwrap();
+        let _ = fs::remove_dir_all(test_cache_name());
     }
 
     #[test]
