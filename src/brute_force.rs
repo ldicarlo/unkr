@@ -1,13 +1,8 @@
 use super::combinator;
-use crate::atbash;
-use crate::enigma;
-use crate::join;
+use crate::cryptors::{atbash, enigma, join, permute, reverse, swap};
 use crate::models;
 use crate::models::BruteForceCryptor;
 use crate::parser;
-use crate::permute;
-use crate::reverse;
-use crate::swap;
 use crate::thread_system;
 use std::collections::VecDeque;
 use std::vec;

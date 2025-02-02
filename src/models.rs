@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, VecDeque};
 
-use crate::enigma::EnigmaArgs;
+use crate::cryptors::enigma::EnigmaArgs;
 
 // This module is pure enum aberrations
 

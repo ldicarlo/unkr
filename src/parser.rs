@@ -1,6 +1,6 @@
 use super::models::{CryptorTypeWithArgs, NumberArgs, VigenereArgs};
 use crate::{
-    enigma::EnigmaArgs,
+    cryptors::enigma::EnigmaArgs,
     models::{
         BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
         CLIPermuteArgs, CryptorBase, CryptorTypeWithBruteForceArgs, StringArgs, SwapArgs,
@@ -176,7 +176,7 @@ fn read_cryptor_base(str: String) -> CryptorBase {
 mod tests {
 
     use crate::{
-        enigma::{EnigmaArgs, Reflector, Rotor},
+        cryptors::enigma::{EnigmaArgs, Reflector, Rotor},
         models::{BruteForceCryptor, CLICryptor, CLIPermuteArgs, SwapArgs},
     };
 

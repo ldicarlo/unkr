@@ -1,0 +1,12 @@
+pub mod atbash;
+pub mod caesar;
+pub mod char_utils;
+pub mod cut;
+pub mod enigma;
+pub mod indexcrypt;
+pub mod join;
+pub mod permute;
+pub mod reverse;
+pub mod swap;
+pub mod transpose;
+pub mod vigenere;

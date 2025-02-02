@@ -210,12 +210,11 @@ pub fn string_to_partial(str: String) -> Vec<PartialLine> {
 #[cfg(test)]
 pub mod tests {
     use crate::{
-        enigma::{EnigmaArgs, Reflector, Rotor},
+        cryptors::enigma::{EnigmaArgs, Reflector, Rotor},
         models::{
-            BruteForceCryptor, BruteForceVigenereArgs, CLICryptor, CLIPermuteArgs, Cryptor,
-            CryptorBase, DoneLine, PartialLine,
+            BruteForceCryptor, BruteForcePermuteArgs, BruteForceVigenereArgs, CLICryptor,
+            CLIPermuteArgs, Cryptor, CryptorBase, DoneLine, PartialLine,
         },
-        BruteForcePermuteArgs,
     };
 
     #[test]

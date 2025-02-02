@@ -1,11 +1,13 @@
+use crate::cryptors::{
+    atbash, caesar, cut, enigma, join, permute, reverse, swap, transpose, vigenere,
+};
 use crate::{
-    atbash, caesar, colorize, cut, enigma, join,
+    colorize,
     mapper::cryptor_base_from_cryptor,
     models::{
         BruteForceCryptor, BruteForceState, Cryptor, PermuteBruteForceState,
         VigenereBruteForceState,
     },
-    permute, reverse, swap, transpose, vigenere,
 };
 use crossbeam::channel::Sender;
 use std::collections::VecDeque;
@@ -164,7 +166,7 @@ pub fn loop_decrypt(
 mod tests {
     use crate::{
         brute_force_state::get_cryptor,
-        enigma::{EnigmaArgs, Rotor},
+        cryptors::enigma::{EnigmaArgs, Reflector, Rotor},
         models::Cryptor,
     };
 
@@ -201,7 +203,7 @@ mod tests {
     #[test]
     fn reuse_works() {
         let pc = Cryptor::Enigma(EnigmaArgs {
-            reflector: crate::enigma::Reflector::B,
+            reflector: Reflector::B,
             l0_rotor: None,
             l_rotor: (Rotor::I, 0),
             m_rotor: (Rotor::I, 10),
