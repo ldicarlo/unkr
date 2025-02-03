@@ -24,7 +24,7 @@ pub fn init() -> EnigmaArgs {
 /// https://en.wikipedia.org/wiki/Enigma_rotor_details
 /// https://piotte13.github.io/enigma-cipher/
 pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
-    let string_args = args_to_string(enigma_args.clone());
+    let string_args = args_to_string(&enigma_args);
     let rotors_count = Rotor::iter().len() + 1;
     let reflector_count = Reflector::iter().len() + 1;
     let maybe_next = fuzzer::fuzz_next_string_bases(
@@ -76,26 +76,26 @@ pub fn next(enigma_args: EnigmaArgs) -> Option<EnigmaArgs> {
     maybe_next.map(|next| string_to_args(next))
 }
 
-fn args_to_string(enigma_args: EnigmaArgs) -> String {
+fn args_to_string(enigma_args: &EnigmaArgs) -> String {
     let mut vec = Vec::new();
 
-    vec.push(reflector_to_char(enigma_args.reflector));
+    vec.push(reflector_to_char(&enigma_args.reflector));
 
-    vec.push(rotor_to_char(enigma_args.l_rotor.0));
+    vec.push(rotor_to_char(&enigma_args.l_rotor.0));
 
     vec.push(char_utils::get_alphabet()[enigma_args.l_rotor.1 as usize]);
 
-    vec.push(rotor_to_char(enigma_args.m_rotor.0));
+    vec.push(rotor_to_char(&enigma_args.m_rotor.0));
 
     vec.push(char_utils::get_alphabet()[enigma_args.m_rotor.1 as usize]);
 
-    vec.push(rotor_to_char(enigma_args.r_rotor.0));
+    vec.push(rotor_to_char(&enigma_args.r_rotor.0));
 
     vec.push(char_utils::get_alphabet()[enigma_args.r_rotor.1 as usize]);
 
-    if let Some((r, i)) = enigma_args.l0_rotor {
-        vec.push(rotor_to_char(r));
-        vec.push(char_utils::get_alphabet()[i as usize]);
+    if let Some((r, i)) = &enigma_args.l0_rotor {
+        vec.push(rotor_to_char(&r));
+        vec.push(char_utils::get_alphabet()[*i as usize]);
     }
 
     vec.iter().collect()
@@ -141,16 +141,16 @@ fn string_to_args(str: String) -> EnigmaArgs {
     }
 }
 
-fn rotor_to_char(r: Rotor) -> char {
+fn rotor_to_char(r: &Rotor) -> char {
     match r {
-        Rotor::I => 'A',
-        Rotor::II => 'B',
-        Rotor::III => 'C',
-        Rotor::IV => 'D',
-        Rotor::V => 'E',
-        Rotor::VI => 'F',
-        Rotor::VII => 'G',
-        Rotor::VIII => 'H',
+        &Rotor::I => 'A',
+        &Rotor::II => 'B',
+        &Rotor::III => 'C',
+        &Rotor::IV => 'D',
+        &Rotor::V => 'E',
+        &Rotor::VI => 'F',
+        &Rotor::VII => 'G',
+        &Rotor::VIII => 'H',
     }
 }
 
@@ -172,10 +172,10 @@ fn char_to_rotor(c: char) -> Option<Rotor> {
     }
 }
 
-fn reflector_to_char(r: Reflector) -> char {
+fn reflector_to_char(r: &Reflector) -> char {
     match r {
-        Reflector::B => 'A',
-        Reflector::C => 'B',
+        &Reflector::B => 'A',
+        &Reflector::C => 'B',
     }
 }
 
@@ -582,7 +582,7 @@ mod tests {
             .map(|r| {
                 assert_eq!(
                     Some(r.clone()),
-                    super::char_to_rotor(super::rotor_to_char(r.clone()))
+                    super::char_to_rotor(super::rotor_to_char(&r))
                 );
                 r
             })
@@ -595,7 +595,7 @@ mod tests {
             .map(|r| {
                 assert_eq!(
                     Some(r.clone()),
-                    super::char_to_reflector(super::reflector_to_char(r.clone()))
+                    super::char_to_reflector(super::reflector_to_char(&r))
                 );
                 r
             })
@@ -605,7 +605,7 @@ mod tests {
     #[test]
     fn args_to_string_works() {
         assert_eq!(
-            args_to_string(EnigmaArgs {
+            args_to_string(&EnigmaArgs {
                 reflector: Reflector::B, // A
                 l0_rotor: None,
                 l_rotor: (Rotor::I, 3),    // A, D
@@ -626,7 +626,7 @@ mod tests {
             r_rotor: (Rotor::III, 12), // C, M
         };
         let result = String::from("AADBCCMCH");
-        assert_eq!(args_to_string(input.clone()), result);
+        assert_eq!(args_to_string(&input), result);
 
         assert_eq!(super::string_to_args(result), input);
     }
@@ -661,7 +661,7 @@ mod tests {
             r_rotor: (Rotor::I, 0), // C, M
         };
         let result = String::from("AAAAAAA");
-        assert_eq!(args_to_string(input.clone()), result);
+        assert_eq!(args_to_string(&input), result);
 
         assert_eq!(super::string_to_args(result), input);
     }

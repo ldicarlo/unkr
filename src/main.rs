@@ -185,7 +185,8 @@ enum Commands {
         length: usize,
 
         /// Rules to restrict output
-        #[arg(long)]
+        /// SortedLettersByPair,EvenCount,UniqueLetters
+        #[arg(short, long)]
         rules: Vec<String>,
     },
     //Crossterm {},

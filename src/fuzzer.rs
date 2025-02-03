@@ -3,6 +3,7 @@ use crate::{
     cryptors::char_utils::{self, get_alphabet_prefixed},
 };
 
+// Called from CLI only, no perf questions here.
 pub fn fuzz_from(str: String, len_max: usize, base: usize, rules: Vec<String>) {
     let unique_letters_contraint = rules.contains(&String::from("UniqueLetters"));
     let even_count_constraint = rules.contains(&String::from("EvenCount"));
