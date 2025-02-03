@@ -18,17 +18,15 @@ pub fn pairs_to_vec<A>(input: BTreeMap<A, A>) -> Vec<A> {
     input.into_iter().flat_map(|(a, b)| vec![a, b]).collect()
 }
 
+// better perf like that.
 pub fn vec_to_pairs<A: Clone>(input: &Vec<A>) -> Vec<(A, A)> {
-    let even: Vec<A> = input.clone().into_iter().step_by(2).collect();
-    let uneven: Vec<A> = input
-        .iter()
-        .skip(1)
-        .into_iter()
-        .step_by(2)
-        .map(|x| x.clone())
-        .collect();
+    let mut result = Vec::new();
 
-    even.into_iter().zip(uneven).collect()
+    for elem in (1..input.len()).step_by(2) {
+        result.push((input[elem - 1].clone(), input[elem].clone()));
+    }
+
+    result
 }
 
 pub fn char_mod(c: char, number: usize, order: bool) -> char {

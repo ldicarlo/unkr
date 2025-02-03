@@ -2,5 +2,6 @@ target
 perf.data*
 cache-tests/*
 !cache-tests/.gitkeep
+cache
 .direnv
 result
