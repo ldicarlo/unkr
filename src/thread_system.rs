@@ -26,6 +26,7 @@ use std::thread;
 
 pub fn start(
     str: String,
+    threads_numbers: Vec<u8>,
     thread_count: usize,
     combinations: Vec<VecDeque<BruteForceCryptor>>,
     clues: Vec<String>,
@@ -66,10 +67,10 @@ pub fn start(
 
     let done_cache = cache::get_done_cache(cache_args.clone());
     let partial_cache = cache::get_partial_cache(cache_args.clone());
-    for i in 0..thread_count {
+    for i in threads_numbers.into_iter() {
         thread_combination_status_sender
             .send(ThreadStatus::Doing(
-                i,
+                i.into(),
                 thread_work.clone().current_combination,
             ))
             .unwrap();
@@ -85,7 +86,7 @@ pub fn start(
         thread::spawn(move || {
             run_thread_work(
                 local_sender,
-                i,
+                i.into(),
                 thread_count,
                 local_tw,
                 local_clues,
