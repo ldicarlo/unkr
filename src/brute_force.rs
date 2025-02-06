@@ -11,6 +11,7 @@ pub fn brute_force_unique_combination(
     str: String,
     clues: Vec<String>,
     decryptors: Vec<String>,
+    threads_numbers: Vec<u8>,
     threads_count: u8,
     cache_name: String,
     pretty: bool,
@@ -23,6 +24,7 @@ pub fn brute_force_unique_combination(
 
     thread_system::start(
         str,
+        threads_numbers,
         threads_count as usize,
         vec![decr],
         clues,
@@ -37,6 +39,7 @@ pub fn brute_force_decrypt(
     clues: Vec<String>,
     steps: u8,
     decryptors: Vec<String>,
+    threads_numbers: Vec<u8>,
     threads_count: u8,
     pretty: bool,
     cache_name: String,
@@ -64,6 +67,7 @@ pub fn brute_force_decrypt(
 
     thread_system::start(
         str,
+        threads_numbers,
         threads_count as usize,
         filtered_combinations,
         clues,
