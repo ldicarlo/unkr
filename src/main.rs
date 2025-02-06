@@ -1,6 +1,7 @@
 use unkr;
 
 use clap::{Parser, Subcommand};
+use core::cmp::max;
 use std::io;
 fn main() {
     let args = Cli::parse();
@@ -38,7 +39,10 @@ fn main() {
             runners_threads_total_count,
         } => {
             let threads = runner_thread_numbers.unwrap_or(vec![0]);
-            let threads_count = runners_threads_total_count.unwrap_or(threads.len() as u8);
+            let threads_count = runners_threads_total_count.unwrap_or(max(
+                *threads.iter().max().unwrap_or(&0),
+                threads.len() as u8,
+            ));
 
             unkr::brute_force_decrypt(
                 string,
@@ -77,8 +81,10 @@ fn main() {
             runners_threads_total_count,
         } => {
             let threads = runner_thread_numbers.unwrap_or(vec![0]);
-            let threads_count = runners_threads_total_count.unwrap_or(threads.len() as u8);
-
+            let threads_count = runners_threads_total_count.unwrap_or(max(
+                *threads.iter().max().unwrap_or(&0) + 1,
+                threads.len() as u8,
+            ));
             unkr::brute_force_unique_combination(
                 string,
                 clues,
@@ -89,8 +95,7 @@ fn main() {
                 pretty,
                 intermediate_steps,
             )
-        }
-        //Commands::Crossterm {} => console::consume_message(),
+        } //Commands::Crossterm {} => console::consume_message(),
     };
 }
 
