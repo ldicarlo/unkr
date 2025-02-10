@@ -18,6 +18,8 @@ strum = "0.26.2"
 strum_macros = "0.26.2"
 crossterm = "0.28.0"
 crossbeam = "0.8.4"
+vulkano = "0.35.0"
+vulkano-shaders = "0.35.0"
 
 [dev-dependencies]
 pprof = { version = "0.14", features = ["flamegraph", "criterion"] }
@@ -32,3 +34,6 @@ harness = false
 # [lib]
 # name = "unkr"
 # path = "src/lib.rs"
+
+[profile.dev]
+opt-level = 1

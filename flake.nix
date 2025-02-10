@@ -36,14 +36,20 @@
         });
       in
       rec {
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.rustc
-            pkgs.rustfmt
-            pkgs.cargo
-            pkgs.cargo-flamegraph
-          ];
-        };
+        devShells.default = pkgs.mkShell
+          {
+            buildInputs = with pkgs; [
+              rustc
+              rustfmt
+              cargo
+              cargo-flamegraph
+              xorg.libxcb
+              vulkan-headers
+              vulkan-loader
+              vulkan-tools
+            ];
+            LD_LIBRARY_PATH = "${pkgs.vulkan-loader}/lib";
+          };
 
         packages = rec {
           default = unkr;
