@@ -44,11 +44,21 @@
               cargo
               cargo-flamegraph
               xorg.libxcb
-              vulkan-headers
-              vulkan-loader
-              vulkan-tools
+              # pkg-config
+              # vulkan-headers
+              # vulkan-loader
+              # vulkan-tools
+              # shaderc
+              # shaderc.bin
+              # shaderc.static
+              # shaderc.dev
+              # shaderc.lib
+              glslang
+              cmake
             ];
             LD_LIBRARY_PATH = "${pkgs.vulkan-loader}/lib";
+            VULKAN_LIB_DIR = "${pkgs.shaderc.dev}/lib";
+            SHADERC_LIB_DIR = "${pkgs.shaderc.dev}/lib";
           };
 
         packages = rec {

@@ -232,5 +232,5 @@ pub fn char_position(c: char) -> usize {
 }
 
 pub fn run_gpu() {
-    gpu::run_gpu();
+    gpu::run_gpu::run_gpu();
 }
