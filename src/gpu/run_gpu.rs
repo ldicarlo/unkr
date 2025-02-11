@@ -1,4 +1,5 @@
-use super::multiply;
+use crate::gpu::fuzz;
+use core::iter::Iterator;
 use std::sync::Arc;
 use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
 use vulkano::command_buffer::allocator::{
@@ -17,6 +18,13 @@ use vulkano::pipeline::{
 };
 use vulkano::sync::{self, GpuFuture};
 use vulkano::VulkanLibrary;
+
+#[derive(bytemuck::AnyBitPattern, Copy, Clone, Debug)]
+#[repr(C)]
+struct InputPod {
+    strings: [u8; 4],
+}
+
 // https://vulkano.rs/04-compute-pipeline/01-compute-intro.html
 pub fn run_gpu() {
     let library = VulkanLibrary::new().expect("no local Vulkan library/DLL");
@@ -53,6 +61,12 @@ pub fn run_gpu() {
         })
         .expect("couldn't find a graphical queue family") as u32;
 
+    println!(
+        "Using device: {} (type: {:?})",
+        physical_device.properties().device_name,
+        physical_device.properties().device_type,
+    );
+
     let (device, mut queues) = Device::new(
         physical_device,
         DeviceCreateInfo {
@@ -67,7 +81,7 @@ pub fn run_gpu() {
     .expect("failed to create device");
 
     let queue = queues.next().unwrap();
-    let shader = multiply::load(device.clone()).expect("failed to create shader module");
+    let shader = fuzz::load(device.clone()).expect("failed to create shader module");
     let cs = shader.entry_point("main").unwrap();
     let stage = PipelineShaderStageCreateInfo::new(cs);
     let layout = PipelineLayout::new(
@@ -85,7 +99,8 @@ pub fn run_gpu() {
     )
     .expect("failed to create compute pipeline");
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
-    let data_iter = 0..65536u32;
+    let data_iter = 0..3u32;
+
     let data_buffer = Buffer::from_iter(
         memory_allocator.clone(),
         BufferCreateInfo {
@@ -97,7 +112,9 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter,
+        data_iter
+            .into_iter()
+            .map(|_| InputPod { strings: *b"test" }),
     )
     .expect("failed to create buffer");
     let descriptor_set_allocator = Arc::new(StandardDescriptorSetAllocator::new(
@@ -158,7 +175,7 @@ pub fn run_gpu() {
 
     let content = data_buffer.read().unwrap();
     for (n, val) in content.iter().enumerate() {
-        assert_eq!(*val, n as u32 * 12);
+        println!("{},{:?}", n, val);
     }
 
     println!("Everything succeeded!");
