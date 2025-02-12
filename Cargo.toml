@@ -21,6 +21,7 @@ crossbeam = "0.8.4"
 vulkano = "0.35.0"
 vulkano-shaders = "0.35.0"
 bytemuck = "1.2.0"
+glam = "0.29.2"
 
 [dev-dependencies]
 pprof = { version = "0.14", features = ["flamegraph", "criterion"] }

@@ -11,23 +11,21 @@ layout(set = 0, binding = 0)  buffer InputPod  {
     inputPod data[];
 } buf;
 
-// layout(set = 0, binding = 0) buffer OutPod  {
-//     inputPod data[];
-// } outpod;
-
 void main() {
     uint idx = gl_GlobalInvocationID.x;
-    uvec2 newstr[4];
+    // uvec2 newstr[4];
 
-    newstr[1].x = 1;
-    newstr[1].y = 1;
+    // newstr[1].x = 1;
+    // newstr[1].y = 1;
 
 
-    for (int i = 0; i < 4; i++){
+  //  for (int i = 0; i < 4; i++){
 
-        newstr[i].x = 1; // buf.data[idx].string[4-i-1].x;
+    buf.data[idx].string[0].y = 1; // buf.data[idx].string[4-i-1].x;
+    buf.data[idx].string[1].y = 1;
+    buf.data[idx].string[2].y = 1;
+    buf.data[idx].string[3].y = 1;
+    //}
 
-    }
-
-    buf.data[idx] = inputPod (newstr);
+    //outpod.data[idx] = inputPod (newstr);
 }

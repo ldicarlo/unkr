@@ -1,6 +1,7 @@
 use crate::gpu::fuzz;
 use core::iter::Iterator;
 use std::sync::Arc;
+use vulkano::buffer::BufferContents;
 use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
 use vulkano::command_buffer::allocator::{
     StandardCommandBufferAllocator, StandardCommandBufferAllocatorCreateInfo,
@@ -19,10 +20,10 @@ use vulkano::pipeline::{
 use vulkano::sync::{self, GpuFuture};
 use vulkano::VulkanLibrary;
 
-#[derive(bytemuck::AnyBitPattern, Copy, Clone, Debug)]
+#[derive(Clone, Debug, Copy, bytemuck::Pod)]
 #[repr(C)]
 struct InputPod {
-    strings: [u8; 4],
+    string: Vec<glam::UVec2>,
 }
 
 // https://vulkano.rs/04-compute-pipeline/01-compute-intro.html
@@ -100,8 +101,9 @@ pub fn run_gpu() {
     .expect("failed to create compute pipeline");
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
     let data_iter = 0..3u32;
+    let out_data_iter = 0..3u32;
 
-    let data_buffer = Buffer::from_iter(
+    let in_buffer = Buffer::from_iter(
         memory_allocator.clone(),
         BufferCreateInfo {
             usage: BufferUsage::STORAGE_BUFFER,
@@ -112,9 +114,23 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter
+        data_iter.into_iter().map(|_| InputPod { string: *b"test" }),
+    )
+    .expect("failed to create buffer");
+    let out_buffer = Buffer::from_iter(
+        memory_allocator.clone(),
+        BufferCreateInfo {
+            usage: BufferUsage::STORAGE_BUFFER,
+            ..Default::default()
+        },
+        AllocationCreateInfo {
+            memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+            ..Default::default()
+        },
+        out_data_iter
             .into_iter()
-            .map(|_| InputPod { strings: *b"test" }),
+            .map(|_| InputPod { strings: *b"0000" }),
     )
     .expect("failed to create buffer");
     let descriptor_set_allocator = Arc::new(StandardDescriptorSetAllocator::new(
@@ -131,7 +147,10 @@ pub fn run_gpu() {
     let descriptor_set = DescriptorSet::new(
         descriptor_set_allocator.clone(),
         descriptor_set_layout.clone(),
-        [WriteDescriptorSet::buffer(0, data_buffer.clone())], // 0 is the binding
+        [
+            WriteDescriptorSet::buffer(0, in_buffer.clone()),
+            //  WriteDescriptorSet::buffer(0, out_buffer.clone()),
+        ], // 0 is the binding
         [],
     )
     .unwrap();
@@ -173,7 +192,7 @@ pub fn run_gpu() {
 
     future.wait(None).unwrap();
 
-    let content = data_buffer.read().unwrap();
+    let content = in_buffer.read().unwrap();
     for (n, val) in content.iter().enumerate() {
         println!("{},{:?}", n, val);
     }
