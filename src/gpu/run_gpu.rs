@@ -1,5 +1,7 @@
 use crate::gpu::fuzz;
+use bytemuck::Zeroable;
 use core::iter::Iterator;
+use glam::UVec2;
 use std::sync::Arc;
 use vulkano::buffer::BufferContents;
 use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
@@ -20,10 +22,11 @@ use vulkano::pipeline::{
 use vulkano::sync::{self, GpuFuture};
 use vulkano::VulkanLibrary;
 
-#[derive(Clone, Debug, Copy, bytemuck::Pod)]
+#[derive(Clone, Debug, Copy, bytemuck::Pod, Zeroable)]
 #[repr(C)]
-struct InputPod {
-    string: Vec<glam::UVec2>,
+struct BufferPod {
+    #[bytemuck]
+    chars: [u8; 2],
 }
 
 // https://vulkano.rs/04-compute-pipeline/01-compute-intro.html
@@ -100,7 +103,7 @@ pub fn run_gpu() {
     )
     .expect("failed to create compute pipeline");
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
-    let data_iter = 0..3u32;
+    let data_iter = 0..4u8;
     let out_data_iter = 0..3u32;
 
     let in_buffer = Buffer::from_iter(
@@ -114,25 +117,25 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter.into_iter().map(|_| InputPod { string: *b"test" }),
+        data_iter.into_iter().map(|i| BufferPod { chars: [0, i] }),
     )
     .expect("failed to create buffer");
-    let out_buffer = Buffer::from_iter(
-        memory_allocator.clone(),
-        BufferCreateInfo {
-            usage: BufferUsage::STORAGE_BUFFER,
-            ..Default::default()
-        },
-        AllocationCreateInfo {
-            memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
-                | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
-            ..Default::default()
-        },
-        out_data_iter
-            .into_iter()
-            .map(|_| InputPod { strings: *b"0000" }),
-    )
-    .expect("failed to create buffer");
+    // let out_buffer = Buffer::from_iter(
+    //     memory_allocator.clone(),
+    //     BufferCreateInfo {
+    //         usage: BufferUsage::STORAGE_BUFFER,
+    //         ..Default::default()
+    //     },
+    //     AllocationCreateInfo {
+    //         memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+    //             | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+    //         ..Default::default()
+    //     },
+    //     out_data_iter
+    //         .into_iter()
+    //         .map(|_| InputPod { strings: *b"0000" }),
+    // )
+    // .expect("failed to create buffer");
     let descriptor_set_allocator = Arc::new(StandardDescriptorSetAllocator::new(
         device.clone(),
         Default::default(),
@@ -193,9 +196,8 @@ pub fn run_gpu() {
     future.wait(None).unwrap();
 
     let content = in_buffer.read().unwrap();
-    for (n, val) in content.iter().enumerate() {
-        println!("{},{:?}", n, val);
-    }
+
+    println!("{:?}", content);
 
     println!("Everything succeeded!");
 }
