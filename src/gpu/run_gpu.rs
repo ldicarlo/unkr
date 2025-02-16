@@ -104,7 +104,6 @@ pub fn run_gpu() {
     .expect("failed to create compute pipeline");
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
     let data_iter = 0..4u8;
-    let out_data_iter = 0..3u32;
 
     let in_buffer = Buffer::from_iter(
         memory_allocator.clone(),
@@ -117,25 +116,26 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter.into_iter().map(|i| BufferPod { chars: [0, i] }),
+        data_iter
+            .clone()
+            .into_iter()
+            .map(|i| BufferPod { chars: [0, i] }),
     )
     .expect("failed to create buffer");
-    // let out_buffer = Buffer::from_iter(
-    //     memory_allocator.clone(),
-    //     BufferCreateInfo {
-    //         usage: BufferUsage::STORAGE_BUFFER,
-    //         ..Default::default()
-    //     },
-    //     AllocationCreateInfo {
-    //         memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
-    //             | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
-    //         ..Default::default()
-    //     },
-    //     out_data_iter
-    //         .into_iter()
-    //         .map(|_| InputPod { strings: *b"0000" }),
-    // )
-    // .expect("failed to create buffer");
+    let out_buffer = Buffer::from_iter(
+        memory_allocator.clone(),
+        BufferCreateInfo {
+            usage: BufferUsage::STORAGE_BUFFER,
+            ..Default::default()
+        },
+        AllocationCreateInfo {
+            memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+            ..Default::default()
+        },
+        data_iter.into_iter().map(|_| BufferPod { chars: [0, 0] }),
+    )
+    .expect("failed to create buffer");
     let descriptor_set_allocator = Arc::new(StandardDescriptorSetAllocator::new(
         device.clone(),
         Default::default(),
@@ -152,7 +152,7 @@ pub fn run_gpu() {
         descriptor_set_layout.clone(),
         [
             WriteDescriptorSet::buffer(0, in_buffer.clone()),
-            //  WriteDescriptorSet::buffer(0, out_buffer.clone()),
+            WriteDescriptorSet::buffer(1, out_buffer.clone()),
         ], // 0 is the binding
         [],
     )
@@ -196,8 +196,7 @@ pub fn run_gpu() {
     future.wait(None).unwrap();
 
     let content = in_buffer.read().unwrap();
-
-    println!("{:?}", content);
+    content.iter().for_each(|v| println!("{:?}", v));
 
     println!("Everything succeeded!");
 }
