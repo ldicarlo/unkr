@@ -53,11 +53,11 @@
 //!
 //! WEAREAUDACIOUSINCONCEPTANDMETICULOUSINEXECUTION
 //!
-//! $ echo "BGOAMVOEIATSIRLNGTTNEOGRERGXNTEAIFC" | cargo run -- encrypt -- cut:35 transpose:7 join
+//! $ echo "BGOAMVOEIATSIRLNGTTNEOGRERGXNTEAIFC" | cargo run -- encrypt -- transpose:7 join
 //!
 //! BELONGINGTOAGREATTEAMSTRIVINGFOREXC
 //!
-//! $ echo "ECAIEOALEKFNR5LWEFCHDEEAEEE7NMDRXX5" | cargo run -- encrypt -- cut:35 transpose:7 join
+//! $ echo "ECAIEOALEKFNR5LWEFCHDEEAEEE7NMDRXX5" | cargo run -- encrypt -- transpose:7 join
 //!
 //! ELLENCEWEMAKEADIFFERENCEXORHEXA5D75
 //! ```
