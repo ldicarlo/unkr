@@ -1,9 +1,7 @@
 use crate::gpu::fuzz;
 use bytemuck::Zeroable;
 use core::iter::Iterator;
-use glam::UVec2;
 use std::sync::Arc;
-use vulkano::buffer::BufferContents;
 use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
 use vulkano::command_buffer::allocator::{
     StandardCommandBufferAllocator, StandardCommandBufferAllocatorCreateInfo,
