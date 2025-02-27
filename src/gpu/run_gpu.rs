@@ -23,8 +23,7 @@ use vulkano::VulkanLibrary;
 #[derive(Clone, Debug, Copy, bytemuck::Pod, Zeroable)]
 #[repr(C)]
 struct BufferPod {
-    #[bytemuck]
-    chars: [u8; 2],
+    chars: [u8; 4],
 }
 
 // https://vulkano.rs/04-compute-pipeline/01-compute-intro.html
@@ -114,10 +113,9 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter
-            .clone()
-            .into_iter()
-            .map(|i| BufferPod { chars: [0, i] }),
+        data_iter.clone().into_iter().map(|i| BufferPod {
+            chars: [i * 10, i * 10 + 1, i * 10 + 2, i * 10 + 3],
+        }),
     )
     .expect("failed to create buffer");
     let out_buffer = Buffer::from_iter(
@@ -131,7 +129,9 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter.into_iter().map(|_| BufferPod { chars: [0, 0] }),
+        data_iter.into_iter().map(|_| BufferPod {
+            chars: [0, 0, 0, 0],
+        }),
     )
     .expect("failed to create buffer");
     let descriptor_set_allocator = Arc::new(StandardDescriptorSetAllocator::new(
@@ -192,8 +192,12 @@ pub fn run_gpu() {
         .unwrap();
 
     future.wait(None).unwrap();
+    println!("IN buffer");
+    let in_content = in_buffer.read().unwrap();
+    in_content.iter().for_each(|v| println!("{:?}", v));
+    println!("OUT buffer");
 
-    let content = in_buffer.read().unwrap();
+    let content = out_buffer.read().unwrap();
     content.iter().for_each(|v| println!("{:?}", v));
 
     println!("Everything succeeded!");
