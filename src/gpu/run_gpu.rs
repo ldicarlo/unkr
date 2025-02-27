@@ -100,7 +100,7 @@ pub fn run_gpu() {
     )
     .expect("failed to create compute pipeline");
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
-    let data_iter = 0..4u8;
+    let data_iter = 0..5u8;
 
     let in_buffer = Buffer::from_iter(
         memory_allocator.clone(),
@@ -195,10 +195,12 @@ pub fn run_gpu() {
     println!("IN buffer");
     let in_content = in_buffer.read().unwrap();
     in_content.iter().for_each(|v| println!("{:?}", v));
-    println!("OUT buffer");
 
+    println!("OUT buffer");
     let content = out_buffer.read().unwrap();
-    content.iter().for_each(|v| println!("{:?}", v));
+    content.iter().enumerate().for_each(|(i, v)| {
+        println!("Element {}: {:?}", i, v.chars);
+    });
 
     println!("Everything succeeded!");
 }
