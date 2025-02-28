@@ -1,5 +1,6 @@
 use crate::gpu::fuzz;
 use bytemuck::AnyBitPattern;
+use bytemuck::Pod;
 use bytemuck::Zeroable;
 use core::iter::Iterator;
 use glam::f32::Vec4;
@@ -22,10 +23,10 @@ use vulkano::pipeline::{
 use vulkano::sync::{self, GpuFuture};
 use vulkano::VulkanLibrary;
 
-#[derive(Clone, Debug, Copy, AnyBitPattern)]
+#[derive(Clone, Debug, Copy)]
 #[repr(C)]
 struct BufferPod {
-    //#[bytemuck]
+    // #[bytemuck]
     chars: Vec4,
 }
 
@@ -104,6 +105,8 @@ pub fn run_gpu() {
     .expect("failed to create compute pipeline");
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
     let data_iter = 0..5u8;
+    let ten = 10 as f32;
+    let one = 1 as f32;
 
     let in_buffer = Buffer::from_iter(
         memory_allocator.clone(),
@@ -116,13 +119,16 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter
-            .clone()
-            .into_iter()
-            .map(|i| i as f32)
-            .map(|i| BufferPod {
-                chars: Vec4::from_array([i * 10, i * 10 + 1, i * 10 + 2, i * 10 + 3]),
-            }),
+        data_iter.clone().into_iter().map(|i| i as f32).map(|i| {
+            bytemuck::cast_slice(BufferPod {
+                chars: Vec4::from_array([
+                    i * 10f32,
+                    i * 10f32 + 1f32,
+                    i * 10f32 + 2f32,
+                    i * 10f32 + 3f32,
+                ]),
+            })
+        }),
     )
     .expect("failed to create buffer");
     let out_buffer = Buffer::from_iter(
@@ -137,7 +143,10 @@ pub fn run_gpu() {
             ..Default::default()
         },
         data_iter.into_iter().map(|i| i as f32).map(|_| BufferPod {
-            chars: Vec4::from_array([1, 1, 1, 1]),
+            chars:
+            //Vec4::from_array(
+            [1f32, 1f32,1f32, 1f32]
+        //),
         }),
     )
     .expect("failed to create buffer");
