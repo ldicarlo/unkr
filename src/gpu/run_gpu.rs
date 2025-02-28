@@ -1,6 +1,8 @@
 use crate::gpu::fuzz;
+use bytemuck::AnyBitPattern;
 use bytemuck::Zeroable;
 use core::iter::Iterator;
+use glam::f32::Vec4;
 use std::sync::Arc;
 use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
 use vulkano::command_buffer::allocator::{
@@ -20,10 +22,11 @@ use vulkano::pipeline::{
 use vulkano::sync::{self, GpuFuture};
 use vulkano::VulkanLibrary;
 
-#[derive(Clone, Debug, Copy, bytemuck::Pod, Zeroable)]
+#[derive(Clone, Debug, Copy, AnyBitPattern)]
 #[repr(C)]
 struct BufferPod {
-    chars: [u8; 4],
+    //#[bytemuck]
+    chars: Vec4,
 }
 
 // https://vulkano.rs/04-compute-pipeline/01-compute-intro.html
@@ -113,9 +116,13 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter.clone().into_iter().map(|i| BufferPod {
-            chars: [i * 10, i * 10 + 1, i * 10 + 2, i * 10 + 3],
-        }),
+        data_iter
+            .clone()
+            .into_iter()
+            .map(|i| i as f32)
+            .map(|i| BufferPod {
+                chars: Vec4::from_array([i * 10, i * 10 + 1, i * 10 + 2, i * 10 + 3]),
+            }),
     )
     .expect("failed to create buffer");
     let out_buffer = Buffer::from_iter(
@@ -129,8 +136,8 @@ pub fn run_gpu() {
                 | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
             ..Default::default()
         },
-        data_iter.into_iter().map(|_| BufferPod {
-            chars: [0, 0, 0, 0],
+        data_iter.into_iter().map(|i| i as f32).map(|_| BufferPod {
+            chars: Vec4::from_array([1, 1, 1, 1]),
         }),
     )
     .expect("failed to create buffer");
@@ -198,9 +205,7 @@ pub fn run_gpu() {
 
     println!("OUT buffer");
     let content = out_buffer.read().unwrap();
-    content.iter().enumerate().for_each(|(i, v)| {
-        println!("Element {}: {:?}", i, v.chars);
-    });
+    content.iter().for_each(|v| println!("{:?}", v));
 
     println!("Everything succeeded!");
 }
