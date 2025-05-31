@@ -3,7 +3,6 @@
     nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     crane.url = "github:ipetkov/crane";
-    crane.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, crane, flake-utils }:
@@ -13,7 +12,7 @@
           inherit system;
         };
         lib = pkgs.lib;
-        craneLib = crane.lib.${system};
+        craneLib = (crane.mkLib nixpkgs.legacyPackages.${system});
 
         commonArgs = {
           src = lib.cleanSourceWith {
