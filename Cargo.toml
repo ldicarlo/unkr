@@ -20,7 +20,7 @@ crossterm = "0.29.0"
 crossbeam = "0.8.4"
 
 [dev-dependencies]
-pprof = { version = "0.14", features = ["flamegraph", "criterion"] }
+pprof = { version = "0.15", features = ["flamegraph", "criterion"] }
 criterion = { version = "0.6", features = ["html_reports"] }
 pretty_assertions = "1.4.0"
 
