@@ -3,9 +3,13 @@
     nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     crane.url = "github:ipetkov/crane";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, crane, flake-utils }:
+  outputs = { self, nixpkgs, crane, flake-utils, fenix }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -33,14 +37,21 @@
           pname = "unkr";
           inherit cargoArtifacts;
         });
+        fenixToolchain = (fenix.packages.${system}.fromToolchainFile
+          {
+            file = ./rust-toolchain.toml;
+            sha256 = "FuOGHL+DbavyycfaDakNP1ANZ0qox3ha+v2/4MVI5YY=";
+          });
       in
       rec {
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.rustc
-            pkgs.rustfmt
-            pkgs.cargo
-            pkgs.cargo-flamegraph
+        devShells.default = pkgs.mkShell rec {
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
+          # RUST_SRC_PATH = fenixToolchain;
+
+          nativeBuildInputs = [ fenixToolchain ];
+
+          buildInputs = with pkgs;  [
+            vulkan-loader
           ];
         };
 

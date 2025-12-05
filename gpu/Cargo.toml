@@ -1,0 +1,17 @@
+[package]
+name = "gpu"
+edition = "2024"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+spirv-std = { git = "https://github.com/rust-gpu/rust-gpu.git" }
+
+
+[build-dependencies]
+spirv-builder = { git = "https://github.com/rust-gpu/rust-gpu.git" }

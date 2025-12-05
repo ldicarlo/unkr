@@ -1,9 +1,11 @@
-use unkr;
-
 use clap::{Parser, Subcommand};
 use core::cmp::max;
 use std::io;
+use unkr;
+
 fn main() {
+    const SHADER: &[u8] = include_bytes!(env!("gpu.spv"));
+
     let args = Cli::parse();
 
     match args.command {
@@ -95,7 +97,8 @@ fn main() {
                 pretty,
                 intermediate_steps,
             )
-        } //Commands::Crossterm {} => console::consume_message(),
+        }
+        Commands::RunGpu {} => todo!(),
     };
 }
 
@@ -222,5 +225,7 @@ enum Commands {
         #[arg(short, long)]
         rules: Vec<String>,
     },
+
+    RunGpu {},
     //Crossterm {},
 }
