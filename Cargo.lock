@@ -772,7 +772,6 @@ dependencies = [
 name = "gpu"
 version = "0.1.0"
 dependencies = [
- "spirv-builder",
  "spirv-std",
 ]
 
@@ -2191,6 +2190,7 @@ dependencies = [
  "crossbeam",
  "crossterm",
  "csv",
+ "gpu",
  "md5",
  "pprof",
  "pretty_assertions",

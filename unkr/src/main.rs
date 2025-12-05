@@ -98,7 +98,7 @@ fn main() {
                 intermediate_steps,
             )
         }
-        Commands::RunGpu {} => todo!(),
+        Commands::RunGpu {} => gpu::main_fs(),
     };
 }
 

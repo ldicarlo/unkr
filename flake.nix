@@ -46,12 +46,15 @@
       rec {
         devShells.default = pkgs.mkShell rec {
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
+
+          hardeningDisable = [ "fortify" ];
           # RUST_SRC_PATH = fenixToolchain;
 
           nativeBuildInputs = [ fenixToolchain ];
 
           buildInputs = with pkgs;  [
             vulkan-loader
+            stdenv.cc.cc.lib
           ];
         };
 

@@ -18,6 +18,7 @@ strum = "0.27.0"
 strum_macros = "0.27.0"
 crossterm = "0.29.0"
 crossbeam = "0.8.4"
+gpu = { path = "../gpu" }
 
 [dev-dependencies]
 pprof = { version = "0.15", features = ["flamegraph", "criterion"] }

@@ -13,5 +13,5 @@ crate-type = ["dylib"]
 spirv-std = { git = "https://github.com/rust-gpu/rust-gpu.git" }
 
 
-[build-dependencies]
-spirv-builder = { git = "https://github.com/rust-gpu/rust-gpu.git" }
+# [build-dependencies]
+# spirv-builder = { git = "https://github.com/rust-gpu/rust-gpu.git" }
