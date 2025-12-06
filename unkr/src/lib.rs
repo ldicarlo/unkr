@@ -115,9 +115,9 @@ mod decrypt;
 mod decryptors;
 mod encrypt;
 mod fuzzer;
+mod gpu;
 mod mapper;
-// pub for benchmark, but not sure that it is really required
-pub mod models;
+pub mod models; // pub for benchmark, but not sure that it is really required
 mod parser;
 mod thread_system;
 
@@ -252,4 +252,8 @@ pub fn permute_decrypt(strs: Vec<String>, permute_args: PermuteArgs) -> Vec<std:
 
 pub fn char_position(c: char) -> usize {
     char_utils::char_position_base(c)
+}
+
+pub fn run_gpu() {
+    gpu::run_gpu::run_gpu();
 }

@@ -46,7 +46,9 @@
       rec {
         devShells.default = pkgs.mkShell rec {
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
-
+          #  LD_LIBRARY_PATH = "${pkgs.vulkan-loader}/lib";
+          VULKAN_LIB_DIR = "${pkgs.shaderc.dev}/lib";
+          # SHADERC_LIB_DIR = "${pkgs.shaderc.dev}/lib";
           hardeningDisable = [ "fortify" ];
           # RUST_SRC_PATH = fenixToolchain;
 

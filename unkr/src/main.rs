@@ -3,6 +3,7 @@ use core::cmp::max;
 use spirv_std::glam::{vec4, Vec4};
 use std::io;
 use unkr;
+use unkr::{self, run_gpu};
 
 // https://github.com/Firestar99/rust-gpu-vulkano-example
 
@@ -229,6 +230,6 @@ enum Commands {
         rules: Vec<String>,
     },
 
-    RunGpu {},
-    //Crossterm {},
+    /// Run GPU stuff
+    RunGPU {},
 }
