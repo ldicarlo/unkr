@@ -2197,6 +2197,7 @@ dependencies = [
  "rand",
  "serde",
  "spirv-builder",
+ "spirv-std",
  "strum",
  "strum_macros",
 ]

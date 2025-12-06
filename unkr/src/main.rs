@@ -1,7 +1,10 @@
 use clap::{Parser, Subcommand};
 use core::cmp::max;
+use spirv_std::glam::{vec4, Vec4};
 use std::io;
 use unkr;
+
+// https://github.com/Firestar99/rust-gpu-vulkano-example
 
 fn main() {
     const SHADER: &[u8] = include_bytes!(env!("gpu.spv"));
@@ -98,7 +101,7 @@ fn main() {
                 intermediate_steps,
             )
         }
-        Commands::RunGpu {} => gpu::main_fs(),
+        Commands::RunGpu {} => gpu::main_fs(&mut vec4(1.0, 0.0, 0.0, 1.0)),
     };
 }
 
