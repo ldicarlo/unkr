@@ -105,6 +105,7 @@ pub fn read_parameters(mut str: String) -> CLICryptor {
         "indexcrypt" => read(str, CryptorTypeWithArgs::IndexCrypt),
         "permute" => read(str, CryptorTypeWithArgs::Permute),
         "enigma" => read(str, CryptorTypeWithArgs::Enigma),
+        "caesar" => read(str, CryptorTypeWithArgs::Caesar),
         _ => panic!("Cannot parse: {}", str),
     }
 }
