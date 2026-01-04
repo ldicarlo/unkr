@@ -42,7 +42,7 @@ fortanix-sgx-abi = "=0.5.0"
 getopts = "=0.2.23"
 unwinding = "=0.2.7"
 unicode-width = "=0.2.1"
-gimli = "=0.32.0"
+gimli = "=0.32.3"
 # spirv-builder = { workspace = true }
 # spirv-std = { workspace = true }
 
