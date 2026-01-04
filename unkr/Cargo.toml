@@ -32,7 +32,7 @@ bytemuck = { version = "1.7", features = [
 png = "0.18"
 # fixed deps
 rustc-literal-escaper = "=0.0.4"
-cfg-if = "=1.0.1"
+cfg-if = "=1.0.4"
 hashbrown = "=0.15.4"
 rustc-demangle = "=0.1.25"
 dlmalloc = "=0.2.9"
