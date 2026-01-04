@@ -1,8 +1,9 @@
-use unkr;
-
 use clap::{Parser, Subcommand};
 use core::cmp::max;
+mod gpu;
 use std::io;
+use unkr;
+
 fn main() {
     let args = Cli::parse();
 
@@ -95,7 +96,8 @@ fn main() {
                 pretty,
                 intermediate_steps,
             )
-        } //Commands::Crossterm {} => console::consume_message(),
+        }
+        Commands::RunGpu {} => gpu::gpu::run_gpu(),
     };
 }
 
@@ -223,4 +225,5 @@ enum Commands {
         rules: Vec<String>,
     },
     //Crossterm {},
+    RunGpu {},
 }

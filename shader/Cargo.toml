@@ -1,0 +1,15 @@
+[package]
+name = "shader"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["dylib"]
+
+[lints]
+workspace = true
+
+[dependencies]
+spirv-std = { workspace = true }
