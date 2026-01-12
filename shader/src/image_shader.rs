@@ -28,8 +28,8 @@ pub fn image_fs(
 pub fn add_cs(
     #[spirv(global_invocation_id)] id: UVec3,
     #[spirv(storage_buffer, descriptor_set = 0, binding = 0)] left: &mut [u32],
-    #[spirv(storage_buffer, descriptor_set = 0, binding = 0)] right: &mut [u32],
-    #[spirv(storage_buffer, descriptor_set = 0, binding = 0)] output: &mut [u32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 1)] right: &mut [u32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 2)] output: &mut [u32],
 ) {
     let index = id.x as usize;
     output[index] = left[index] + right[index];

@@ -9,7 +9,8 @@ use vulkano::{
         allocator::StandardDescriptorSetAllocator, DescriptorSet, WriteDescriptorSet,
     },
     device::{
-        physical::PhysicalDeviceType, Device, DeviceCreateInfo, Queue, QueueCreateInfo, QueueFlags,
+        physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceFeatures, Queue,
+        QueueCreateInfo, QueueFlags,
     },
     instance::{Instance, InstanceCreateInfo},
     memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
@@ -138,10 +139,7 @@ pub fn run_gpu() {
     }
 
     let results = output_buffer.read().unwrap();
-    println!(
-        "First additions: {:?}",
-        &results.iter().take(8).collect::<Vec<_>>()
-    );
+    println!("Additions: {:?}", &results.iter().collect::<Vec<_>>());
 
     let mismatches = results
         .iter()
@@ -166,7 +164,7 @@ pub fn run_gpu() {
 fn build_compute_pipeline(device: Arc<Device>) -> Arc<ComputePipeline> {
     let cs = shaders::cs::load(device.clone())
         .expect("failed to create shader module")
-        .entry_point("add_cs")
+        .entry_point("image_shader::add_cs")
         .unwrap();
 
     let stage = PipelineShaderStageCreateInfo::new(cs);
@@ -228,6 +226,10 @@ fn init_device() -> (Arc<Device>, Arc<Queue>) {
                 queue_family_index,
                 ..Default::default()
             }],
+            enabled_features: DeviceFeatures {
+                vulkan_memory_model: true,
+                ..DeviceFeatures::empty()
+            },
             ..Default::default()
         },
     )
