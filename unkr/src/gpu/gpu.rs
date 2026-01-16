@@ -27,7 +27,18 @@ use crate::gpu::shaders;
 
 const LOCAL_SIZE_X: u32 = 64;
 
-pub fn run_gpu() {
+///
+
+pub fn run_gpu(
+    str: String,
+    clues: Vec<String>,
+    decryptors: Vec<String>,
+    threads_number: Vec<u8>,
+    total_threads: u8,
+    cache_name: String,
+    pretty: bool,
+    intermediate_steps: bool,
+) {
     let (device, queue) = init_device();
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
     let command_buffer_allocator = Arc::new(StandardCommandBufferAllocator::new(

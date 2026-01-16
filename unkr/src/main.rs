@@ -97,7 +97,31 @@ fn main() {
                 intermediate_steps,
             )
         }
-        Commands::RunGpu {} => gpu::gpu::run_gpu(),
+        Commands::GpuBruteForceCombination {
+            string,
+            clues,
+            decryptors,
+            pretty,
+            intermediate_steps,
+            runner_thread_numbers,
+            runners_threads_total_count,
+        } => {
+            let threads = runner_thread_numbers.unwrap_or(vec![0]);
+            let threads_count = runners_threads_total_count.unwrap_or(max(
+                *threads.iter().max().unwrap_or(&0) + 1,
+                threads.len() as u8,
+            ));
+            gpu::gpu::run_gpu(
+                string,
+                clues,
+                decryptors,
+                threads,
+                threads_count,
+                String::from("cache"),
+                pretty,
+                intermediate_steps,
+            )
+        }
     };
 }
 
@@ -225,5 +249,36 @@ enum Commands {
         rules: Vec<String>,
     },
     //Crossterm {},
-    RunGpu {},
+    GpuBruteForceCombination {
+        /// String to try to decrypt
+        #[arg(short, long)]
+        string: String,
+
+        /// words to search for (cannot be empty)
+        #[arg(long)]
+        clues: Vec<String>,
+
+        /// Combination of BrufteForce params to use
+        #[arg(last = true)]
+        decryptors: Vec<String>,
+
+        /// using pretty prints "nicely" (hey it's a shell don't be too picky) the logs
+        #[arg(long)]
+        pretty: bool,
+
+        /// check for clues during the intermediate steps of an encryption
+        #[arg(long)]
+        intermediate_steps: bool,
+
+        /// run as one of multiple runners, or single runner (runner_thread_numbers starts at 0), give this runner a number. It will skip other steps
+        /// So for example if you have 2 runners and 2 threads in each that's [0 ,1].
+        #[arg(long, value_delimiter = ',', num_args=1..)]
+        runner_thread_numbers: Option<Vec<u8>>,
+
+        /// run as one of multiple runners, give the total number of runners threads.
+        /// So for example if you have 2 runners and 2 threads in each that's 4.
+        /// if not provided, total_count will be the size of `runner_thread_numbers`
+        #[arg(long)]
+        runners_threads_total_count: Option<u8>,
+    },
 }
