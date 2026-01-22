@@ -1,8 +1,7 @@
+use spirv_builder::{Capability, MetadataPrintout, SpirvBuilder, SpirvMetadata};
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
-
-use spirv_builder::{MetadataPrintout, SpirvBuilder, SpirvMetadata};
 
 const TARGET: &str = "spirv-unknown-vulkan1.2";
 const SHADER_PATH: &str = "shader";
@@ -18,6 +17,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .multimodule(true)
         // this needs at least NameVariables for vulkano to like the spv, but may also be Full
         .spirv_metadata(SpirvMetadata::NameVariables)
+        .capability(Capability::Int8)
+        .extension("SPV_KHR_8bit_storage")
         .print_metadata(MetadataPrintout::DependencyOnly)
         .build()?;
 

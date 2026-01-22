@@ -50,8 +50,13 @@ pub fn run_gpu(
         Default::default(),
     ));
 
-    let lhs_data: Vec<u32> = (0..3000).collect();
-
+    let lhs_data: Vec<u8> = str
+        .to_uppercase()
+        .as_bytes()
+        .into_iter()
+        .map(|s| *s)
+        .collect();
+    // println!("{lhs_data:?}");
     let lhs_buffer = Buffer::from_iter(
         memory_allocator.clone(),
         BufferCreateInfo {
@@ -78,7 +83,7 @@ pub fn run_gpu(
                 | MemoryTypeFilter::HOST_RANDOM_ACCESS,
             ..Default::default()
         },
-        (0..lhs_data.len()).map(|_| 0u32),
+        (0..lhs_data.len()).map(|_| 0u8),
     )
     .unwrap();
 
@@ -135,10 +140,11 @@ pub fn run_gpu(
     let results = output_buffer.read().unwrap();
     let chunks = results.as_chunks::<255>();
     for chunk in chunks.0.into_iter() {
-        println!("{chunk:?}");
+        let str = str::from_utf8(chunk).unwrap();
+        println!("{str}");
     }
-
-    println!("{0:?}", chunks.1);
+    let str = str::from_utf8(chunks.1).unwrap();
+    println!("{str}");
 }
 
 fn build_compute_pipeline(device: Arc<Device>) -> Arc<ComputePipeline> {
@@ -208,6 +214,7 @@ fn init_device() -> (Arc<Device>, Arc<Queue>) {
             }],
             enabled_features: DeviceFeatures {
                 vulkan_memory_model: true,
+                shader_int8: true,
                 ..DeviceFeatures::empty()
             },
             ..Default::default()
