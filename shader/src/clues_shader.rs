@@ -9,16 +9,23 @@ pub fn check_string_contains(
     #[spirv(storage_buffer, descriptor_set = 0, binding = 3)] output: &mut [u8],
 ) {
     let index = id.x as usize;
+    let begin = index * *string_size;
+    let end = index + 1usize * *string_size;
 
-    let slice = &inputs[(index * *string_size)..(index + 1usize * *string_size)];
-
-    output[index * *string_size] = contains(slice, clue);
+    output[index * *string_size] = contains(inputs, begin, end, clue);
 }
 
-fn contains(input: &[u8], clue: &[u8]) -> u8 {
-    if input.len() == clue.len() {
-        1u8
-    } else {
-        0u8
+fn contains(input: &[u8], begin: usize, end: usize, clue: &[u8]) -> u8 {
+    let mut equal = 0;
+    for i in 0..clue.len() {
+        if input[begin + i] != clue[i] {
+            equal = 1;
+            break;
+        }
+        if i >= end - begin {
+            break;
+        }
     }
+
+    equal
 }

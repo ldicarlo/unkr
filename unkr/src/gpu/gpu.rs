@@ -1,5 +1,5 @@
-use crate::gpu::{self, shaders};
-use std::{process::Output, sync::Arc};
+use crate::gpu::{self};
+use std::sync::Arc;
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage},
     command_buffer::{
@@ -14,11 +14,7 @@ use vulkano::{
     },
     instance::{Instance, InstanceCreateInfo},
     memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
-    pipeline::{
-        compute::ComputePipelineCreateInfo, layout::PipelineDescriptorSetLayoutCreateInfo,
-        ComputePipeline, Pipeline, PipelineBindPoint, PipelineLayout,
-        PipelineShaderStageCreateInfo,
-    },
+    pipeline::{Pipeline, PipelineBindPoint},
     sync::{self, GpuFuture},
     Validated, VulkanError, VulkanLibrary,
 };
