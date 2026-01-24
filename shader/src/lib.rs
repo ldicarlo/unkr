@@ -6,3 +6,6 @@ pub mod image_shader;
 
 #[deny(warnings)]
 pub mod atbash_shader;
+
+#[deny(warnings)]
+pub mod clues_shader;
