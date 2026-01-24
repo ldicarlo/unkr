@@ -5,20 +5,20 @@ pub fn check_string_contains(
     #[spirv(global_invocation_id)] id: UVec3,
     #[spirv(storage_buffer, descriptor_set = 0, binding = 0)] clue: &[u8],
     #[spirv(storage_buffer, descriptor_set = 0, binding = 1)] inputs: &mut [u8],
-    #[spirv(storage_buffer, descriptor_set = 0, binding = 2)] string_size: usize,
-    #[spirv(storage_buffer, descriptor_set = 0, binding = 3)] output: &mut [bool],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 2)] string_size: &usize,
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 3)] output: &mut [u8],
 ) {
     let index = id.x as usize;
 
-    let slice = &inputs[(index * string_size)..(index + 1) * string_size];
+    let slice = &inputs[(index * *string_size)..(index + 1usize * *string_size)];
 
-    output[index * string_size] = contains(slice, clue);
+    output[index * *string_size] = contains(slice, clue);
 }
 
-fn contains(input: &[u8], clue: &[u8]) -> bool {
-    if input == clue {
-        true
+fn contains(input: &[u8], clue: &[u8]) -> u8 {
+    if input.len() == clue.len() {
+        1u8
     } else {
-        false
+        0u8
     }
 }
