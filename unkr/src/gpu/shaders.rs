@@ -29,3 +29,11 @@ pub mod ab {
         bytes: "atbash_shader-atbash.spv",
     }
 }
+
+#[cfg(not(feature = "use-glsl-shader"))]
+pub mod clues {
+    vulkano_shaders::shader! {
+        root_path_env: "SHADER_OUT_DIR",
+        bytes: "clues_shader-check_string_contains.spv",
+    }
+}
