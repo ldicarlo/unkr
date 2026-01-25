@@ -50,7 +50,7 @@ pub fn run_gpu(
         .into_iter()
         .map(|s| *s)
         .collect();
-    // println!("{lhs_data:?}");
+
     let lhs_buffer = Buffer::from_iter(
         memory_allocator.clone(),
         BufferCreateInfo {
